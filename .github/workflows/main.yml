@@ -47,10 +47,10 @@ jobs:
           HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
           HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
-        run: ci/install_hcl.sh
+        run: .github/workflows/ci/install_hcl.sh
       - name: Test
         env:
           HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
           HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
-        run: ci/run_hcl.sh
+        run: .github/workflows/ci/run_hcl.sh
