@@ -31,7 +31,7 @@ function(mpi target mpi_procs example ranks_per_process num_requests size_of_req
     set(test_parameters -np ${mpi_procs} -f "${CMAKE_BINARY_DIR}/test/hostfile" "${CMAKE_BINARY_DIR}/bin/${example}" ${ranks_per_process} ${num_requests} ${size_of_request} ${server_on_node} ${debug})
     set(test_name ${target}_${example}_MPI_${mpi_procs}_${ranks_per_process}_${num_requests}_${size_of_request}_${server_on_node}_${debug})
     add_test(NAME ${test_name} COMMAND ${MPIEXEC_EXECUTABLE} ${test_parameters})
-    set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "SERVER_LIST_PATH=${CMAKE_BINARY_DIR}/test/")
+    set_tests_properties(${test_name} PROPERTIES ENVIRONMENT "SERVER_LIST_PATH=${CMAKE_BINARY_DIR}/bin/")
 
 endfunction()
 
@@ -47,7 +47,7 @@ foreach (example ${examples})
 endforeach ()
 
 foreach (example ${examples})
-    set(test_parameters -np 2 "${CMAKE_BINARY_DIR}/test/${example}")
+    set(test_parameters -np 2 "${CMAKE_BINARY_DIR}/bin/${example}")
     add_test(NAME ${example} COMMAND ${MPIEXEC_EXECUTABLE} ${test_parameters})
-    set_tests_properties(${example} PROPERTIES ENVIRONMENT "SERVER_LIST_PATH=${CMAKE_BINARY_DIR}/test/")
+    set_tests_properties(${example} PROPERTIES ENVIRONMENT "SERVER_LIST_PATH=${CMAKE_BINARY_DIR}/bin/")
 endforeach ()
