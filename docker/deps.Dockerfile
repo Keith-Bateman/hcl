@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # general environment for docker
 ENV        DEBIAN_FRONTEND=noninteractive \
@@ -28,31 +28,26 @@ ENV HOME=/root
 ENV PROJECT_DIR=$HOME/source
 ENV INSTALL_DIR=$HOME/install
 ENV SPACK_DIR=$HOME/spack
-ENV SDS_DIR=$HOME/sds
 
 # install spack
 RUN echo $INSTALL_DIR && mkdir -p $INSTALL_DIR
 RUN git clone https://github.com/spack/spack ${SPACK_DIR}
-RUN git clone https://xgitlab.cels.anl.gov/sds/sds-repo.git ${SDS_DIR}
 RUN git clone https://github.com/HDFGroup/hcl ${PROJECT_DIR}
 
 ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
-RUN $spack repo add ${SDS_DIR}
-RUN $spack repo add ${PROJECT_DIR}/ci/hcl
+RUN $spack repo add ${PROJECT_DIR}/dependency/hcl
 
 # install software
-ENV HCL_VERSION=dev
+ENV HCL_VERSION=develop
 
 #RUN $spack spec "hcl@${HCL_VERSION}"
 
 ENV HCL_SPEC=hcl@${HCL_VERSION}
-RUN $spack install --only dependencies ${HCL_SPEC} communication=rpclib
-
-RUN $spack install --only dependencies ${HCL_SPEC} communication=thallium
+RUN $spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
 
 ## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} gcc@8.3.0 mpich@3.3.2 rpclib@2.2.1 mochi-thallium@0.8.3 boost@1.74.0
+RUN $spack view symlink -i ${INSTALL_DIR} gcc@10.3.0 mpich@3.3.2 rpclib@2.2.1 mochi-thallium@0.11.3 boost@1.74.0
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
