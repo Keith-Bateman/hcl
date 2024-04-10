@@ -209,6 +209,13 @@ endif ()
 
 # Required Dependencies
 # =============================================================================
+find_package(MPI REQUIRED COMPONENTS CXX C)
+if (${MPI_FOUND})
+    message(STATUS "[${PROJECT_NAME}] found mpi at ${MPI_CXX_INCLUDE_DIRS}")
+    include_directories(${MPI_CXX_INCLUDE_DIRS})
+else ()
+    message(FATAL_ERROR "-- [${PROJECT_NAME}] mpi is needed for ${PROJECT_NAME} build")
+endif ()
 if(HCL_COMMUNICATION STREQUAL "UCX")
     set(HCL_COMMUNICATION_ENABLE_UCX 1)
     find_package(ucx 1.6 REQUIRED)
@@ -310,8 +317,25 @@ set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_factory.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/container.h)
+set(HCL_SRC_PRIVATE  ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/map/map.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/set/set.cpp
+${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp)
 
-hcl_install_headers("${HCL_PUBLIC_HEADER}" ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
+target_link_libraries(${PROJECT_NAME} ${RPC_LIB_FLAGS} ${MPI_CXX_LIBRARIES} -lpthread -lrt)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    LINKER_LANGUAGE CXX
+    VERSION ${HCL_PACKAGE_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER include/hcl.h)
+hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SOURCE_DIR})
 #-----------------------------------------------------------------------------
 # Testing
 #-----------------------------------------------------------------------------
