@@ -39,11 +39,12 @@ class Hcl(CMakePackage):
             values=('tcp', 'roce'),
             multi=True,
             description='Which communication protocol to use.')
-    depends_on('gcc@8.3.0')
-    depends_on('mpich@3.3.2~fortran')
+    depends_on('mpi')
     depends_on('rpclib@2.2.1', when='communication=rpclib')
-    depends_on('mochi-thallium~cereal@0.8.3', when='communication=thallium')
-    depends_on('boost@1.74.0')
+    depends_on('mochi-thallium~cereal@0.11.3', when='communication=thallium')
+    depends_on('mercury@2.3.1+ofi', when='communication=thallium')
+    depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
+    depends_on('boost@1.71.0:')
 
     def cmake_args(self):
         spec = self.spec
