@@ -42,7 +42,8 @@ class Hcl(CMakePackage):
     depends_on('mpi')
     depends_on('rpclib@2.2.1', when='communication=rpclib')
     depends_on('mochi-thallium~cereal@0.11.3', when='communication=thallium')
-    depends_on('mercury@2.3.1', when='communication=thallium')
+    depends_on('mercury@2.3.1+ofi', when='communication=thallium')
+    depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
     depends_on('boost@1.71.0:')
 
     def cmake_args(self):

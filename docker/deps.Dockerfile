@@ -42,16 +42,17 @@ RUN git clone https://github.com/hariharan-devarajan/hcl.git ${PROJECT_DIR}
 
 ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
-RUN $spack repo add ${PROJECT_DIR}/ci/hcl
-
-COPY ./packages.yaml /root/.spack/packages.yaml
 
 # install software
 ENV HCL_VERSION=dev
 
 #RUN $spack spec "hcl@${HCL_VERSION}"
 
-RUN cd ${PROJECT_DIR} && git checkout feature/fix_ci
+RUN cd ${PROJECT_DIR} && git checkout feature/fix_ci && git pull
+
+RUN $spack repo add ${PROJECT_DIR}/ci/hcl
+
+COPY ./packages.yaml /root/.spack/packages.yaml
 
 ENV HCL_SPEC=hcl@${HCL_VERSION}
 RUN $spack install --only dependencies ${HCL_SPEC} communication=rpclib
