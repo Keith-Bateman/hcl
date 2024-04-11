@@ -36,4 +36,6 @@ GTAGS
 
 /.spack-env/
 spack.lock
-
+install
+build
+__pycache__

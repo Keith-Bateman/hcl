@@ -16,23 +16,14 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     container:
       image: hdevarajan92/hcl-deps:latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - RPCLIB: ON
-            THALLIUM_TCP: OFF
-            THALLIUM_ROCE: OFF
-          - RPCLIB: OFF
-            THALLIUM_TCP: ON
-            THALLIUM_ROCE: OFF
-          - RPCLIB: OFF
-            THALLIUM_TCP: OFF
-            THALLIUM_ROCE: ON
-
+        communication: ["RPCLIB", "THALLIUM"]
+        protocol: ["TCP"]
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -44,13 +35,11 @@ jobs:
 
       - name: Build
         env:
-          HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
-          HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
-          HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
+          HCL_COMMUNICATION: ${{ matrix.communication }}
+          HCL_COMMUNICATION_PROTOCOL: ${{ matrix.protocol }}
         run: .github/workflows/ci/install_hcl.sh
       - name: Test
         env:
-          HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
-          HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
-          HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
+          HCL_COMMUNICATION: ${{ matrix.communication }}
+          HCL_COMMUNICATION_PROTOCOL: ${{ matrix.protocol }}
         run: .github/workflows/ci/run_hcl.sh

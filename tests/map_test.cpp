@@ -12,7 +12,7 @@
 
 #include <execinfo.h>
 #include <hcl/common/data_structures.h>
-#include <hcl/unordered_map/unordered_map.h>
+#include <hcl/map/map.h>
 #include <mpi.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -55,22 +55,36 @@ struct hash<KeyType> {
 }  // namespace std
 
 int main(int argc, char *argv[]) {
-  MPI_Init(&argc, &argv);
-  int comm_size = 0, my_rank = 0;
+  int provided;
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+  if (provided < MPI_THREAD_MULTIPLE) {
+    printf("Didn't receive appropriate MPI threading specification\n");
+    exit(EXIT_FAILURE);
+  }
+  int comm_size, my_rank;
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   int ranks_per_server = comm_size, num_request = 100;
   long size_of_request = 1000;
   bool debug = false;
-  bool server_on_node = false;
-  char *server_list_path = std::getenv("SERVER_LIST_PATH");
-
+  bool server_on_node = true;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
   if (argc > 2) num_request = atoi(argv[2]);
   if (argc > 3) size_of_request = (long)atol(argv[3]);
   if (argc > 4) server_on_node = (bool)atoi(argv[4]);
   if (argc > 5) debug = (bool)atoi(argv[5]);
+
+  /* if(comm_size/ranks_per_server < 2){
+       perror("comm_size/ranks_per_server should be atleast 2 for this test\n");
+       exit(-1);
+   }*/
   int len;
+  char processor_name[MPI_MAX_PROCESSOR_NAME];
+  MPI_Get_processor_name(processor_name, &len);
+  if (debug) {
+    printf("%s/%d: %d\n", processor_name, my_rank, getpid());
+  }
+
   if (debug && my_rank == 0) {
     printf("%d ready for attach\n", comm_size);
     fflush(stdout);
@@ -80,6 +94,15 @@ int main(int argc, char *argv[]) {
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
   int my_server = my_rank / ranks_per_server;
   int num_servers = comm_size / ranks_per_server;
+
+  // The following is used to switch to 40g network on Ares.
+  // This is necessary when we use RoCE on Ares.
+  std::string proc_name = std::string(processor_name);
+  /*int split_loc = proc_name.find('.');
+  std::string node_name = proc_name.substr(0, split_loc);
+  std::string extra_info = proc_name.substr(split_loc+1, string::npos);
+  proc_name = node_name + "-40g." + extra_info;*/
+
   size_t size_of_elem = sizeof(int);
 
   printf("rank %d, is_server %d, my_server %d, num_servers %d\n", my_rank,
@@ -100,33 +123,34 @@ int main(int argc, char *argv[]) {
   HCL_CONF->MY_SERVER = my_server;
   HCL_CONF->NUM_SERVERS = num_servers;
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
-  HCL_CONF->SERVER_LIST_PATH = std::string(server_list_path) + "server_list";
+  HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
-  hcl::unordered_map<KeyType, std::array<int, array_size>> *map;
+  hcl::map<KeyType, std::array<int, array_size>> *map;
   if (is_server) {
-    map = new hcl::unordered_map<KeyType, std::array<int, array_size>>();
+    map = new hcl::map<KeyType, std::array<int, array_size>>();
   }
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    map = new hcl::unordered_map<KeyType, std::array<int, array_size>>();
+    map = new hcl::map<KeyType, std::array<int, array_size>>();
   }
 
-  std::unordered_map<KeyType, std::array<int, array_size>> lmap =
-      std::unordered_map<KeyType, std::array<int, array_size>>();
+  std::map<KeyType, std::array<int, array_size>> lmap =
+      std::map<KeyType, std::array<int, array_size>>();
 
   MPI_Comm client_comm;
-  bool is_client = true;
-  int client_comm_size = 1;
-  if (comm_size > 1) {
-    MPI_Comm_split(MPI_COMM_WORLD, !is_server, my_rank, &client_comm);
-    MPI_Comm_size(client_comm, &client_comm_size);
-    is_client = !is_server;
-  } else {
-    client_comm = MPI_COMM_WORLD;
-  }
-
+  MPI_Comm_split(MPI_COMM_WORLD, !is_server, my_rank, &client_comm);
+  int client_comm_size;
+  MPI_Comm_size(client_comm, &client_comm_size);
+  // if(is_server){
+  //     std::function<int(int)> func=[](int x){ std::cout<<x<<std::endl;return
+  //     x; }; int a; std::function<std::pair<bool,int>(KeyType&,std::array<int,
+  //     array_size>&,std::string,int)>
+  //     putFunc(std::bind(&hcl::map<KeyType,std::array<int,
+  //                                                                                                                 array_size>>::LocalPutWithCallback<int,int>,map,std::placeholders::_1, std::placeholders::_2,std::placeholders::_3, std::placeholders::_4));
+  //     map->Bind("CB_Put", func, "APut",putFunc);
+  // }
   MPI_Barrier(MPI_COMM_WORLD);
-  if (is_client) {
+  if (!is_server) {
     Timer llocal_map_timer = Timer();
     std::hash<KeyType> keyHash;
     /*Local std::map test*/

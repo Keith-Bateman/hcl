@@ -12,7 +12,7 @@
 
 #include <execinfo.h>
 #include <hcl/common/data_structures.h>
-#include <hcl/set/set.h>
+#include <hcl/priority_queue/priority_queue.h>
 #include <mpi.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -21,7 +21,7 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
-#include <set>
+#include <queue>
 #include <utility>
 
 struct KeyType {
@@ -38,9 +38,7 @@ struct KeyType {
     return *this;
   }
   bool operator<(const KeyType &o) const { return a < o.a; }
-  bool operator<=(const KeyType &o) const { return a < o.a; }
   bool operator>(const KeyType &o) const { return a > o.a; }
-  bool operator>=(const KeyType &o) const { return a >= o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
 };
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
@@ -69,7 +67,7 @@ int main(int argc, char *argv[]) {
   int ranks_per_server = comm_size, num_request = 100;
   long size_of_request = 1000;
   bool debug = false;
-  bool server_on_node = false;
+  bool server_on_node = true;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
   if (argc > 2) num_request = atoi(argv[2]);
   if (argc > 3) size_of_request = (long)atol(argv[3]);
@@ -127,16 +125,16 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
-  hcl::set<KeyType> *set;
+  hcl::priority_queue<KeyType> *priority_queue;
   if (is_server) {
-    set = new hcl::set<KeyType>();
+    priority_queue = new hcl::priority_queue<KeyType>();
   }
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    set = new hcl::set<KeyType>();
+    priority_queue = new hcl::priority_queue<KeyType>();
   }
 
-  std::set<KeyType> lset = std::set<KeyType>();
+  std::priority_queue<KeyType> lpriority_queue = std::priority_queue<KeyType>();
 
   MPI_Comm client_comm;
   MPI_Comm_split(MPI_COMM_WORLD, !is_server, my_rank, &client_comm);
@@ -146,157 +144,162 @@ int main(int argc, char *argv[]) {
   //     std::function<int(int)> func=[](int x){ std::cout<<x<<std::endl;return
   //     x; }; int a; std::function<std::pair<bool,int>(KeyType&,std::array<int,
   //     array_size>&,std::string,int)>
-  //     putFunc(std::bind(&hcl::set<KeyType,std::array<int,
-  //                                                                                                                 array_size>>::LocalPutWithCallback<int,int>,set,std::placeholders::_1, std::placeholders::_2,std::placeholders::_3, std::placeholders::_4));
-  //     set->Bind("CB_Put", func, "APut",putFunc);
+  //     putFunc(std::bind(&hcl::priority_queue<KeyType,std::array<int,
+  //                                                                                                                 array_size>>::LocalPutWithCallback<int,int>,priority_queue,std::placeholders::_1, std::placeholders::_2,std::placeholders::_3, std::placeholders::_4));
+  //     priority_queue->Bind("CB_Put", func, "APut",putFunc);
   // }
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    Timer llocal_set_timer = Timer();
+    Timer llocal_priority_queue_timer = Timer();
     std::hash<KeyType> keyHash;
-    /*Local std::set test*/
+    /*Local std::priority_queue test*/
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
-      llocal_set_timer.resumeTime();
+      llocal_priority_queue_timer.resumeTime();
       size_t key_hash = keyHash(KeyType(val)) % num_servers;
       if (key_hash == my_server && is_server) {
       }
-      lset.insert(KeyType(val));
-      llocal_set_timer.pauseTime();
+      lpriority_queue.push(KeyType(val));
+      llocal_priority_queue_timer.pauseTime();
     }
 
-    double llocal_set_throughput = num_request /
-                                   llocal_set_timer.getElapsedTime() * 1000 *
-                                   size_of_elem * my_vals.size() / 1024 / 1024;
+    double llocal_priority_queue_throughput =
+        num_request / llocal_priority_queue_timer.getElapsedTime() * 1000 *
+        size_of_elem * my_vals.size() / 1024 / 1024;
 
-    Timer llocal_get_set_timer = Timer();
+    Timer llocal_get_priority_queue_timer = Timer();
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
-      llocal_get_set_timer.resumeTime();
+      llocal_get_priority_queue_timer.resumeTime();
       size_t key_hash = keyHash(KeyType(val)) % num_servers;
       if (key_hash == my_server && is_server) {
       }
-      auto result = lset.find(KeyType(val));
-      if (result != lset.end()) {
-      }
-      llocal_get_set_timer.pauseTime();
+      auto result = lpriority_queue.top();
+      lpriority_queue.pop();
+      llocal_get_priority_queue_timer.pauseTime();
     }
-    double llocal_get_set_throughput =
-        num_request / llocal_get_set_timer.getElapsedTime() * 1000 *
+    double llocal_get_priority_queue_throughput =
+        num_request / llocal_get_priority_queue_timer.getElapsedTime() * 1000 *
         size_of_elem * my_vals.size() / 1024 / 1024;
 
     if (my_rank == 0) {
-      printf("llocal_set_throughput put: %f\n", llocal_set_throughput);
-      printf("llocal_set_throughput get: %f\n", llocal_get_set_throughput);
+      printf("llocal_priority_queue_throughput put: %f\n",
+             llocal_priority_queue_throughput);
+      printf("llocal_priority_queue_throughput get: %f\n",
+             llocal_get_priority_queue_throughput);
     }
     MPI_Barrier(client_comm);
 
     if (HCL_CONF->SERVER_ON_NODE) {
-      Timer local_set_timer = Timer();
+      Timer local_priority_queue_timer = Timer();
       uint16_t my_server_key = my_server % num_servers;
-      /*Local set test*/
+      /*Local priority_queue test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
         auto key = KeyType(val);
-        local_set_timer.resumeTime();
-        set->Put(key);
-        local_set_timer.pauseTime();
+        local_priority_queue_timer.resumeTime();
+        priority_queue->Push(key, my_server_key);
+        local_priority_queue_timer.pauseTime();
       }
-      double local_set_throughput = num_request /
-                                    local_set_timer.getElapsedTime() * 1000 *
-                                    size_of_elem * my_vals.size() / 1024 / 1024;
+      double local_priority_queue_throughput =
+          num_request / local_priority_queue_timer.getElapsedTime() * 1000 *
+          size_of_elem * my_vals.size() / 1024 / 1024;
 
-      Timer local_get_set_timer = Timer();
-      /*Local set test*/
+      Timer local_get_priority_queue_timer = Timer();
+      /*Local priority_queue test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
         auto key = KeyType(val);
+        local_get_priority_queue_timer.resumeTime();
         size_t key_hash = keyHash(KeyType(val)) % num_servers;
         if (key_hash == my_server && is_server) {
         }
-        local_get_set_timer.resumeTime();
-        auto result = set->Get(key);
-        local_get_set_timer.pauseTime();
+        auto result = priority_queue->Pop(my_server_key);
+        local_get_priority_queue_timer.pauseTime();
       }
 
-      double local_get_set_throughput =
-          num_request / local_get_set_timer.getElapsedTime() * 1000 *
+      double local_get_priority_queue_throughput =
+          num_request / local_get_priority_queue_timer.getElapsedTime() * 1000 *
           size_of_elem * my_vals.size() / 1024 / 1024;
 
       double local_put_tp_result, local_get_tp_result;
       if (client_comm_size > 1) {
-        MPI_Reduce(&local_set_throughput, &local_put_tp_result, 1, MPI_DOUBLE,
-                   MPI_SUM, 0, client_comm);
-        MPI_Reduce(&local_get_set_throughput, &local_get_tp_result, 1,
+        MPI_Reduce(&local_priority_queue_throughput, &local_put_tp_result, 1,
                    MPI_DOUBLE, MPI_SUM, 0, client_comm);
+        MPI_Reduce(&local_get_priority_queue_throughput, &local_get_tp_result,
+                   1, MPI_DOUBLE, MPI_SUM, 0, client_comm);
         local_put_tp_result /= client_comm_size;
         local_get_tp_result /= client_comm_size;
       } else {
-        local_put_tp_result = local_set_throughput;
-        local_get_tp_result = local_get_set_throughput;
+        local_put_tp_result = local_priority_queue_throughput;
+        local_get_tp_result = local_get_priority_queue_throughput;
       }
 
       if (my_rank == 0) {
-        printf("local_set_throughput put: %f\n", local_put_tp_result);
-        printf("local_set_throughput get: %f\n", local_get_tp_result);
+        printf("local_priority_queue_throughput put: %f\n",
+               local_put_tp_result);
+        printf("local_priority_queue_throughput get: %f\n",
+               local_get_tp_result);
       }
     }
     MPI_Barrier(client_comm);
 
     if (!HCL_CONF->SERVER_ON_NODE) {
-      Timer remote_set_timer = Timer();
-      /*Remote set test*/
+      Timer remote_priority_queue_timer = Timer();
+      /*Remote priority_queue test*/
       uint16_t my_server_remote_key = (my_server + 1) % num_servers;
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;
         auto key = KeyType(val);
-        remote_set_timer.resumeTime();
-        set->Put(key);
-        remote_set_timer.pauseTime();
+        remote_priority_queue_timer.resumeTime();
+        priority_queue->Push(key, my_server_remote_key);
+        remote_priority_queue_timer.pauseTime();
       }
-      double remote_set_throughput =
-          num_request / remote_set_timer.getElapsedTime() * 1000 *
+      double remote_priority_queue_throughput =
+          num_request / remote_priority_queue_timer.getElapsedTime() * 1000 *
           size_of_elem * my_vals.size() / 1024 / 1024;
 
       MPI_Barrier(client_comm);
 
-      Timer remote_get_set_timer = Timer();
-      /*Remote set test*/
+      Timer remote_get_priority_queue_timer = Timer();
+      /*Remote priority_queue test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;
         auto key = KeyType(val);
-        remote_get_set_timer.resumeTime();
+        remote_get_priority_queue_timer.resumeTime();
         size_t key_hash = keyHash(KeyType(val)) % num_servers;
         if (key_hash == my_server && is_server) {
         }
-        set->Get(key);
-        remote_get_set_timer.pauseTime();
+        priority_queue->Pop(my_server_remote_key);
+        remote_get_priority_queue_timer.pauseTime();
       }
-      double remote_get_set_throughput =
-          num_request / remote_get_set_timer.getElapsedTime() * 1000 *
-          size_of_elem * my_vals.size() / 1024 / 1024;
+      double remote_get_priority_queue_throughput =
+          num_request / remote_get_priority_queue_timer.getElapsedTime() *
+          1000 * size_of_elem * my_vals.size() / 1024 / 1024;
 
       double remote_put_tp_result, remote_get_tp_result;
       if (client_comm_size > 1) {
-        MPI_Reduce(&remote_set_throughput, &remote_put_tp_result, 1, MPI_DOUBLE,
-                   MPI_SUM, 0, client_comm);
-        remote_put_tp_result /= client_comm_size;
-        MPI_Reduce(&remote_get_set_throughput, &remote_get_tp_result, 1,
+        MPI_Reduce(&remote_priority_queue_throughput, &remote_put_tp_result, 1,
                    MPI_DOUBLE, MPI_SUM, 0, client_comm);
+        remote_put_tp_result /= client_comm_size;
+        MPI_Reduce(&remote_get_priority_queue_throughput, &remote_get_tp_result,
+                   1, MPI_DOUBLE, MPI_SUM, 0, client_comm);
         remote_get_tp_result /= client_comm_size;
       } else {
-        remote_put_tp_result = remote_set_throughput;
-        remote_get_tp_result = remote_get_set_throughput;
+        remote_put_tp_result = remote_priority_queue_throughput;
+        remote_get_tp_result = remote_get_priority_queue_throughput;
       }
 
       if (my_rank == 0) {
-        printf("remote set throughput (put): %f\n", remote_put_tp_result);
-        printf("remote set throughput (get): %f\n", remote_get_tp_result);
+        printf("remote priority_queue throughput (put): %f\n",
+               remote_put_tp_result);
+        printf("remote priority_queue throughput (get): %f\n",
+               remote_get_tp_result);
       }
     }
   }
   MPI_Barrier(MPI_COMM_WORLD);
-  delete (set);
+  delete (priority_queue);
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }
