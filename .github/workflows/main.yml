@@ -36,8 +36,8 @@ jobs:
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
-        run: ci/install_hcl.sh
+        run: .github/install_hcl.sh
       - name: Test
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
-        run: ci/run_hcl.sh
+        run: .github/run_hcl.sh

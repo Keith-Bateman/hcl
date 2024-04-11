@@ -50,7 +50,7 @@ ENV HCL_VERSION=dev
 RUN echo 1
 RUN cd ${PROJECT_DIR} && git fetch && git checkout feature/no_rpclib && git pull
 
-RUN $spack repo add ${PROJECT_DIR}/ci/hcl
+RUN $spack repo add ${PROJECT_DIR}/dependency/hcl
 
 
 COPY ./packages.yaml /root/.spack/packages.yaml
