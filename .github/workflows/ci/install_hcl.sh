@@ -1,24 +1,25 @@
 #!/bin/bash
 
 INSTALL_DIR=/root/install
+VIEW_DIR=$HOME/install/.spack-env/view
 SPACK_DIR=/root/spack
 
 mkdir build
 pushd build
 
-CXXFLAGS="-I${INSTALL_DIR}/include"
-LDFLAGS="-L${INSTALL_DIR}/lib"
+CXXFLAGS="-I${VIEW_DIR}/include"
+LDFLAGS="-L${VIEW_DIR}/lib"
 CMAKE_C_COMPILER=`which gcc`
 CMAKE_CXX_COMPILER=`which g++`
 
-echo ${INSTALL_DIR}
+echo ${VIEW_DIR}
 
 cmake \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-    -DCMAKE_PREFIX_PATH=${INSTALL_DIR} \
-    -DCMAKE_BUILD_RPATH="${INSTALL_DIR}/lib" \
-    -DCMAKE_INSTALL_RPATH="${INSTALL_DIR}/lib" \
-    -DCMAKE_CXX_FLAGS="-I${INSTALL_DIR}/include -L${INSTALL_DIR}/lib" \
+    -DCMAKE_INSTALL_PREFIX=${VIEW_DIR} \
+    -DCMAKE_PREFIX_PATH=${VIEW_DIR} \
+    -DCMAKE_BUILD_RPATH="${VIEW_DIR}/lib" \
+    -DCMAKE_INSTALL_RPATH="${VIEW_DIR}/lib" \
+    -DCMAKE_CXX_FLAGS="-I${VIEW_DIR}/include -L${VIEW_DIR}/lib" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
