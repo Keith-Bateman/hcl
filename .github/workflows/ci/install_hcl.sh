@@ -4,7 +4,7 @@ spack env activate -p ${INSTALL_DIR}
 export INSTALL_DIR=/root/install
 export VIEW_DIR=/root/install/.spack-env/view
 export SPACK_DIR=/root/spack
-
+export MPIEXEC_EXECUTABLE=mpiexec
 ls ${VIEW_DIR}/lib/cmake ${VIEW_DIR}/lib64/cmake
 
 mkdir build

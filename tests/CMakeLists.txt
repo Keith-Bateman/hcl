@@ -48,6 +48,6 @@ endforeach ()
 
 foreach (example ${examples})
     set(test_parameters -n 2 "${CMAKE_BINARY_DIR}/bin/${example}")
-    add_test(NAME ${example} COMMAND ${MPIEXEC_EXECUTABLE} ${test_parameters})
+    add_test(NAME ${example} COMMAND $ENV{MPIEXEC_EXECUTABLE} ${test_parameters})
     set_tests_properties(${example} PROPERTIES ENVIRONMENT "SERVER_LIST_PATH=${CMAKE_CURRENT_BINARY_DIR}/")
 endforeach ()
