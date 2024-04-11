@@ -16,10 +16,10 @@
 template <typename F>
 void RPC::bind(CharStruct str, F func) {
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
       thallium_server->define(str.string(), func);
       break;
@@ -34,7 +34,7 @@ Response RPC::callWithTimeout(uint16_t server_index, int timeout_ms,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
@@ -55,7 +55,7 @@ Response RPC::call(uint16_t server_index, CharStruct const &func_name,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
@@ -72,7 +72,7 @@ Response RPC::call(CharStruct &server, uint16_t &port,
                    CharStruct const &func_name, Args... args) {
   AutoTrace trace = AutoTrace("RPC::call", server, port, func_name);
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
@@ -92,7 +92,7 @@ std::future<Response> RPC::async_call(uint16_t server_index,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
       // TODO:NotImplemented error
       break;
@@ -108,7 +108,7 @@ std::future<Response> RPC::async_call(CharStruct &server, uint16_t &port,
   AutoTrace trace = AutoTrace("RPC::async_call", server, port, func_name);
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
       // TODO:NotImplemented error
       break;

@@ -25,7 +25,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -87,10 +87,10 @@ class map : public container {
   void bind_functions() override {
     /* Create a RPC server and map the methods to it. */
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
 
         std::function<void(const tl::request &, KeyType &, MappedType &)>
@@ -156,7 +156,7 @@ class map : public container {
   std::vector<std::pair<KeyType, MappedType>> LocalContainsInServer(
       KeyType &key_start, KeyType &key_end);
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
   THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)

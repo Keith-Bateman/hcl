@@ -55,7 +55,7 @@ class ConfigurationManager {
         MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
         RPC_PORT(9000),
         RPC_THREADS(1),
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         RPC_IMPLEMENTATION(THALLIUM_TCP),
 #endif
         TCP_CONF("ofi+tcp"),

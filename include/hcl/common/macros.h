@@ -30,12 +30,12 @@
     thallium_req.respond(name());                              \
   }
 
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
 #define RPC_CALL_WRAPPER_THALLIUM_TCP() case THALLIUM_TCP:
 #else
 #define RPC_CALL_WRAPPER_THALLIUM_TCP()
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
   {                                                           \
     return rpc->call<ret>(serverVar, func_prefix + funcname); \

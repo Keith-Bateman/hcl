@@ -22,7 +22,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #include <thallium/serialization/proc_input_archive.hpp>
 #include <thallium/serialization/proc_output_archive.hpp>
@@ -66,7 +66,7 @@
 #include <vector>
 
 namespace bip = boost::interprocess;
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 namespace tl = thallium;
 #endif
 
@@ -74,7 +74,7 @@ class RPC {
  private:
   uint16_t server_port;
   std::string name;
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   std::shared_ptr<tl::engine> thallium_server;
   std::shared_ptr<tl::engine> thallium_client;
   CharStruct engine_init_str;
@@ -116,10 +116,10 @@ class RPC {
   void Stop() {
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         {
           // Mercury addresses in endpoints must be freed before
           // finalizing Thallium
@@ -141,7 +141,7 @@ class RPC {
     /* if current rank is a server */
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP: {
           engine_init_str = HCL_CONF->TCP_CONF + "://" +
                             HCL_CONF->SERVER_LIST[HCL_CONF->MY_SERVER] + ":" +
@@ -161,10 +161,10 @@ class RPC {
     AutoTrace trace = AutoTrace("RPC::run", workers);
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         {
           thallium_server = hcl::Singleton<tl::engine>::GetInstance(
               engine_init_str.c_str(), THALLIUM_SERVER_MODE, true,
@@ -175,7 +175,7 @@ class RPC {
       }
     }
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP: {
         init_engine_and_endpoints(HCL_CONF->TCP_CONF);
         break;

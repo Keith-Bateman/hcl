@@ -25,7 +25,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -76,10 +76,10 @@ private:
   void bind_functions() override 
   {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
 
         std::function<void(const tl::request &, ValueT &)> pushFunc(
@@ -129,7 +129,7 @@ private:
       else return std::pair<bool,ValueT> (false,ValueT());
   }
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPush, (v), ValueT& v)
   THALLIUM_DEFINE1(LocalPop)
 #endif

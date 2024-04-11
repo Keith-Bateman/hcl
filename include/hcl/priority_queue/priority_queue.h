@@ -25,7 +25,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -94,7 +94,7 @@ class priority_queue : public container {
   std::pair<bool, MappedType> LocalTop();
   size_t LocalSize();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPush, (data), MappedType &data)
   THALLIUM_DEFINE1(LocalPop)
   THALLIUM_DEFINE1(LocalTop)
