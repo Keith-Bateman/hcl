@@ -1,7 +1,0 @@
-{
-    "cmake.configureArgs": [
-        "-DCMAKE_PREFIX_PATH=/usr/WS2/haridev/hcl/install/.spack-env/view",
-        "-DCMAKE_INSTALL_PREFIX=/usr/WS2/haridev/hcl/install/.spack-env/view",
-        "-DHCL_ENABLE_TESTING=ON"
-    ]
-}
