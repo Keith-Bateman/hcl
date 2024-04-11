@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # general environment for docker
 ENV        DEBIAN_FRONTEND=noninteractive \
@@ -9,19 +9,24 @@ ENV        DEBIAN_FRONTEND=noninteractive \
 RUN        apt-get update \
    && apt-get install -y --no-install-recommends \
    autoconf \
-   ca-certificates \
-   curl \
-   environment-modules \
    git \
-   build-essential \
-   python3 \
-   nano \
-   sudo \
-   unzip \
-   && rm -rf /var/lib/apt/lists/*
-
-RUN        apt-get update \
-   && apt-get install -y gcc g++
+   automake \
+   libarchive-dev \
+   lua5.3 liblua5.3-dev \
+   python3 python3-pip \
+   gcc g++ \
+   mpich \
+   hwloc \
+   cmake pkg-config \
+   libboost-all-dev \
+   libtool libtool-bin \
+   libfabric-dev libfabric-bin \
+   libczmq-dev \
+   lua-posix-dev \
+   lz4 \
+   libzmq5 \
+   sqlite \
+   make
 
 # setup paths
 ENV HOME=/root
@@ -39,25 +44,27 @@ ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
 RUN $spack repo add ${PROJECT_DIR}/ci/hcl
 
+COPY ./packages.yaml /root/.spack/packages.yaml
+
 # install software
 ENV HCL_VERSION=dev
 
 #RUN $spack spec "hcl@${HCL_VERSION}"
 
-ENV HCL_SPEC=hcl@${HCL_VERSION}
-RUN $spack install --only dependencies ${HCL_SPEC} communication=rpclib
+# ENV HCL_SPEC=hcl@${HCL_VERSION}
+# RUN $spack install --only dependencies ${HCL_SPEC} communication=rpclib
 
-RUN $spack install --only dependencies ${HCL_SPEC} communication=thallium
+# RUN $spack install --only dependencies ${HCL_SPEC} communication=thallium
 
-RUN apt-get install -y cmake pkg-config mpich
+# RUN apt-get install -y cmake pkg-config mpich
 
-COPY ./packages.yaml /root/.spack/packages.yaml
-RUN $spack external find
+# COPY ./packages.yaml /root/.spack/packages.yaml
+# RUN $spack external find
 
-RUN $spack install mpich@3.3.2
+# RUN $spack install mpich@3.3.2
 
-## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} gcc@8.3.0 mpich@3.3.2 rpclib@2.2.1 mochi-thallium@0.8.3 boost@1.74.0
+# ## Link Software
+# RUN $spack view symlink -i ${INSTALL_DIR} gcc@8.3.0 mpich@3.3.2 rpclib@2.2.1 mochi-thallium@0.8.3 boost@1.74.0
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
