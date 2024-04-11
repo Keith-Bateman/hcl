@@ -1,0 +1,6 @@
+packages:
+  mpich:
+    buildable: False
+    externals:
+    - spec: mpich@3.3.2
+      prefix: /usr
