@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
   int ranks_per_server = comm_size, num_request = 100;
   long size_of_request = 1000;
   bool debug = false;
-  bool server_on_node = false;
+  bool server_on_node = true;
   char *server_list_path = std::getenv("SERVER_LIST_PATH");
 
   if (argc > 1) ranks_per_server = atoi(argv[1]);
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
   if (debug && my_rank == 0) {
     printf("%d ready for attach\n", comm_size);
     fflush(stdout);
-    getchar();
+    sleep(30);
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
@@ -164,7 +164,9 @@ int main(int argc, char *argv[]) {
       printf("llocal_map_throughput get: %f\n", llocal_get_map_throughput);
     }
     MPI_Barrier(client_comm);
-
+    if (my_rank == 0) {
+      printf("Running HCL Local\n");
+    }
     if (HCL_CONF->SERVER_ON_NODE) {
       Timer local_map_timer = Timer();
       /*Local map test*/
