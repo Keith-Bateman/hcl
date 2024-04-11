@@ -41,19 +41,20 @@ RUN git clone https://github.com/spack/spack ${SPACK_DIR}
 RUN git clone https://github.com/hariharan-devarajan/hcl.git ${PROJECT_DIR} && cd ${PROJECT_DIR} && git checkout feature/structure_changes
 
 ENV spack=${SPACK_DIR}/bin/spack
-RUN . ${SPACK_DIR}/share/spack/setup-env.sh
-RUN $spack repo add ${PROJECT_DIR}/dependency/hcl
+ENV SPACK_SOURCE=". ${SPACK_DIR}/share/spack/setup-env.sh"
+RUN eval $SPACK_SOURCE
+RUN eval $SPACK_SOURCE && spack repo add ${PROJECT_DIR}/dependency/hcl
 
 # install software
 ENV HCL_VERSION=develop
 
 COPY ./packages.yaml /root/.spack/packages.yaml
-RUN $spack spec "hcl@${HCL_VERSION}"
+RUN eval $SPACK_SOURCE && spack spec "hcl@${HCL_VERSION}"
 ENV HCL_SPEC=hcl@${HCL_VERSION}
-RUN $spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
-
-## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} gcc@10.3.0 rpclib@2.2.1 mochi-thallium@0.11.3 boost@1.71.0
+RUN eval $SPACK_SOURCE && spack env create -d ${INSTALL_DIR}
+RUN cd ${PROJECT_DIR}/dependency/hcl && git pull
+RUN apt-get install openmpi-bin openmpi-common libopenmpi-dev
+RUN eval $SPACK_SOURCE && spack env activate --sh -p ${INSTALL_DIR} && spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
