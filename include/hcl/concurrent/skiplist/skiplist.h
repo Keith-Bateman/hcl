@@ -23,14 +23,7 @@
 #include <hcl/communication/rpc_lib.h>
 /** MPI Headers**/
 #include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
 
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-
-#endif
 /** Thallium Headers **/
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
 #include <thallium.hpp>
@@ -134,21 +127,6 @@ class concurrent_skiplist : public container
         void bind_functions() override
 	{
 	  switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-          case RPCLIB: {
-            std::function<bool(T &)> insertFunc(
-            std::bind(&concurrent_skiplist<T,HashFcn,Comp,NodeAlloc,MAX_HEIGHT>::LocalInsert, this,std::placeholders::_1));
-            std::function<bool(T &)> findFunc(
-            std::bind(&concurrent_skiplist<T,HashFcn,Comp,NodeAlloc,MAX_HEIGHT>::LocalFind, this,std::placeholders::_1));
-            std::function<bool(T &)> eraseFunc(
-            std::bind(&concurrent_skiplist<T,HashFcn,Comp,NodeAlloc,MAX_HEIGHT>::LocalErase, this,std::placeholders::_1));
-            
-	    rpc->bind(func_prefix + "_Insert", insertFunc);
-            rpc->bind(func_prefix + "_Find", findFunc);
-            rpc->bind(func_prefix + "_Erase", eraseFunc);
-           break;
-          }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif

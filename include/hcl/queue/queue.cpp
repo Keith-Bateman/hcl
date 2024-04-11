@@ -165,25 +165,6 @@ template <typename MappedType, typename Allocator, typename SharedType>
 void queue<MappedType, Allocator, SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      std::function<bool(MappedType &)> pushFunc(
-          std::bind(&hcl::queue<MappedType, Allocator, SharedType>::LocalPush,
-                    this, std::placeholders::_1));
-      std::function<std::pair<bool, MappedType>(void)> popFunc(std::bind(
-          &hcl::queue<MappedType, Allocator, SharedType>::LocalPop, this));
-      std::function<size_t(void)> sizeFunc(std::bind(
-          &hcl::queue<MappedType, Allocator, SharedType>::LocalSize, this));
-      std::function<bool(void)> waitForElementFunc(std::bind(
-          &hcl::queue<MappedType, Allocator, SharedType>::LocalWaitForElement,
-          this));
-      rpc->bind(func_prefix + "_Push", pushFunc);
-      rpc->bind(func_prefix + "_Pop", popFunc);
-      rpc->bind(func_prefix + "_WaitForElement", waitForElementFunc);
-      rpc->bind(func_prefix + "_Size", sizeFunc);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif

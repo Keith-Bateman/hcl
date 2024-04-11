@@ -398,52 +398,6 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      std::function<bool(KeyType &)> putFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPut, this,
-          std::placeholders::_1));
-      std::function<bool(KeyType &)> getFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGet, this,
-          std::placeholders::_1));
-      std::function<bool(KeyType &)> eraseFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalErase, this,
-          std::placeholders::_1));
-      std::function<std::vector<KeyType>(void)> getAllDataInServerFunc(
-          std::bind(&set<KeyType, Hash, Compare, Allocator,
-                         SharedType>::LocalGetAllDataInServer,
-                    this));
-      std::function<std::vector<KeyType>(KeyType &, KeyType &)>
-          containsInServerFunc(
-              std::bind(&set<KeyType, Hash, Compare, Allocator,
-                             SharedType>::LocalContainsInServer,
-                        this, std::placeholders::_1, std::placeholders::_2));
-      std::function<std::pair<bool, KeyType>(void)> seekFirstFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirst,
-          this));
-      std::function<std::pair<bool, KeyType>(void)> popFirstFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPopFirst,
-          this));
-      std::function<size_t(void)> sizeFunc(std::bind(
-          &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSize,
-          this));
-      std::function<std::pair<bool, std::vector<KeyType>>(uint32_t)>
-          localSeekFirstNFunc(std::bind(&set<KeyType, Hash, Compare, Allocator,
-                                             SharedType>::LocalSeekFirstN,
-                                        this, std::placeholders::_1));
-      rpc->bind(func_prefix + "_Put", putFunc);
-      rpc->bind(func_prefix + "_Get", getFunc);
-      rpc->bind(func_prefix + "_Erase", eraseFunc);
-      rpc->bind(func_prefix + "_GetAllData", getAllDataInServerFunc);
-      rpc->bind(func_prefix + "_Contains", containsInServerFunc);
-
-      rpc->bind(func_prefix + "_SeekFirst", seekFirstFunc);
-      rpc->bind(func_prefix + "_PopFirst", popFirstFunc);
-      rpc->bind(func_prefix + "_SeekFirstN", localSeekFirstNFunc);
-      rpc->bind(func_prefix + "_Size", sizeFunc);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif

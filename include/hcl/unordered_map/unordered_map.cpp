@@ -248,32 +248,6 @@ template <typename KeyType, typename MappedType, typename Hash,
 void unordered_map<KeyType, MappedType, Hash, Allocator,
                    SharedType>::bind_functions() {
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      std::function<bool(KeyType &, MappedType &)> putFunc(
-          std::bind(&unordered_map<KeyType, MappedType, Hash, Allocator,
-                                   SharedType>::LocalPut,
-                    this, std::placeholders::_1, std::placeholders::_2));
-      std::function<std::pair<bool, MappedType>(KeyType &)> getFunc(
-          std::bind(&unordered_map<KeyType, MappedType, Hash, Allocator,
-                                   SharedType>::LocalGet,
-                    this, std::placeholders::_1));
-      std::function<std::pair<bool, MappedType>(KeyType &)> eraseFunc(
-          std::bind(&unordered_map<KeyType, MappedType, Hash, Allocator,
-                                   SharedType>::LocalErase,
-                    this, std::placeholders::_1));
-      std::function<std::vector<std::pair<KeyType, MappedType>>(void)>
-          getAllDataInServerFunc(
-              std::bind(&unordered_map<KeyType, MappedType, Hash, Allocator,
-                                       SharedType>::LocalGetAllDataInServer,
-                        this));
-      rpc->bind(func_prefix + "_Put", putFunc);
-      rpc->bind(func_prefix + "_Get", getFunc);
-      rpc->bind(func_prefix + "_Erase", eraseFunc);
-      rpc->bind(func_prefix + "_GetAllData", getAllDataInServerFunc);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif

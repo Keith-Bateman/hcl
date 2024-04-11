@@ -77,14 +77,6 @@ class global_clock {
     rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(port);
     if (is_server) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-        case RPCLIB: {
-          std::function<HTime(void)> getTimeFunction(
-              std::bind(&global_clock::LocalGetTime, this));
-          rpc->bind(func_prefix + "_GetTime", getTimeFunction);
-          break;
-        }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP:
 #endif

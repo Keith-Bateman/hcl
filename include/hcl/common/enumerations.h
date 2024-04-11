@@ -14,7 +14,6 @@
 #define INCLUDE_HCL_COMMON_ENUMERATIONS_H
 
 typedef enum RPCImplementation {
-  RPCLIB = 0,
   THALLIUM_TCP = 1,
   THALLIUM_ROCE = 2
 } RPCImplementation;

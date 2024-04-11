@@ -10,7 +10,6 @@ SDS_REPO_DIR=${INSTALL_DIR}/sds-repo
 THALLIUM_VERSION=0.9.1
 MERCURY_VERSION=2.0.0
 MPICH_VERSION=3.2.1
-RPCLIB_VERSION=2.2.1
 BOOST_VERSION=1.74.0
 GCC_VERSION=8.3.0
 
@@ -64,13 +63,10 @@ spack install -y --no-checksum ${MERCURY_SPEC}
 THALLIUM_SPEC="mochi-thallium~cereal@${THALLIUM_VERSION}%${GCC_SPEC}"
 spack install ${THALLIUM_SPEC}
 
-RPCLIB_SPEC="rpclib@${RPCLIB_VERSION}%${GCC_SPEC}"
-spack install ${RPCLIB_SPEC}
-
 BOOST_SPEC="boost@${BOOST_VERSION}%${GCC_SPEC}"
 spack install ${BOOST_SPEC}
 
 # spack env create hcl
 # spack env activate hcl
-# spack install ${GCC_SPEC} ${THALLIUM_SPEC} ${RPCLIB_SPEC} ${BOOST_SPEC}
+# spack install ${GCC_SPEC} ${THALLIUM_SPEC} ${BOOST_SPEC}
 # ls ${SPACK_DIR}/var/spack/environments/hcl/.spack-env/view

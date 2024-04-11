@@ -20,7 +20,7 @@
 * DONE cpplint
 ** Make sure source code fits Google C++ style by running cpplint.py on it
 * TODO rdma
-** MercuryRPC vs RPCLib
+** MercuryRPC
 * TODO NVM Journal
 ** first Branch off 0.0.1 and 0.0.2
 *** Master stable branch

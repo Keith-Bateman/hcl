@@ -11,11 +11,11 @@
 # next to all the things you'll want to change. Once you've handled
 # them, you can save this file and test your package like this:
 #
-#     spack install rpclib
+#     spack install hcl
 #
 # You can edit this file again by typing:
 #
-#     spack edit rpclib
+#     spack edit hcl
 #
 # See the Spack documentation for more information on packaging.
 # ----------------------------------------------------------------------------
@@ -30,8 +30,8 @@ class Hcl(CMakePackage):
     version('dev', branch='dev')
     version('0.1', branch='v0.1')
     variant('communication',
-            default='rpclib',
-            values=('rpclib', 'thallium'),
+            default='thallium',
+            values=('thallium',),
             multi=False,
             description='Which communication interface to build.')
     variant('protocol',
@@ -40,7 +40,6 @@ class Hcl(CMakePackage):
             multi=True,
             description='Which communication protocol to use.')
     depends_on('mpi')
-    depends_on('rpclib@2.2.1', when='communication=rpclib')
     depends_on('mochi-thallium~cereal@0.11.3', when='communication=thallium')
     depends_on('mercury@2.3.1+ofi', when='communication=thallium')
     depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
@@ -49,9 +48,7 @@ class Hcl(CMakePackage):
     def cmake_args(self):
         spec = self.spec
         args = ['-DCMAKE_INSTALL_PREFIX={}'.format(self.prefix)]
-        if 'communication=rpclib' in spec:
-            args.append("-DBASKET_ENABLE_RPCLIB=ON")
-        elif 'communication=thallium' in spec:
+        if 'communication=thallium' in spec:
             if 'protocol=roce' in spec:
                 args.append("-DHCL_ENABLE_THALLIUM_ROCE=ON")
             else:
