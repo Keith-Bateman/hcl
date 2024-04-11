@@ -50,12 +50,12 @@ ENV HCL_VERSION=develop
 COPY ./packages.yaml /root/.spack/packages.yaml
 RUN $spack spec "hcl@${HCL_VERSION}"
 ENV HCL_SPEC=hcl@${HCL_VERSION}
-# RUN $spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
+RUN $spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
 
-# ## Link Software
-# RUN $spack view symlink -i ${INSTALL_DIR} gcc@10.3.0 rpclib@2.2.1 mochi-thallium@0.11.3 boost@1.71.0
+## Link Software
+RUN $spack view symlink -i ${INSTALL_DIR} gcc@10.3.0 rpclib@2.2.1 mochi-thallium@0.11.3 boost@1.71.0
 
-# RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
-# RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
+RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
+RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
 
 SHELL ["/bin/bash", "-c"]
