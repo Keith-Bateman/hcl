@@ -36,7 +36,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 #include <thallium.hpp>
 #endif
 /** Boost Headers **/
@@ -107,7 +107,7 @@ class unordered_map : public container {
   std::pair<bool, MappedType> LocalErase(KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> LocalGetAllDataInServer();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
 
   // void ThalliumLocalPut(const tl::request &thallium_req, tl::bulk

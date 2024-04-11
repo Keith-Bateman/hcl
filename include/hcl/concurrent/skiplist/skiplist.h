@@ -25,7 +25,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 #include <thallium.hpp>
 #endif
 
@@ -130,10 +130,7 @@ class concurrent_skiplist : public container
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-      case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
          {
 
            std::function<void(const tl::request &, T &)> insertFunc(
@@ -185,7 +182,7 @@ class concurrent_skiplist : public container
      }
 
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
     THALLIUM_DEFINE(LocalInsert, (k), T& k)
     THALLIUM_DEFINE(LocalFind, (k), T& k)
     THALLIUM_DEFINE(LocalErase, (k), T& k)

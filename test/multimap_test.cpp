@@ -38,7 +38,7 @@ struct KeyType {
   bool operator>(const KeyType &o) const { return a > o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
 };
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 template <typename A>
 void serialize(A &ar, KeyType &a) {
   ar &a.a;

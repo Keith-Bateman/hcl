@@ -210,10 +210,7 @@ void priority_queue<MappedType, Compare, Allocator,
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
     {
       std::function<void(const tl::request &, MappedType &)> pushFunc(std::bind(
           &hcl::priority_queue<MappedType, Compare>::ThalliumLocalPush, this,

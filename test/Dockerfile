@@ -8,14 +8,12 @@ SHELL   ["/bin/bash", "-c"]
 
 ENV     RPC_BUILD_DIR=${HCL_DIR}/build_rpc
 ENV     THALLIUM_TCP_BUILD_DIR=${HCL_DIR}/build_thallium_tcp
-ENV     THALLIUM_ROCE_BUILD_DIR=${HCL_DIR}/build_thallium_roce
 
 # Build Thallium TCP Version
 
 ENV     BUILD_DIR=${THALLIUM_TCP_BUILD_DIR}
 
 ENV     HCL_ENABLE_THALLIUM_TCP=ON
-ENV     HCL_ENABLE_THALLIUM_ROCE=OFF
 
 RUN     mkdir -p ${BUILD_DIR}
 
@@ -31,34 +29,6 @@ RUN     ${INSTALL_DIR}/bin/cmake \
         -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/g++ \
         -DCMAKE_C_COMPILER=${INSTALL_DIR}/bin/gcc \
         -DHCL_ENABLE_THALLIUM_TCP=${HCL_ENABLE_THALLIUM_TCP} \
-        -DHCL_ENABLE_THALLIUM_ROCE=${HCL_ENABLE_THALLIUM_ROCE} \
-        -DBUILD_TEST=ON \
-        ..
-
-RUN ${INSTALL_DIR}/bin/cmake --build . -- -j 2
-
-# Build Thallium ROCE Version
-
-ENV     BUILD_DIR=${THALLIUM_ROCE_BUILD_DIR}
-
-ENV     HCL_ENABLE_THALLIUM_TCP=OFF
-ENV     HCL_ENABLE_THALLIUM_ROCE=ON
-
-RUN     mkdir -p ${BUILD_DIR}
-
-WORKDIR ${BUILD_DIR}
-
-RUN     ${INSTALL_DIR}/bin/cmake \
-        -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-        -DCMAKE_PREFIX_PATH=${INSTALL_DIR} \
-        -DCMAKE_BUILD_RPATH="${INSTALL_DIR}/lib" \
-        -DCMAKE_INSTALL_RPATH="${INSTALL_DIR}/lib" \
-        -DCMAKE_CXX_FLAGS="-I${INSTALL_DIR}/include -L${INSTALL_DIR}/lib" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_CXX_COMPILER=${INSTALL_DIR}/bin/g++ \
-        -DCMAKE_C_COMPILER=${INSTALL_DIR}/bin/gcc \
-        -DHCL_ENABLE_THALLIUM_TCP=${HCL_ENABLE_THALLIUM_TCP} \
-        -DHCL_ENABLE_THALLIUM_ROCE=${HCL_ENABLE_THALLIUM_ROCE} \
         -DBUILD_TEST=ON \
         ..
 

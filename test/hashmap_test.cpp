@@ -27,7 +27,7 @@
 #include <unordered_map>
 #include <mutex>
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 template <typename A>
 void serialize(A &ar, int &a) {
   ar &a;

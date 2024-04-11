@@ -22,7 +22,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 #include <thallium.hpp>
 #include <thallium/serialization/proc_input_archive.hpp>
 #include <thallium/serialization/proc_output_archive.hpp>
@@ -66,7 +66,7 @@
 #include <vector>
 
 namespace bip = boost::interprocess;
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 namespace tl = thallium;
 #endif
 
@@ -74,7 +74,7 @@ class RPC {
  private:
   uint16_t server_port;
   std::string name;
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
   std::shared_ptr<tl::engine> thallium_server;
   std::shared_ptr<tl::engine> thallium_client;
   CharStruct engine_init_str;
@@ -119,10 +119,7 @@ class RPC {
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-        case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
         {
           // Mercury addresses in endpoints must be freed before
           // finalizing Thallium
@@ -152,15 +149,6 @@ class RPC {
           break;
         }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-        case THALLIUM_ROCE: {
-          engine_init_str = HCL_CONF->VERBS_CONF + ";" +
-                            HCL_CONF->VERBS_DOMAIN + "://" +
-                            HCL_CONF->SERVER_LIST[HCL_CONF->MY_SERVER] + ":" +
-                            std::to_string(server_port + HCL_CONF->MY_SERVER);
-          break;
-        }
-#endif
       }
     }
     run(HCL_CONF->RPC_THREADS);
@@ -176,10 +164,7 @@ class RPC {
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-        case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
         {
           thallium_server = hcl::Singleton<tl::engine>::GetInstance(
               engine_init_str.c_str(), THALLIUM_SERVER_MODE, true,
@@ -196,22 +181,9 @@ class RPC {
         break;
       }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-      case THALLIUM_ROCE: {
-        init_engine_and_endpoints(HCL_CONF->VERBS_CONF);
-        break;
-      }
-#endif
     }
   }
 
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-  template <typename MappedType>
-  MappedType prep_rdma_server(tl::endpoint endpoint, tl::bulk &bulk_handle);
-
-  template <typename MappedType>
-  tl::bulk prep_rdma_client(MappedType &data);
-#endif
   template <typename Response, typename... Args>
   Response call(uint16_t server_index, CharStruct const &func_name,
                 Args... args);

@@ -25,7 +25,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 #include <thallium.hpp>
 #endif
 
@@ -99,7 +99,7 @@ class set : public container {
   size_t LocalSize();
   std::pair<bool, std::vector<KeyType>> LocalSeekFirstN(uint32_t n);
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
   THALLIUM_DEFINE(LocalPut, (key), KeyType &key)
   THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)

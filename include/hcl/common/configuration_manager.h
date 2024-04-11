@@ -57,8 +57,6 @@ class ConfigurationManager {
         RPC_THREADS(1),
 #if defined(HCL_ENABLE_THALLIUM_TCP)
         RPC_IMPLEMENTATION(THALLIUM_TCP),
-#elif defined(HCL_ENABLE_THALLIUM_ROCE)
-        RPC_IMPLEMENTATION(THALLIUM_ROCE),
 #endif
         TCP_CONF("ofi+tcp"),
         VERBS_CONF("ofi+verbs"),

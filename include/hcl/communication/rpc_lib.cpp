@@ -19,10 +19,7 @@ void RPC::bind(CharStruct str, F func) {
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
     {
       thallium_server->define(str.string(), func);
       break;
@@ -49,15 +46,6 @@ Response RPC::callWithTimeout(uint16_t server_index, int timeout_ms,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE: {
-      tl::remote_procedure remote_procedure =
-          thallium_client->define(func_name.c_str());
-      return remote_procedure.on(thallium_endpoints[server_index])(
-          std::forward<Args>(args)...);
-      break;
-    }
-#endif
   }
 }
 template <typename Response, typename... Args>
@@ -69,15 +57,6 @@ Response RPC::call(uint16_t server_index, CharStruct const &func_name,
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
-      tl::remote_procedure remote_procedure =
-          thallium_client->define(func_name.c_str());
-      return remote_procedure.on(thallium_endpoints[server_index])(
-          std::forward<Args>(args)...);
-      break;
-    }
-#endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
       return remote_procedure.on(thallium_endpoints[server_index])(
@@ -102,15 +81,6 @@ Response RPC::call(CharStruct &server, uint16_t &port,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE: {
-      tl::remote_procedure remote_procedure =
-          thallium_client->define(func_name.c_str());
-      auto end_point = get_endpoint(HCL_CONF->TCP_CONF, server, port);
-      return remote_procedure.on(end_point)(std::forward<Args>(args)...);
-      break;
-    }
-#endif
   }
 }
 
@@ -124,12 +94,6 @@ std::future<Response> RPC::async_call(uint16_t server_index,
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
-      // TODO:NotImplemented error
-      break;
-    }
-#endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE: {
       // TODO:NotImplemented error
       break;
     }
@@ -150,38 +114,7 @@ std::future<Response> RPC::async_call(CharStruct &server, uint16_t &port,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-    case THALLIUM_ROCE: {
-      // TODO:NotImplemented error
-      break;
-    }
-#endif
   }
 }
-
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-// These are still experimental for using RDMA bulk transfers
-template <typename MappedType>
-MappedType RPC::prep_rdma_server(tl::endpoint endpoint, tl::bulk &bulk_handle) {
-  // MappedType buffer;
-  std::string buffer;
-  buffer.resize(1000000, 'a');
-  std::vector<std::pair<void *, size_t>> segments(1);
-  segments[0].first = (void *)(&buffer[0]);
-  segments[0].second = 1000000 + 1;
-  tl::bulk local = thallium_server->expose(segments, tl::bulk_mode::write_only);
-  bulk_handle.on(endpoint) >> local;
-  return buffer;
-}
-
-template <typename MappedType>
-tl::bulk RPC::prep_rdma_client(MappedType &data) {
-  MappedType my_buffer = data;
-  std::vector<std::pair<void *, std::size_t>> segments(1);
-  segments[0].first = (void *)&my_buffer[0];
-  segments[0].second = 1000000 + 1;
-  return thallium_client->expose(segments, tl::bulk_mode::read_only);
-}
-#endif
 
 #endif  // INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_

@@ -23,7 +23,6 @@ jobs:
       fail-fast: false
       matrix:
         THALLIUM_TCP: ["ON"]
-        THALLIUM_ROCE: ["OFF"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -37,10 +36,8 @@ jobs:
       - name: Build
         env:
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
-          HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
         run: ci/install_hcl.sh
       - name: Test
         env:
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
-          HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
         run: ci/run_hcl.sh

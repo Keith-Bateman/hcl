@@ -15,7 +15,6 @@
 
 typedef enum RPCImplementation {
   THALLIUM_TCP = 1,
-  THALLIUM_ROCE = 2
 } RPCImplementation;
 
 #endif  // INCLUDE_HCL_COMMON_ENUMERATIONS_H

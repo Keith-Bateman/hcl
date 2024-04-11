@@ -7,8 +7,6 @@ env:
   # build matrix
   global:
     - HCL_ENABLE_THALLIUM_TCP=OFF
-    - HCL_ENABLE_THALLIUM_ROCE=OFF
-
 # Install APT dependencies
 addons:
   apt:
@@ -27,8 +25,6 @@ thallium_deps: &thallium_deps
 matrix:
   include:
     - env: HCL_ENABLE_THALLIUM_TCP=ON
-      before_install: *thallium_deps
-    - env: HCL_ENABLE_THALLIUM_ROCE=ON
       before_install: *thallium_deps
 
 script: ./ci/install_hcl.sh

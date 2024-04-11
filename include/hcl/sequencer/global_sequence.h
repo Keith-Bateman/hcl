@@ -53,10 +53,7 @@ class global_sequence : public container {
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-      case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
       {
         std::function<void(const tl::request &)> getNextSequence(
             std::bind(&hcl::global_sequence::ThalliumLocalGetNextSequence, this,
@@ -107,7 +104,7 @@ class global_sequence : public container {
     return ++*value;
   }
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
   THALLIUM_DEFINE1(LocalGetNextSequence)
 #endif
 };

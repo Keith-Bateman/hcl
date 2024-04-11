@@ -35,12 +35,7 @@
 #else
 #define RPC_CALL_WRAPPER_THALLIUM_TCP()
 #endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-#define RPC_CALL_WRAPPER_THALLIUM_ROCE() case THALLIUM_ROCE:
-#else
-#define RPC_CALL_WRAPPER_THALLIUM_ROCE()
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_ENABLE_THALLIUM_TCP)
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
   {                                                           \
     return rpc->call<ret>(serverVar, func_prefix + funcname); \
@@ -60,7 +55,6 @@
   [&]() -> ret {                                           \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                \
       RPC_CALL_WRAPPER_THALLIUM_TCP()                      \
-      RPC_CALL_WRAPPER_THALLIUM_ROCE()                     \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
   }();
@@ -68,7 +62,6 @@
   [&]() -> ret {                                                \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                     \
       RPC_CALL_WRAPPER_THALLIUM_TCP()                           \
-      RPC_CALL_WRAPPER_THALLIUM_ROCE()                          \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args) \
     }                                                           \
   }();
@@ -76,7 +69,6 @@
   [&]() -> ret {                                           \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                \
       RPC_CALL_WRAPPER_THALLIUM_TCP()                      \
-      RPC_CALL_WRAPPER_THALLIUM_ROCE()                     \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
   }();
@@ -85,7 +77,6 @@
   [&]() -> ret {                                                        \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
       RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM_ROCE()                                  \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__)  \
     }                                                                   \
   }();
