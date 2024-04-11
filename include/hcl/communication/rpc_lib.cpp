@@ -80,7 +80,7 @@ Response RPC::call(CharStruct &server, uint16_t &port,
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
-      auto end_point = get_endpoint(HCL_CONF->TCP_CONF, server, port);
+      auto end_point = get_endpoint(HCL_CONF->URI, server, port);
       return remote_procedure.on(end_point)(std::forward<Args>(args)...);
       break;
     }

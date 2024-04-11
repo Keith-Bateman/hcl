@@ -38,9 +38,7 @@ class ConfigurationManager {
   uint16_t RPC_PORT;
   uint16_t RPC_THREADS;
   RPCImplementation RPC_IMPLEMENTATION;
-  CharStruct TCP_CONF;
-  CharStruct VERBS_CONF;
-  CharStruct VERBS_DOMAIN;
+  CharStruct URI;
   really_long MEMORY_ALLOCATED;
 
   bool IS_SERVER;
@@ -59,9 +57,13 @@ class ConfigurationManager {
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         RPC_IMPLEMENTATION(THALLIUM_TCP),
 #endif
-        TCP_CONF("ofi+tcp"),
-        VERBS_CONF("ofi+verbs"),
-        VERBS_DOMAIN("mlx5_0"),
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_VERBS)
+        URI("ofi+verbs://mlx5_0/"),
+#else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_TCP)
+        URI("ofi+tcp://"),
+#endif
+#endif
         MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
         IS_SERVER(false),
         MY_SERVER(0),

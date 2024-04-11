@@ -91,7 +91,7 @@ class RPC {
     in_addr **addr_list = (struct in_addr **)he->h_addr_list;
     strcpy(ip, inet_ntoa(*addr_list[0]));
     CharStruct lookup_str =
-        protocol + "://" + std::string(ip) + ":" + std::to_string(server_port);
+        protocol + std::string(ip) + ":" + std::to_string(server_port);
     return thallium_client->lookup(lookup_str.c_str());
   }
   void init_engine_and_endpoints(CharStruct protocol) {
@@ -147,7 +147,7 @@ class RPC {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP: {
-          engine_init_str = HCL_CONF->TCP_CONF + "://" +
+          engine_init_str = HCL_CONF->URI +
                             HCL_CONF->SERVER_LIST[HCL_CONF->MY_SERVER] + ":" +
                             std::to_string(server_port + HCL_CONF->MY_SERVER);
           break;
@@ -181,7 +181,7 @@ class RPC {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP: {
-        init_engine_and_endpoints(HCL_CONF->TCP_CONF);
+        init_engine_and_endpoints(HCL_CONF->URI);
         break;
       }
 #endif
