@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_SET_SET_H_
 #define INCLUDE_HCL_SET_SET_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
@@ -25,7 +29,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -99,7 +103,7 @@ class set : public container {
   size_t LocalSize();
   std::pair<bool, std::vector<KeyType>> LocalSeekFirstN(uint32_t n);
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key), KeyType &key)
   THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)

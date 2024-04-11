@@ -38,7 +38,7 @@ struct KeyType {
   bool operator>(const KeyType &o) const { return a > o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
 };
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 template <typename A>
 void serialize(A &ar, KeyType &a) {
   ar &a.a;
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
   int num_servers = comm_size / ranks_per_server;
 
   // The following is used to switch to 40g network on Ares.
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 
   size_t size_of_elem = sizeof(int);
 
-  printf("rank %d, is_server %d, my_server %d, num_servers %d\n", my_rank,
+  printf("rank %d, is_server %d, my_server %ld, num_servers %d\n", my_rank,
          is_server, my_server, num_servers);
 
   const int array_size = TEST_REQUEST_SIZE;
@@ -174,6 +174,7 @@ int main(int argc, char *argv[]) {
       }
       auto iterator = lmap.find(KeyType(val));
       auto result = iterator->second;
+      (void)result;
       llocal_get_map_timer.pauseTime();
     }
     double llocal_get_map_throughput =
@@ -208,6 +209,7 @@ int main(int argc, char *argv[]) {
         local_get_map_timer.resumeTime();
         auto result = map->Get(key);
         local_get_map_timer.pauseTime();
+        (void)result;
       }
 
       double local_get_map_throughput =

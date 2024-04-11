@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_COMMON_CONFIGURATION_MANAGER_H
 #define INCLUDE_HCL_COMMON_CONFIGURATION_MANAGER_H
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/enumerations.h>
@@ -50,22 +54,22 @@ class ConfigurationManager {
   bool DYN_CONFIG;  // Does not do anything (yet)
 
   ConfigurationManager()
-      : SERVER_LIST(),
-        BACKED_FILE_DIR("/dev/shm"),
-        MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
-        RPC_PORT(9000),
+      : RPC_PORT(9000),
         RPC_THREADS(1),
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         RPC_IMPLEMENTATION(THALLIUM_TCP),
 #endif
         TCP_CONF("ofi+tcp"),
         VERBS_CONF("ofi+verbs"),
         VERBS_DOMAIN("mlx5_0"),
+        MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
         IS_SERVER(false),
         MY_SERVER(0),
         NUM_SERVERS(1),
         SERVER_ON_NODE(true),
         SERVER_LIST_PATH(""),
+        SERVER_LIST(),
+        BACKED_FILE_DIR("/dev/shm"),
         DYN_CONFIG(false) {
     AutoTrace trace = AutoTrace("ConfigurationManager");
   }
@@ -82,8 +86,8 @@ class ConfigurationManager {
       while (getline(file, file_line)) {
         CharStruct server_node_name;
         if (!file_line.empty()) {
-          int split_loc = file_line.find(":");
-          int split_loc2 = file_line.find(':');  // split to node and net
+          auto split_loc = file_line.find(":");
+          auto split_loc2 = file_line.find(':');  // split to node and net
           // int split_loc = file_line.find(" slots=");
           // int split_loc2 = file_line.find('='); // split to node and net
           if (split_loc != std::string::npos) {

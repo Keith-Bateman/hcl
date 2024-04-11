@@ -59,7 +59,7 @@ make install
 ```
 
 A flag should be added to cmake to indicate the preferred RPC library, otherwise
-compilation will fail. If compiling with Thallium, use either `-DHCL_ENABLE_THALLIUM_TCP`.
+compilation will fail. If compiling with Thallium, use either `-DHCL_COMMUNICATION=THALLIUM`.
 
 ### Dependencies
 

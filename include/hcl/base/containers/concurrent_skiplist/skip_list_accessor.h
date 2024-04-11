@@ -1,9 +1,12 @@
 #ifndef HCL_SKIPLIST_ACCESSOR_H
 #define HCL_SKIPLIST_ACCESSOR_H
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 template <typename T, typename Comp, typename NodeAlloc, int MAX_HEIGHT>
-class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor 
-{
+class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor {
   typedef SkipListNode<T> NodeType;
   typedef ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT> SkipListType;
 
@@ -27,27 +30,23 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor
   typedef typename SkipListType::Skipper Skipper;
 
   explicit Accessor(std::shared_ptr<ConcurrentSkipList> skip_list)
-      : slHolder_(std::move(skip_list)) 
-  {
+      : slHolder_(std::move(skip_list)) {
     sl_ = slHolder_.get();
     assert(sl_ != nullptr);
     sl_->recycler_.addRef();
   }
 
-  explicit Accessor(ConcurrentSkipList* skip_list) : sl_(skip_list) 
-  {
+  explicit Accessor(ConcurrentSkipList* skip_list) : sl_(skip_list) {
     assert(sl_ != nullptr);
     sl_->recycler_.addRef();
   }
 
   Accessor(const Accessor& accessor)
-      : sl_(accessor.sl_), slHolder_(accessor.slHolder_) 
-  {
+      : sl_(accessor.sl_), slHolder_(accessor.slHolder_) {
     sl_->recycler_.addRef();
   }
 
-  Accessor& operator=(const Accessor& accessor) 
-  {
+  Accessor& operator=(const Accessor& accessor) {
     if (this != &accessor) {
       slHolder_ = accessor.slHolder_;
       sl_->recycler_.releaseRef();
@@ -57,10 +56,7 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor
     return *this;
   }
 
-  ~Accessor() 
-  {
-    sl_->recycler_.releaseRef(); 
-  }
+  ~Accessor() { sl_->recycler_.releaseRef(); }
 
   bool empty() const { return sl_->size() == 0; }
   size_t size() const { return sl_->size(); }
@@ -72,8 +68,7 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor
   }
   size_type count(const key_type& data) const { return contains(data); }
 
-  iterator begin() const 
-  {
+  iterator begin() const {
     NodeType* head = sl_->head_.load(std::memory_order_acquire);
     return iterator(head->next());
   }
@@ -81,9 +76,9 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
-  template <typename U,typename =typename std::enable_if<std::is_convertible<U, T>::value>::type>
-  std::pair<iterator, bool> insert(U&& data) 
-  {
+  template <typename U, typename = typename std::enable_if<
+                            std::is_convertible<U, T>::value>::type>
+  std::pair<iterator, bool> insert(U&& data) {
     auto ret = sl_->addOrGetData(std::forward<U>(data));
     return std::make_pair(iterator(ret.first), ret.second);
   }
@@ -98,14 +93,12 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor
   const key_type* first() const { return sl_->first(); }
   const key_type* last() const { return sl_->last(); }
 
-  bool pop_back() 
-  {
+  bool pop_back() {
     auto last = sl_->last();
     return last ? sl_->remove(*last) : false;
   }
 
-  std::pair<key_type*, bool> addOrGetData(const key_type& data) 
-  {
+  std::pair<key_type*, bool> addOrGetData(const key_type& data) {
     auto ret = sl_->addOrGetData(data);
     return std::make_pair(&ret.first->data(), ret.second);
   }
@@ -140,18 +133,18 @@ class IteratorFacade {
   }
 
   D operator++(int) {
-    auto ret = asDerived(); 
+    auto ret = asDerived();
     asDerived().increment();
     return ret;
   }
 
-    D& operator--() {
+  D& operator--() {
     asDerived().decrement();
     return asDerived();
   }
 
   D operator--(int) {
-    auto ret = asDerived(); 
+    auto ret = asDerived();
     asDerived().decrement();
     return ret;
   }
@@ -165,10 +158,8 @@ class IteratorFacade {
 };
 
 template <typename ValT, typename NodeT>
-class csl_iterator : public IteratorFacade<
-                                 csl_iterator<ValT, NodeT>,
-                                 ValT,
-                                 std::forward_iterator_tag> {
+class csl_iterator : public IteratorFacade<csl_iterator<ValT, NodeT>, ValT,
+                                           std::forward_iterator_tag> {
  public:
   typedef ValT value_type;
   typedef value_type& reference;
@@ -184,8 +175,7 @@ class csl_iterator : public IteratorFacade<
           std::is_convertible<OtherVal*, ValT*>::value>::type* = nullptr)
       : node_(other.node_) {}
 
-  size_t nodeSize() const 
-  {
+  size_t nodeSize() const {
     return node_ == nullptr ? 0
                             : node_->height() * sizeof(NodeT*) + sizeof(*this);
   }
@@ -217,15 +207,13 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
   typedef ptrdiff_t difference_type;
 
   Skipper(std::shared_ptr<SkipListType> skipList)
-      : accessor_(std::move(skipList)) 
-  {
+      : accessor_(std::move(skipList)) {
     init();
   }
 
   Skipper(const Accessor& accessor) : accessor_(accessor) { init(); }
 
-  void init() 
-  {
+  void init() {
     NodeType* head_node = head();
     headHeight_ = head_node->height();
     for (int i = 0; i < headHeight_; ++i) {
@@ -239,13 +227,11 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
     hints_[max_layer] = max_layer;
   }
 
-  Skipper& operator++() 
-  {
+  Skipper& operator++() {
     preds_[0] = succs_[0];
     succs_[0] = preds_[0]->skip(0);
     int height = curHeight();
-    for (int i = 1; i < height && preds_[0] == succs_[i]; ++i) 
-    {
+    for (int i = 1; i < height && preds_[0] == succs_[i]; ++i) {
       preds_[i] = succs_[i];
       succs_[i] = preds_[i]->skip(i);
     }
@@ -259,48 +245,41 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
 
   int maxLayer() const { return headHeight_ - 1; }
 
-  int curHeight() const 
-  {
+  int curHeight() const {
     return succs_[0] ? std::min(headHeight_, succs_[0]->height()) : 0;
   }
 
-  const value_type& data() const 
-  {
+  const value_type& data() const {
     assert(succs_[0] != nullptr);
     return succs_[0]->data();
   }
 
-  value_type& operator*() const 
-  {
+  value_type& operator*() const {
     assert(succs_[0] != nullptr);
     return succs_[0]->data();
   }
 
-  value_type* operator->() 
-  {
+  value_type* operator->() {
     assert(succs_[0] != nullptr);
     return &succs_[0]->data();
   }
 
-  bool to(const value_type& data) 
-  {
+  bool to(const value_type& data) {
     int layer = curHeight() - 1;
-    if (layer < 0) 
-    {
-      return false; 
+    if (layer < 0) {
+      return false;
     }
 
     int lyr = hints_[layer];
     int max_layer = maxLayer();
-    while (SkipListType::greater(data, succs_[lyr]) && lyr < max_layer) 
-    {
+    while (SkipListType::greater(data, succs_[lyr]) && lyr < max_layer) {
       ++lyr;
     }
-    hints_[layer] = lyr; 
+    hints_[layer] = lyr;
 
-    int foundLayer = SkipListType::findInsertionPoint(preds_[lyr], lyr, data, preds_, succs_);
-    if (foundLayer < 0) 
-    {
+    int foundLayer = SkipListType::findInsertionPoint(preds_[lyr], lyr, data,
+                                                      preds_, succs_);
+    if (foundLayer < 0) {
       return false;
     }
 
@@ -309,8 +288,7 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
   }
 
  private:
-  NodeType* head() const 
-  {
+  NodeType* head() const {
     return accessor_.skiplist()->head_.load(std::memory_order_acquire);
   }
 

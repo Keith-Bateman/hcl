@@ -398,10 +398,10 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
 
       std::function<void(const tl::request &, KeyType &)> putFunc(std::bind(

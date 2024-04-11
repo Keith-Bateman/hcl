@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_MULTIMAP_MULTIMAP_H_
 #define INCLUDE_HCL_MULTIMAP_MULTIMAP_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
@@ -24,7 +28,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -95,7 +99,7 @@ class multimap : public container {
       KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> LocalGetAllDataInServer();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
   THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)

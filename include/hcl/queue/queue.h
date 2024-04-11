@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_QUEUE_QUEUE_H_
 #define INCLUDE_HCL_QUEUE_QUEUE_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
@@ -24,7 +28,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 
@@ -89,7 +93,7 @@ class queue : public container {
   bool LocalWaitForElement();
   size_t LocalSize();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPush, (data), MappedType &data)
   THALLIUM_DEFINE1(LocalPop)
   THALLIUM_DEFINE1(LocalWaitForElement)

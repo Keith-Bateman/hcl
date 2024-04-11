@@ -23,11 +23,14 @@
 
 #ifndef INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
 #define INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
+#include <boost/concept_check.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/containers/vector.hpp>
-
-#include <boost/concept_check.hpp>
 #include <chrono>
 #include <cstdint>
 #include <string>
@@ -66,7 +69,7 @@ typedef struct CharStruct {
   std::string string() const { return std::string(value); }
 
   char *data() { return value; }
-  const size_t size() const { return strlen(value); }
+  size_t size() const { return strlen(value); }
   /**
    * Operators
    */
@@ -120,7 +123,6 @@ struct hash<CharStruct> {
   }
 };
 }  // namespace std
-
 
 /**
  * Outstream conversions

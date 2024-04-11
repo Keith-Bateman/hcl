@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_CLOCK_GLOBAL_CLOCK_H_
 #define INCLUDE_HCL_CLOCK_GLOBAL_CLOCK_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
@@ -77,10 +81,10 @@ class global_clock {
     rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(port);
     if (is_server) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         {
           std::function<void(const tl::request &)> getTimeFunction(
               std::bind(&global_clock::ThalliumLocalGetTime, this,
@@ -161,7 +165,7 @@ class global_clock {
     return t;
   }
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE1(LocalGetTime)
 #endif
 };

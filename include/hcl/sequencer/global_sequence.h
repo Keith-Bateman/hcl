@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
 #define INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/container.h>
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
@@ -50,10 +54,10 @@ class global_sequence : public container {
 
   void bind_functions() override {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
         std::function<void(const tl::request &)> getNextSequence(
             std::bind(&hcl::global_sequence::ThalliumLocalGetNextSequence, this,
@@ -104,7 +108,7 @@ class global_sequence : public container {
     return ++*value;
   }
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE1(LocalGetNextSequence)
 #endif
 };

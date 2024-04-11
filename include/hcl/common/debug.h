@@ -23,7 +23,11 @@
 
 #ifndef INCLUDE_HCL_COMMON_DEBUG_H_
 #define INCLUDE_HCL_COMMON_DEBUG_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <execinfo.h>
 #include <unistd.h>
 
@@ -41,7 +45,6 @@ inline void handler(int sig) {
   size_t size;
   // get void*'s for all entries on the stack
   size = backtrace(array, 300);
-  int rank, comm_size;
   // print out all the frames to stderr
   fprintf(stderr, "Error: signal %d\n", sig);
   backtrace_symbols_fd(array, size, STDERR_FILENO);

@@ -6,7 +6,7 @@ env:
   # Turn off all RPC layers by default. They will be enabled one-by-one in the
   # build matrix
   global:
-    - HCL_ENABLE_THALLIUM_TCP=OFF
+    - HCL_COMMUNICATION=THALLIUM
 # Install APT dependencies
 addons:
   apt:
@@ -24,7 +24,7 @@ thallium_deps: &thallium_deps
 
 matrix:
   include:
-    - env: HCL_ENABLE_THALLIUM_TCP=ON
+    - env: HCL_COMMUNICATION=THALLIUM
       before_install: *thallium_deps
 
 script: ./ci/install_hcl.sh

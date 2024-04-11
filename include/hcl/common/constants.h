@@ -12,6 +12,12 @@
 
 #ifndef INCLUDE_HCL_COMMON_CONSTANTS_H_
 #define INCLUDE_HCL_COMMON_CONSTANTS_H_
+
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/data_structures.h>
 #include <stdint.h>
 

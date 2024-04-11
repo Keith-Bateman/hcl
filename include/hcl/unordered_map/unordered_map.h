@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_H_
 #define INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
@@ -36,7 +40,7 @@
 #include <mpi.h>
 
 /** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
 #endif
 /** Boost Headers **/
@@ -107,7 +111,7 @@ class unordered_map : public container {
   std::pair<bool, MappedType> LocalErase(KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> LocalGetAllDataInServer();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
 
   // void ThalliumLocalPut(const tl::request &thallium_req, tl::bulk

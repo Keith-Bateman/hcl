@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_COMMON_ENUMERATIONS_H
 #define INCLUDE_HCL_COMMON_ENUMERATIONS_H
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 typedef enum RPCImplementation {
   THALLIUM_TCP = 1,
 } RPCImplementation;

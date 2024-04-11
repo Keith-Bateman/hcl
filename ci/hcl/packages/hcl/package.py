@@ -50,7 +50,7 @@ class Hcl(CMakePackage):
         args = ['-DCMAKE_INSTALL_PREFIX={}'.format(self.prefix)]
         if 'communication=thallium' in spec:
             if 'protocol=tcp' in spec:
-                args.append("-DHCL_ENABLE_THALLIUM_TCP=ON")
+                args.append("-DHCL_COMMUNICATION=THALLIUM")
         return args
 
     def set_include(self, env, path):
