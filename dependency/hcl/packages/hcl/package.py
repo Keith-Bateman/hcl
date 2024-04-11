@@ -59,7 +59,8 @@ class Hcl(CMakePackage):
      msg="RPC lib only supports tcp protocol")
     depends_on("mpi")
     depends_on('rpclib@2.2.1:', when='+rpclib')
-    depends_on('mochi-thallium~cereal@0.11.3 ^mercury@2.3.1', when='+thallium')
+    depends_on('mochi-thallium~cereal@0.11.3', when='+thallium')
+    depends_on('mercury@2.3.1', when='+thallium')
     depends_on('ucx@1.13.1:', when='+ucx')
     depends_on('boost@1.71.0:')
 
