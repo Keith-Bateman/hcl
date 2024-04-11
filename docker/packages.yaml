@@ -8,11 +8,6 @@ packages:
     externals:
       - spec: "pkgconf@1.8.0"
         prefix: /usr
-  libfabric:
-    buildable: False
-    externals:
-      - spec: "libfabric@1.6.2"
-        prefix: /usr
   libtool:
     buildable: False
     externals:

@@ -52,6 +52,7 @@ RUN cd ${PROJECT_DIR} && git checkout feature/fix_ci && git pull
 
 RUN $spack repo add ${PROJECT_DIR}/ci/hcl
 
+RUN echo 1
 COPY ./packages.yaml /root/.spack/packages.yaml
 
 ENV HCL_SPEC=hcl@${HCL_VERSION}
@@ -67,7 +68,7 @@ RUN apt-get install -y cmake pkg-config mpich
 # RUN $spack install mpich@3.3.2
 
 # ## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} mpich@3.3.2 rpclib@2.2.1 mochi-thallium~cereal@0.11.3 mercury@2.3.1 boost@1.71.0
+RUN $spack view symlink -i ${INSTALL_DIR} mpich@3.3.2 libfabric rpclib@2.2.1 mochi-thallium~cereal@0.11.3 mercury@2.3.1 boost@1.71.0
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
