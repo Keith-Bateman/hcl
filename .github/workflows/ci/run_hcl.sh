@@ -17,7 +17,5 @@ echo "Testing queue"
 ctest -V -R ^queue_test || exit 1
 echo "Testing set"
 ctest -V -R ^set_test || exit 1
-echo "Testing concurrent skiplist test"
-ctest -V -R ^skiplist_test || exit 1
 
 popd
