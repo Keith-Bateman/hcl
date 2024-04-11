@@ -24,6 +24,11 @@
 
 #ifndef INCLUDE_HCL_COMMON_SINGLETON_H_
 #define INCLUDE_HCL_COMMON_SINGLETON_H_
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <iostream>
 #include <memory>
 #include <utility>

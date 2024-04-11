@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_COMMON_TYPEDEFS_H_
 #define INCLUDE_HCL_COMMON_TYPEDEFS_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <stdint.h>
 
 typedef uint64_t t_mili;

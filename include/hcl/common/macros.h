@@ -12,17 +12,21 @@
 
 #ifndef INCLUDE_HCL_COMMON_MACROS_H_
 #define INCLUDE_HCL_COMMON_MACROS_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/configuration_manager.h>
 #include <hcl/common/singleton.h>
 
 #define EXPAND_ARGS(...) __VA_ARGS__
 #define HCL_CONF hcl::Singleton<hcl::ConfigurationManager>::GetInstance()
 
-#define THALLIUM_DEFINE(name, args, args_t...)                         \
-  void Thallium##name(const thallium::request &thallium_req, args_t) { \
-    auto result = name args;                                           \
-    thallium_req.respond(result);                                      \
+#define THALLIUM_DEFINE(name, args, ...)                                    \
+  void Thallium##name(const thallium::request &thallium_req, __VA_ARGS__) { \
+    auto result = name args;                                                \
+    thallium_req.respond(result);                                           \
   }
 
 #define THALLIUM_DEFINE1(name)                                 \
@@ -41,14 +45,14 @@
     return rpc->call<ret>(serverVar, func_prefix + funcname); \
     break;                                                    \
   }
-#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args...) \
-  {                                                                  \
-    return rpc->call<ret>(serverVar, func_prefix + funcname, args);  \
-    break;                                                           \
+#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ...)           \
+  {                                                                        \
+    return rpc->call<ret>(serverVar, func_prefix + funcname, __VA_ARGS__); \
+    break;                                                                 \
   }
 #else
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)
-#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args...)
+#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ...)
 #endif
 
 #define RPC_CALL_WRAPPER1(funcname, serverVar, ret)        \
@@ -58,12 +62,12 @@
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
   }();
-#define RPC_CALL_WRAPPER(funcname, serverVar, ret, args...)     \
-  [&]() -> ret {                                                \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                     \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                           \
-      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args) \
-    }                                                           \
+#define RPC_CALL_WRAPPER(funcname, serverVar, ret, ...)                \
+  [&]() -> ret {                                                       \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
+    }                                                                  \
   }();
 #define RPC_CALL_WRAPPER1_CB(funcname, serverVar, ret)     \
   [&]() -> ret {                                           \
@@ -73,12 +77,12 @@
     }                                                      \
   }();
 
-#define RPC_CALL_WRAPPER_CB(funcname, serverVar, ret, ...)              \
-  [&]() -> ret {                                                        \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__)  \
-    }                                                                   \
+#define RPC_CALL_WRAPPER_CB(funcname, serverVar, ret, ...)             \
+  [&]() -> ret {                                                       \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
+    }                                                                  \
   }();
 
 #endif  // INCLUDE_HCL_COMMON_MACROS_H_

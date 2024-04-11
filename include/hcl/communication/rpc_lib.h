@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_COMMUNICATION_RPC_LIB_H_
 #define INCLUDE_HCL_COMMUNICATION_RPC_LIB_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/constants.h>
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
@@ -133,7 +137,7 @@ class RPC {
   }
   ~RPC() { Stop(); }
 
-  RPC() : server_list(HCL_CONF->SERVER_LIST), server_port(HCL_CONF->RPC_PORT) {
+  RPC() : server_port(HCL_CONF->RPC_PORT), server_list(HCL_CONF->SERVER_LIST) {
     AutoTrace trace = AutoTrace("RPC");
     if (server_list.empty() && HCL_CONF->SERVER_LIST_PATH.size() > 0) {
       server_list = HCL_CONF->LoadServers();

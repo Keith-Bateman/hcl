@@ -12,7 +12,11 @@
 
 #ifndef HCL_CONTAINER_H
 #define HCL_CONTAINER_H
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
 
@@ -62,19 +66,19 @@ class container {
     return std::move(value);
   }
 
-  ~container() {
+  virtual ~container() {
     if (is_server)
       boost::interprocess::file_mapping::remove(backed_file.c_str());
   }
   container(CharStruct name_, uint16_t port)
-      : is_server(HCL_CONF->IS_SERVER),
-        my_server(HCL_CONF->MY_SERVER),
-        num_servers(HCL_CONF->NUM_SERVERS),
-        comm_size(1),
+      : comm_size(1),
         my_rank(0),
+        num_servers(HCL_CONF->NUM_SERVERS),
+        my_server(HCL_CONF->MY_SERVER),
         memory_allocated(HCL_CONF->MEMORY_ALLOCATED),
-        name(name_),
+        is_server(HCL_CONF->IS_SERVER),
         segment(),
+        name(name_),
         func_prefix(name_),
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_ + "_" +
                     std::to_string(my_server)),

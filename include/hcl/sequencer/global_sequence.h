@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
 #define INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <hcl/common/container.h>
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>

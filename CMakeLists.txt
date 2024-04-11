@@ -299,24 +299,20 @@ set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_factory.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/container.h
-                        ${CMAKE_SOURCE_DIR}/src/hcl/common/singleton.h 
-                        ${CMAKE_SOURCE_DIR}/src/hcl/common/constants.h)
+                        ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h 
+                        ${CMAKE_SOURCE_DIR}/include/hcl/common/constants.h)
 set(HCL_SRC_PRIVATE  
-                    ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_lib.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/queue/queue.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/skiplist/skiplist.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/unordered_map/unordered_map.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/map/map.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/multimap/multimap.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/priority_queue/priority_queue.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/queue/queue.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/set/set.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/unordered_map/unordered_map.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/clock/global_clock.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/common/configuration_manager.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/common/container.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_factory.cpp
-                    ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_lib.cpp)
+                    ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/map/map.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/set/set.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
 target_link_libraries(${PROJECT_NAME} ${DEPENDENCY_LIB})
@@ -335,7 +331,7 @@ hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SO
 
 if(HCL_ENABLE_TESTING)
   enable_testing()
-  add_subdirectory(tests)
+  add_subdirectory(test)
 endif()
 
 #-----------------------------------------------------------------------------

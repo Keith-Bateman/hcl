@@ -12,7 +12,11 @@
 
 #ifndef INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
 #define INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 template <typename F>
 void RPC::bind(CharStruct str, F func) {
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
