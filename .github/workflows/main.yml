@@ -23,14 +23,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - RPCLIB: ON
-            THALLIUM_TCP: OFF
+          - THALLIUM_TCP: ON
             THALLIUM_ROCE: OFF
-          - RPCLIB: OFF
-            THALLIUM_TCP: ON
-            THALLIUM_ROCE: OFF
-          - RPCLIB: OFF
-            THALLIUM_TCP: OFF
+          - THALLIUM_TCP: OFF
             THALLIUM_ROCE: ON
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -44,13 +39,11 @@ jobs:
 
       - name: Build
         env:
-          HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
           HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
         run: ci/install_hcl.sh
       - name: Test
         env:
-          HCL_ENABLE_RPCLIB: ${{ matrix.RPCLIB }}
           HCL_ENABLE_THALLIUM_TCP: ${{ matrix.THALLIUM_TCP }}
           HCL_ENABLE_THALLIUM_ROCE: ${{ matrix.THALLIUM_ROCE }}
         run: ci/run_hcl.sh

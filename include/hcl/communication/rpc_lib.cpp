@@ -16,12 +16,6 @@
 template <typename F>
 void RPC::bind(CharStruct str, F func) {
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      rpclib_server->bind(str.c_str(), func);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif
@@ -43,23 +37,6 @@ Response RPC::callWithTimeout(uint16_t server_index, int timeout_ms,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      auto *client = rpclib_clients[server_index].get();
-      if (client->get_connection_state() !=
-          rpc::client::connection_state::connected) {
-        rpclib_clients[server_index] = std::make_unique<rpc::client>(
-            server_list[server_index].c_str(), server_port + server_index);
-        client = rpclib_clients[server_index].get();
-      }
-      client->set_timeout(timeout_ms);
-      Response response =
-          client->call(func_name.c_str(), std::forward<Args>(args)...);
-      client->clear_timeout();
-      return response;
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
@@ -90,20 +67,6 @@ Response RPC::call(uint16_t server_index, CharStruct const &func_name,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      auto *client = rpclib_clients[server_index].get();
-      if (client->get_connection_state() !=
-          rpc::client::connection_state::connected) {
-        rpclib_clients[server_index] = std::make_unique<rpc::client>(
-            server_list[server_index].c_str(), server_port + server_index);
-        client = rpclib_clients[server_index].get();
-      }
-      /*client.set_timeout(5000);*/
-      return client->call(func_name.c_str(), std::forward<Args>(args)...);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
@@ -130,14 +93,6 @@ Response RPC::call(CharStruct &server, uint16_t &port,
                    CharStruct const &func_name, Args... args) {
   AutoTrace trace = AutoTrace("RPC::call", server, port, func_name);
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      auto client = rpc::client(server.c_str(), port);
-      /*client.set_timeout(5000);*/
-      return client.call(func_name.c_str(), std::forward<Args>(args)...);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
@@ -167,20 +122,6 @@ std::future<Response> RPC::async_call(uint16_t server_index,
   int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      auto *client = rpclib_clients[server_index].get();
-      if (client->get_connection_state() !=
-          rpc::client::connection_state::connected) {
-        rpclib_clients[server_index] = std::make_unique<rpc::client>(
-            server_list[server_index].c_str(), server_port + server_index);
-        client = rpclib_clients[server_index].get();
-      }
-      // client.set_timeout(5000);
-      return client->async_call(func_name.c_str(), std::forward<Args>(args)...);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
       // TODO:NotImplemented error
@@ -203,14 +144,6 @@ std::future<Response> RPC::async_call(CharStruct &server, uint16_t &port,
   AutoTrace trace = AutoTrace("RPC::async_call", server, port, func_name);
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      auto client = rpc::client(server.c_str(), port);
-      // client.set_timeout(5000);
-      return client.async_call(func_name.c_str(), std::forward<Args>(args)...);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP: {
       // TODO:NotImplemented error

@@ -50,14 +50,6 @@ class global_sequence : public container {
 
   void bind_functions() override {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-      case RPCLIB: {
-        std::function<uint64_t(void)> getNextSequence(
-            std::bind(&hcl::global_sequence::LocalGetNextSequence, this));
-        rpc->bind(func_prefix + "_GetNextSequence", getNextSequence);
-        break;
-      }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif

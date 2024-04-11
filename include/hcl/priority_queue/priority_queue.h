@@ -23,12 +23,7 @@
 #include <hcl/communication/rpc_lib.h>
 /** MPI Headers**/
 #include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
+
 /** Thallium Headers **/
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
 #include <thallium.hpp>

@@ -21,12 +21,6 @@
 #include <hcl/common/typedefs.h>
 #include <mpi.h>
 
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
 /** Thallium Headers **/
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
 #include <thallium.hpp>
@@ -80,13 +74,6 @@ class RPC {
  private:
   uint16_t server_port;
   std::string name;
-#ifdef HCL_ENABLE_RPCLIB
-  std::shared_ptr<rpc::server> rpclib_server;
-  // We can't use a std::vector<rpc::client> for these since rpc::client is
-  // neither copy nor move constructible. See
-  // https://github.com/rpclib/rpclib/issues/128
-  std::vector<std::shared_ptr<rpc::client>> rpclib_clients;
-#endif
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
   std::shared_ptr<tl::engine> thallium_server;
   std::shared_ptr<tl::engine> thallium_client;
@@ -129,12 +116,6 @@ class RPC {
   void Stop() {
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-        case RPCLIB: {
-          // Twiddle thumbs
-          break;
-        }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP:
 #endif
@@ -163,14 +144,6 @@ class RPC {
     /* if current rank is a server */
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-        case RPCLIB: {
-          rpclib_server =
-              std::make_shared<rpc::server>(server_port + HCL_CONF->MY_SERVER);
-          rpclib_server->suppress_exceptions(false);
-          break;
-        }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP: {
           engine_init_str = HCL_CONF->TCP_CONF + "://" +
@@ -190,13 +163,6 @@ class RPC {
 #endif
       }
     }
-#ifdef HCL_ENABLE_RPCLIB
-    for (std::vector<rpc::client>::size_type i = 0; i < server_list.size();
-         ++i) {
-      rpclib_clients.push_back(std::make_unique<rpc::client>(
-          server_list[i].c_str(), server_port + i));
-    }
-#endif
     run(HCL_CONF->RPC_THREADS);
   }
 
@@ -207,12 +173,6 @@ class RPC {
     AutoTrace trace = AutoTrace("RPC::run", workers);
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-        case RPCLIB: {
-          rpclib_server->async_run(workers);
-          break;
-        }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
         case THALLIUM_TCP:
 #endif
@@ -230,11 +190,6 @@ class RPC {
       }
     }
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-      case RPCLIB: {
-        break;
-      }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP: {
         init_engine_and_endpoints(HCL_CONF->TCP_CONF);
@@ -257,17 +212,10 @@ class RPC {
   template <typename MappedType>
   tl::bulk prep_rdma_client(MappedType &data);
 #endif
-  /**
-   * Response should be RPCLIB_MSGPACK::object_handle for rpclib and
-   * tl::packed_response for thallium/mercury
-   */
   template <typename Response, typename... Args>
   Response call(uint16_t server_index, CharStruct const &func_name,
                 Args... args);
-  /**
-   * Response should be RPCLIB_MSGPACK::object_handle for rpclib and
-   * tl::packed_response for thallium/mercury
-   */
+
   template <typename Response, typename... Args>
   Response call(CharStruct &server, uint16_t &port, CharStruct const &func_name,
                 Args... args);

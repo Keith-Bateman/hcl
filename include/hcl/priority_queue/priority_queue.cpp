@@ -207,24 +207,6 @@ void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      std::function<bool(MappedType &)> pushFunc(
-          std::bind(&hcl::priority_queue<MappedType, Compare>::LocalPush, this,
-                    std::placeholders::_1));
-      std::function<std::pair<bool, MappedType>(void)> popFunc(
-          std::bind(&hcl::priority_queue<MappedType, Compare>::LocalPop, this));
-      std::function<size_t(void)> sizeFunc(std::bind(
-          &hcl::priority_queue<MappedType, Compare>::LocalSize, this));
-      std::function<std::pair<bool, MappedType>(void)> topFunc(
-          std::bind(&hcl::priority_queue<MappedType, Compare>::LocalTop, this));
-      rpc->bind(func_prefix + "_Push", pushFunc);
-      rpc->bind(func_prefix + "_Pop", popFunc);
-      rpc->bind(func_prefix + "_Top", topFunc);
-      rpc->bind(func_prefix + "_Size", sizeFunc);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif

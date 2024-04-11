@@ -23,14 +23,7 @@
 #include <hcl/communication/rpc_lib.h>
 /** MPI Headers**/
 #include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
 
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-
-#endif
 /** Thallium Headers **/
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
 #include <thallium.hpp>
@@ -83,19 +76,6 @@ private:
   void bind_functions() override 
   {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-      case RPCLIB: {
-        std::function<bool(ValueT &)> pushFunc(
-            std::bind(&concurrent_queue<ValueT>::LocalPush, this,
-                      std::placeholders::_1));
-        std::function<std::pair<bool,ValueT>(void)> popFunc(
-            std::bind(&concurrent_queue<ValueT>::LocalPop, this));
-
-        rpc->bind(func_prefix + "_Push", pushFunc);
-        rpc->bind(func_prefix + "_Pop", popFunc);
-        break;
-      }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif

@@ -6,7 +6,6 @@ env:
   # Turn off all RPC layers by default. They will be enabled one-by-one in the
   # build matrix
   global:
-    - HCL_ENABLE_RPCLIB=OFF
     - HCL_ENABLE_THALLIUM_TCP=OFF
     - HCL_ENABLE_THALLIUM_ROCE=OFF
 
@@ -27,11 +26,9 @@ thallium_deps: &thallium_deps
 
 matrix:
   include:
-  - env: HCL_ENABLE_RPCLIB=ON
-    before_install: ./ci/install_rpclib.sh
-  - env: HCL_ENABLE_THALLIUM_TCP=ON
-    before_install: *thallium_deps
-  - env: HCL_ENABLE_THALLIUM_ROCE=ON
-    before_install: *thallium_deps
+    - env: HCL_ENABLE_THALLIUM_TCP=ON
+      before_install: *thallium_deps
+    - env: HCL_ENABLE_THALLIUM_ROCE=ON
+      before_install: *thallium_deps
 
 script: ./ci/install_hcl.sh

@@ -23,14 +23,7 @@
 #include <hcl/communication/rpc_lib.h>
 /** MPI Headers**/
 #include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
 
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-
-#endif
 /** Thallium Headers **/
 #if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
 #include <thallium.hpp>
@@ -153,32 +146,6 @@ class concurrent_unordered_map : public container
   void bind_functions() override 
   {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-      case RPCLIB: {
-        std::function<bool(KeyT &, ValueT &)> insertFunc(
-            std::bind(&concurrent_unordered_map<KeyT, ValueT,HashFcn,EqualFcn>::LocalInsert, this,
-                      std::placeholders::_1, std::placeholders::_2));
-        std::function<bool(KeyT &)> findFunc(
-            std::bind(&concurrent_unordered_map<KeyT, ValueT,HashFcn,EqualFcn>::LocalFind, this,
-                      std::placeholders::_1));
-        std::function<bool(KeyT &)> eraseFunc(
-            std::bind(&concurrent_unordered_map<KeyT, ValueT,HashFcn,EqualFcn>::LocalErase, this,
-                      std::placeholders::_1));
-	std::function<ValueT(KeyT&)> getFunc(
-	   std::bind(&concurrent_unordered_map<KeyT,ValueT,HashFcn,EqualFcn>::LocalGetValue, this,
-		   std::placeholders::_1));
-	std::function<bool(KeyT&,ValueT&)>updateFunc(
-	   std::bind(&concurrent_unordered_map<KeyT,ValueT,HashFcn,EqualFcn>::LocalUpdate, this,
-		 std::placeholders::_1,std::placeholders::_2));
-
-        rpc->bind(func_prefix + "_Insert", insertFunc);
-        rpc->bind(func_prefix + "_Find", findFunc);
-        rpc->bind(func_prefix + "_Erase", eraseFunc);
-	rpc->bind(func_prefix + "_Get", getFunc);
-	rpc->bind(func_prefix + "_Update", updateFunc);
-        break;
-      }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
       case THALLIUM_TCP:
 #endif

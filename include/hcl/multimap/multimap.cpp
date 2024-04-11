@@ -308,38 +308,6 @@ void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-    case RPCLIB: {
-      std::function<bool(KeyType &, MappedType &)> putFunc(
-          std::bind(&multimap<KeyType, MappedType, Compare, Allocator,
-                              SharedType>::LocalPut,
-                    this, std::placeholders::_1, std::placeholders::_2));
-      std::function<std::pair<bool, MappedType>(KeyType &)> getFunc(
-          std::bind(&multimap<KeyType, MappedType, Compare, Allocator,
-                              SharedType>::LocalGet,
-                    this, std::placeholders::_1));
-      std::function<std::pair<bool, MappedType>(KeyType &)> eraseFunc(
-          std::bind(&multimap<KeyType, MappedType, Compare, Allocator,
-                              SharedType>::LocalErase,
-                    this, std::placeholders::_1));
-      std::function<std::vector<std::pair<KeyType, MappedType>>(void)>
-          getAllDataInServerFunc(
-              std::bind(&multimap<KeyType, MappedType, Compare, Allocator,
-                                  SharedType>::LocalGetAllDataInServer,
-                        this));
-      std::function<std::vector<std::pair<KeyType, MappedType>>(KeyType &)>
-          containsInServerFunc(std::bind(
-              &multimap<KeyType, MappedType, Compare>::LocalContainsInServer,
-              this, std::placeholders::_1));
-
-      rpc->bind(func_prefix + "_Put", putFunc);
-      rpc->bind(func_prefix + "_Get", getFunc);
-      rpc->bind(func_prefix + "_Erase", eraseFunc);
-      rpc->bind(func_prefix + "_GetAllData", getAllDataInServerFunc);
-      rpc->bind(func_prefix + "_Contains", containsInServerFunc);
-      break;
-    }
-#endif
 #ifdef HCL_ENABLE_THALLIUM_TCP
     case THALLIUM_TCP:
 #endif

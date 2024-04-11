@@ -43,7 +43,7 @@ The HCL Library compiles with cmake, so the general procedure is
 ```bash
 cd hcl
 mkdir build
-cmake -HCL_ENABLE_RPCLIB=true ..
+cmake ..
 make
 sudo make install
 ```
@@ -53,14 +53,13 @@ If you want to install somewhere besides `/usr/local`, then use
 ```bash
 cd hcl
 mkdir build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/wherever -DHCL_ENABLE_RPCLIB=true ..
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/wherever ..
 make
 make install
 ```
 
 A flag should be added to cmake to indicate the preferred RPC library, otherwise
-compilation will fail. If compiling with RPCLib, use `-DHCL_ENABLE_RPCLIB`. If
-compiling with Thallium, use either `-DHCL_ENABLE_THALLIUM_TCP` or
+compilation will fail. If compiling with Thallium, use either `-DHCL_ENABLE_THALLIUM_TCP` or
 `-DHCL_ENABLE_THALLIUM_ROCE`
 
 ### Dependencies
@@ -68,13 +67,12 @@ compiling with Thallium, use either `-DHCL_ENABLE_THALLIUM_TCP` or
 - MPI
 - Boost (interprocess module)
 - RPC layer (pick one and compile appropriately)
-    - rpclib
     - Thallium (wrapper over Mercury)
 - glibc (for librt and posix threads)
 
 #### Recommended Versions
 
-HCL has been tested with mpich 3.3.1, boost 1.69.0, rpclib 2.2.1, mercury 1.0.1,
+HCL has been tested with mpich 3.3.1, boost 1.69.0, mercury 1.0.1,
 margo 0.5, and thallium 0.4.0. Please consider patching mercury using the patch
 specified below, especially if you're using the Thallium RoCE transport. Also of
 note is that we uses libfabric (ofi) as the default Mercury transport (for TCP
