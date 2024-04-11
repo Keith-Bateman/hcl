@@ -31,7 +31,7 @@ class Hcl(CMakePackage):
     version('0.1', branch='v0.1')
     variant('communication',
             default='thallium',
-            values=('thallium'),
+            values=('thallium',),
             multi=False,
             description='Which communication interface to build.')
     variant('protocol',
