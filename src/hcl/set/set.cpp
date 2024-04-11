@@ -1,30 +1,47 @@
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Distributed under BSD 3-Clause license.                                   *
- * Copyright by The HDF Group.                                               *
- * Copyright by the Illinois Institute of Technology.                        *
- * All rights reserved.                                                      *
- *                                                                           *
- * This file is part of Hermes. The full Hermes copyright notice, including  *
- * terms governing use, modification, and redistribution, is contained in    *
- * the COPYING file, which can be found at the top directory. If you do not  *
- * have access to the file, you may request a copy from help@hdfgroup.org.   *
- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef INCLUDE_HCL_SET_SET_CPP_
-#define INCLUDE_HCL_SET_SET_CPP_
+#include <hcl/set/set.h>
+/** Include Headers**/
+#include <hcl/common/debug.h>
+#include <hcl/common/macros.h>
+#include <hcl/common/singleton.h>
+/** MPI Headers**/
+#include <mpi.h>
+/** RPC Lib Headers**/
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
+#include <rpc/client.h>
+#include <rpc/rpc_error.h>
+#include <rpc/server.h>
+#endif
+/** Thallium Headers **/
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#include <thallium.hpp>
+#endif
 
+namespace hcl {
+template <typename KeyType, typename Hash, typename Compare, typename Allocator,
+          typename SharedType>
+boost::interprocess::set<
+    KeyType, Compare,
+    boost::interprocess::allocator<
+        KeyType, boost::interprocess::managed_mapped_file::segment_manager>> *
+set<KeyType, Hash, Compare, Allocator, SharedType>::data() {
+  if (server_on_node || is_server)
+    return myset;
+  else
+    nullptr;
+}
 /* Constructor to deallocate the shared memory*/
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::~set() {
-  this->container::~container();
+  this->Container::~Container();
 }
 
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::set(CharStruct name_,
                                                         uint16_t port)
-    : container(name_, port), myset() {
+    : Container(name_, port), myset() {
   AutoTrace trace = AutoTrace("hcl::set");
   if (is_server) {
     construct_shared_memory();
@@ -398,7 +415,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
     case RPCLIB: {
       std::function<bool(KeyType &)> putFunc(std::bind(
           &set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPut, this,
@@ -444,13 +461,13 @@ void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
 #ifdef HCL_ENABLE_THALLIUM_ROCE
     case THALLIUM_ROCE:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
 
       std::function<void(const tl::request &, KeyType &)> putFunc(std::bind(
@@ -504,5 +521,4 @@ void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
 #endif
   }
 }
-
-#endif  // INCLUDE_HCL_SET_SET_CPP_
+}  // namespace hcl

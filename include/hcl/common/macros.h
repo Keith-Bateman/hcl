@@ -19,10 +19,10 @@
 #define EXPAND_ARGS(...) __VA_ARGS__
 #define HCL_CONF hcl::Singleton<hcl::ConfigurationManager>::GetInstance()
 
-#define THALLIUM_DEFINE(name, args, args_t...)                         \
-  void Thallium##name(const thallium::request &thallium_req, args_t) { \
-    auto result = name args;                                           \
-    thallium_req.respond(result);                                      \
+#define THALLIUM_DEFINE(name, args, ...)                                      \
+  void Thallium##name(const thallium::request &thallium_req, ##__VA_ARGS__) { \
+    auto result = name args;                                                  \
+    thallium_req.respond(result);                                             \
   }
 
 #define THALLIUM_DEFINE1(name)                                 \
@@ -30,7 +30,7 @@
     thallium_req.respond(name());                              \
   }
 
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
 #define RPC_CALL_WRAPPER_RPCLIB1(funcname, serverVar, ret)  \
   case RPCLIB: {                                            \
     return rpc                                              \
@@ -39,19 +39,19 @@
         .template as<ret>();                                \
     break;                                                  \
   }
-#define RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, args...) \
-  case RPCLIB: {                                                   \
-    return rpc                                                     \
-        ->call<RPCLIB_MSGPACK::object_handle>(                     \
-            serverVar, func_prefix + std::string(funcname), args)  \
-        .template as<ret>();                                       \
-    break;                                                         \
+#define RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, ...)             \
+  case RPCLIB: {                                                           \
+    return rpc                                                             \
+        ->call<RPCLIB_MSGPACK::object_handle>(                             \
+            serverVar, func_prefix + std::string(funcname), ##__VA_ARGS__) \
+        .template as<ret>();                                               \
+    break;                                                                 \
   }
 #else
 #define RPC_CALL_WRAPPER_RPCLIB1(funcname, serverVar, ret)
-#define RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, args...)
+#define RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, ...)
 #endif
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
 #define RPC_CALL_WRAPPER_RPCLIB1_CB(funcname, serverVar, ret)       \
   case RPCLIB: {                                                    \
     return rpc                                                      \
@@ -71,10 +71,10 @@
   }
 #else
 #define RPC_CALL_WRAPPER_RPCLIB1_CB(funcname, serverVar, ret)
-#define RPC_CALL_WRAPPER_RPCLIB_CB(funcname, serverVar, ret, args...)
+#define RPC_CALL_WRAPPER_RPCLIB_CB(funcname, serverVar, ret, ...)
 #endif
 
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
 #define RPC_CALL_WRAPPER_THALLIUM_TCP() case THALLIUM_TCP:
 #else
 #define RPC_CALL_WRAPPER_THALLIUM_TCP()
@@ -84,20 +84,20 @@
 #else
 #define RPC_CALL_WRAPPER_THALLIUM_ROCE()
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
   {                                                           \
     return rpc->call<ret>(serverVar, func_prefix + funcname); \
     break;                                                    \
   }
-#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args...) \
-  {                                                                  \
-    return rpc->call<ret>(serverVar, func_prefix + funcname, args);  \
-    break;                                                           \
+#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ...)           \
+  {                                                                        \
+    return rpc->call<ret>(serverVar, func_prefix + funcname, __VA_ARGS__); \
+    break;                                                                 \
   }
 #else
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)
-#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args...)
+#define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ...)
 #endif
 
 #define RPC_CALL_WRAPPER1(funcname, serverVar, ret)        \
@@ -109,14 +109,14 @@
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
   }();
-#define RPC_CALL_WRAPPER(funcname, serverVar, ret, args...)     \
-  [&]() -> ret {                                                \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                     \
-      RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, args)   \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                           \
-      RPC_CALL_WRAPPER_THALLIUM_ROCE()                          \
-      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, args) \
-    }                                                           \
+#define RPC_CALL_WRAPPER(funcname, serverVar, ret, ...)                  \
+  [&]() -> ret {                                                         \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                              \
+      RPC_CALL_WRAPPER_RPCLIB(funcname, serverVar, ret, ##__VA_ARGS__)   \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                                    \
+      RPC_CALL_WRAPPER_THALLIUM_ROCE()                                   \
+      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ##__VA_ARGS__) \
+    }                                                                    \
   }();
 #define RPC_CALL_WRAPPER1_CB(funcname, serverVar, ret)     \
   [&]() -> ret {                                           \

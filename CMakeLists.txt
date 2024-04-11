@@ -209,10 +209,12 @@ endif ()
 
 # Required Dependencies
 # =============================================================================
+set(DEPENDENCY_LIB -lpthread -lrt)
 find_package(MPI REQUIRED COMPONENTS CXX C)
 if (${MPI_FOUND})
     message(STATUS "[${PROJECT_NAME}] found mpi at ${MPI_CXX_INCLUDE_DIRS}")
     include_directories(${MPI_CXX_INCLUDE_DIRS})
+    set(DEPENDENCY_LIB ${DEPENDENCY_LIB}  ${MPI_CXX_LIBRARIES})
 else ()
     message(FATAL_ERROR "-- [${PROJECT_NAME}] mpi is needed for ${PROJECT_NAME} build")
 endif ()
@@ -222,6 +224,7 @@ if(HCL_COMMUNICATION STREQUAL "UCX")
     if (${ucx_FOUND})
         message(STATUS "[${PROJECT_NAME}] found ucx at ${ucx_INCLUDE_DIRS}")
         include_directories(${ucx_INCLUDE_DIRS})
+        set(DEPENDENCY_LIB ${DEPENDENCY_LIB}  ucx::ucp ucx::ucs)
     else ()
         message(FATAL_ERROR "-- [${PROJECT_NAME}] ucx is needed for ${PROJECT_NAME} build")
     endif ()
@@ -231,6 +234,8 @@ elseif(HCL_COMMUNICATION STREQUAL "THALLIUM")
     if (${THALLIUM_FOUND})
         message(STATUS "[${PROJECT_NAME}] found thallium at ${THALLIUM_INCLUDE_DIRS}")
         include_directories(${THALLIUM_INCLUDE_DIRS})
+        link_directories(${THALLIUM_LIBRARY_PATH})
+        set(DEPENDENCY_LIB ${DEPENDENCY_LIB}  -L${THALLIUM_LIBRARY_PATH} ${THALLIUM_LIBRARIES})
     else ()
         message(FATAL_ERROR "-- [${PROJECT_NAME}] thallium is needed for ${PROJECT_NAME} build")
     endif ()
@@ -240,6 +245,7 @@ elseif(HCL_COMMUNICATION STREQUAL "RPCLIB")
     if (${rpclib_FOUND})
         message(STATUS "[${PROJECT_NAME}] found rpc_lib at ${rpclib_INCLUDE_DIRS}")
         include_directories(${rpclib_INCLUDE_DIRS})
+        set(DEPENDENCY_LIB ${DEPENDENCY_LIB}  ${RPC_LIB_FLAGS})
     else ()
         message(FATAL_ERROR "-- [${PROJECT_NAME}] rpc_lib is needed for ${PROJECT_NAME} build")
     endif ()
@@ -292,22 +298,39 @@ endfunction()
 #-----------------------------------------------------------------------------
 # Source for HCL
 #-----------------------------------------------------------------------------
-
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 include_directories(${CMAKE_SOURCE_DIR}/include)  # public header
-set(HCL_SRC  )
-set(HCL_PRIVATE_HEADER  )
-set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/enumerations.h
+include_directories(${CMAKE_SOURCE_DIR}/src)  # private header
+include_directories(${CMAKE_BINARY_DIR}/include)  # build header
+set(HCL_SRC  
+            ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_lib.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/queue/queue.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/skiplist/skiplist.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/concurrent/unordered_map/unordered_map.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/map/map.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/multimap/multimap.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/priority_queue/priority_queue.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/queue/queue.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/set/set.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/unordered_map/unordered_map.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/clock/global_clock.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/common/configuration_manager.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/common/container.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_factory.cpp
+            ${CMAKE_SOURCE_DIR}/src/hcl/communication/rpc_lib.cpp)
+set(HCL_PRIVATE_HEADER  ${CMAKE_SOURCE_DIR}/src/hcl/common/singleton.h 
+                        ${CMAKE_SOURCE_DIR}/src/hcl/common/constants.h)
+set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl.h
+                        ${CMAKE_SOURCE_DIR}/include/hcl/common/debug.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/macros.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/configuration_manager.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/constants.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/typedefs.h
+                        ${CMAKE_SOURCE_DIR}/include/hcl/common/enumerations.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/data_structures.h
+                        ${CMAKE_SOURCE_DIR}/include/hcl/common/configuration_manager.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/map/map.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/clock/global_clock.h
@@ -317,24 +340,16 @@ set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_factory.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/container.h)
-set(HCL_SRC_PRIVATE  ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/map/map.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/set/set.cpp
-${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp)
+set(HCL_SRC_PRIVATE  )
 
 add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
-target_link_libraries(${PROJECT_NAME} ${RPC_LIB_FLAGS} ${MPI_CXX_LIBRARIES} -lpthread -lrt)
+target_link_libraries(${PROJECT_NAME} ${DEPENDENCY_LIB})
 set_target_properties(${PROJECT_NAME} PROPERTIES
     LINKER_LANGUAGE CXX
     VERSION ${HCL_PACKAGE_VERSION}
     SOVERSION 1
     PUBLIC_HEADER include/hcl.h)
+target_compile_definitions(${PROJECT_NAME} PUBLIC HCL_HAS_CONFIG)
 hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SOURCE_DIR})
 #-----------------------------------------------------------------------------
 # Testing
@@ -459,6 +474,8 @@ elseif (CMAKE_BUILD_TYPE MATCHES Debug)
   string(APPEND _str
     "  C FLAGS:              ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}\n")
 endif ()
+string(APPEND _str
+  "  DEPENDENCY_LIB:              ${DEPENDENCY_LIB}\n")
 string(APPEND _str "\n")
 
 string(APPEND _str
@@ -481,6 +498,7 @@ string(APPEND _str
 #Print the true/false variables
 append_str_tf(_str
   HCL_GNU_LINUX
+  
   HCL_COMMUNICATION_ENABLE_UCX
   HCL_COMMUNICATION_ENABLE_RPCLIB
   HCL_COMMUNICATION_ENABLE_THALLIUM

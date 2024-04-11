@@ -12,27 +12,18 @@
 
 #ifndef INCLUDE_HCL_SET_SET_H_
 #define INCLUDE_HCL_SET_SET_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
-
-#include <hcl/common/debug.h>
-#include <hcl/common/singleton.h>
+#include <hcl/common/container.h>
+#include <hcl/common/macros.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
-/** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-#include <thallium.hpp>
-#endif
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -42,7 +33,6 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 /** Standard C++ Headers**/
-#include <hcl/common/container.h>
 
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <functional>
@@ -64,7 +54,7 @@ namespace hcl {
 template <typename KeyType, typename Hash = std::hash<KeyType>,
           typename Compare = std::less<KeyType>, class Allocator = nullptr_t,
           class SharedType = nullptr_t>
-class set : public container {
+class set : public Container {
  private:
   /** Class Typedefs for ease of use **/
   typedef boost::interprocess::allocator<
@@ -84,14 +74,8 @@ class set : public container {
 
   void bind_functions() override;
 
-  MySet *data() {
-    if (server_on_node || is_server)
-      return myset;
-    else
-      nullptr;
-  }
-  explicit set(CharStruct name_ = "TEST_SET",
-               uint16_t port = HCL_CONF->RPC_PORT);
+  MySet *data();
+  explicit set(CharStruct name_ = "TEST_SET", uint16_t port = -1);
 
   bool LocalPut(KeyType &key);
   bool LocalGet(KeyType &key);
@@ -103,20 +87,6 @@ class set : public container {
   std::pair<bool, KeyType> LocalPopFirst();
   size_t LocalSize();
   std::pair<bool, std::vector<KeyType>> LocalSeekFirstN(uint32_t n);
-
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-  THALLIUM_DEFINE(LocalPut, (key), KeyType &key)
-  THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
-  THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
-  THALLIUM_DEFINE(LocalContainsInServer, (key_start, key_end),
-                  KeyType &key_start, KeyType &key_end)
-  THALLIUM_DEFINE(LocalSeekFirstN, (n), uint32_t n)
-
-  THALLIUM_DEFINE1(LocalSize)
-  THALLIUM_DEFINE1(LocalSeekFirst)
-  THALLIUM_DEFINE1(LocalPopFirst)
-  THALLIUM_DEFINE1(LocalGetAllDataInServer)
-#endif
 
   bool Put(KeyType &key);
   bool Get(KeyType &key);
@@ -133,9 +103,21 @@ class set : public container {
   std::pair<bool, std::vector<KeyType>> SeekFirstN(uint16_t &key_int,
                                                    uint32_t n);
   size_t Size(uint16_t &key_int);
-};
 
-#include "set.cpp"
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+  THALLIUM_DEFINE(LocalPut, (key), KeyType &key)
+  THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
+  THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
+  THALLIUM_DEFINE(LocalContainsInServer, (key_start, key_end),
+                  KeyType &key_start, KeyType &key_end)
+  THALLIUM_DEFINE(LocalSeekFirstN, (n), uint32_t n)
+
+  THALLIUM_DEFINE1(LocalSize)
+  THALLIUM_DEFINE1(LocalSeekFirst)
+  THALLIUM_DEFINE1(LocalPopFirst)
+  THALLIUM_DEFINE1(LocalGetAllDataInServer)
+#endif
+};
 
 }  // namespace hcl
 

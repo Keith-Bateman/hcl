@@ -23,12 +23,13 @@
 #include <iostream>
 #include <map>
 #include <utility>
+const int TEST_REQUEST_SIZE = 1024;
 
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
   KeyType(size_t a_) : a(a_) {}
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
   MSGPACK_DEFINE(a);
 #endif
   /* equal operator for comparing two Matrix. */
@@ -41,7 +42,7 @@ struct KeyType {
   bool operator>(const KeyType &o) const { return a > o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
 };
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 template <typename A>
 void serialize(A &ar, KeyType &a) {
   ar &a.a;
@@ -157,7 +158,7 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
       llocal_multimap_timer.resumeTime();
-      size_t key_hash = keyHash(KeyType(val)) % num_servers;
+      auto key_hash = keyHash(KeyType(val)) % num_servers;
       if (key_hash == my_server && is_server) {
       }
       auto iterator = lmultimap.find(KeyType(val));

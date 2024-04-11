@@ -23,11 +23,15 @@
 
 #ifndef INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
 #define INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/containers/vector.hpp>
 
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
 #include <rpc/msgpack.hpp>
 #endif
 
@@ -70,7 +74,7 @@ typedef struct CharStruct {
   std::string string() const { return std::string(value); }
 
   char *data() { return value; }
-  const size_t size() const { return strlen(value); }
+  size_t size() const { return strlen(value); }
   /**
    * Operators
    */
@@ -110,7 +114,8 @@ typedef struct CharStruct {
 
 } CharStruct;
 
-static CharStruct operator+(const std::string &a1, const CharStruct &a2) {
+[[maybe_unused]] static CharStruct operator+(const std::string &a1,
+                                             const CharStruct &a2) {
   std::string added = a1 + std::string(a2.c_str());
   return CharStruct(added);
 }
@@ -125,7 +130,7 @@ struct hash<CharStruct> {
 };
 }  // namespace std
 
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
 namespace clmdep_msgpack {
 MSGPACK_API_VERSION_NAMESPACE(MSGPACK_DEFAULT_API_NS) {
   namespace adaptor {

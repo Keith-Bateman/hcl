@@ -12,26 +12,18 @@
 
 #ifndef INCLUDE_HCL_MULTIMAP_MULTIMAP_H_
 #define INCLUDE_HCL_MULTIMAP_MULTIMAP_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
-#include <hcl/common/debug.h>
-#include <hcl/common/singleton.h>
+#include <hcl/common/container.h>
+#include <hcl/common/macros.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
-/** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-#include <thallium.hpp>
-#endif
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -41,7 +33,6 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 /** Standard C++ Headers**/
-#include <hcl/common/container.h>
 
 #include <functional>
 #include <iostream>
@@ -60,7 +51,7 @@ namespace hcl {
 template <typename KeyType, typename MappedType,
           typename Compare = std::less<KeyType>, class Allocator = nullptr_t,
           class SharedType = nullptr_t>
-class multimap : public container {
+class multimap : public Container {
  private:
   /** Class Typedefs for ease of use **/
   typedef std::pair<const KeyType, MappedType> ValueType;
@@ -84,14 +75,8 @@ class multimap : public container {
 
   void bind_functions() override;
 
-  MyMap *data() {
-    if (server_on_node || is_server)
-      return mymap;
-    else
-      nullptr;
-  }
-  explicit multimap(CharStruct name_ = "TEST_MULTIMAP",
-                    uint16_t port = HCL_CONF->RPC_PORT);
+  MyMap *data();
+  explicit multimap(CharStruct name_ = "TEST_MULTIMAP", uint16_t port = 0);
 
   bool LocalPut(KeyType &key, MappedType &data);
   std::pair<bool, MappedType> LocalGet(KeyType &key);
@@ -99,14 +84,6 @@ class multimap : public container {
   std::vector<std::pair<KeyType, MappedType>> LocalContainsInServer(
       KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> LocalGetAllDataInServer();
-
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-  THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
-  THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
-  THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
-  THALLIUM_DEFINE(LocalContainsInServer, (key), KeyType &key)
-  THALLIUM_DEFINE1(LocalGetAllDataInServer)
-#endif
 
   bool Put(KeyType &key, MappedType &data);
   std::pair<bool, MappedType> Get(KeyType &key);
@@ -118,9 +95,14 @@ class multimap : public container {
 
   std::vector<std::pair<KeyType, MappedType>> ContainsInServer(KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> GetAllDataInServer();
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+  THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
+  THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
+  THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
+  THALLIUM_DEFINE(LocalContainsInServer, (key), KeyType &key)
+  THALLIUM_DEFINE1(LocalGetAllDataInServer)
+#endif
 };
-
-#include "multimap.cpp"
 
 }  // namespace hcl
 

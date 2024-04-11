@@ -12,17 +12,18 @@
 
 #ifndef INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_H_
 #define INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_H_
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
+/** Include Headers**/
 
-/**
- * Include Headers
- */
-
-/** Standard C++ Headers**/
-#include <hcl/common/singleton.h>
-#include <hcl/common/typedefs.h>
+#include <hcl/common/container.h>
+#include <hcl/common/macros.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-
+/** Standard C++ Headers**/
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -32,20 +33,7 @@
 #include <utility>
 #include <vector>
 
-/** MPI Headers**/
-#include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
-/** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-#include <thallium.hpp>
-#endif
 /** Boost Headers **/
-#include <hcl/common/container.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/functional/hash.hpp>
@@ -68,7 +56,7 @@ namespace hcl {
 template <typename KeyType, typename MappedType,
           typename Hash = std::hash<KeyType>, class Allocator = nullptr_t,
           class SharedType = nullptr_t>
-class unordered_map : public container {
+class unordered_map : public Container {
  private:
   /** Class Typedefs for ease of use **/
   typedef std::pair<const KeyType, MappedType> ValueType;
@@ -88,20 +76,10 @@ class unordered_map : public container {
   ~unordered_map();
 
   explicit unordered_map(CharStruct name_ = std::string("TEST_UNORDERED_MAP"),
-                         uint16_t port = HCL_CONF->RPC_PORT);
-  MyHashMap *data() {
-    if (server_on_node || is_server)
-      return myHashMap;
-    else
-      nullptr;
-  }
+                         uint16_t port = 0);
+  MyHashMap *data();
 
-  void construct_shared_memory() override {
-    /* Construct unordered_map in the shared memory space. */
-    myHashMap = segment.construct<MyHashMap>(name.c_str())(
-        128, Hash(), std::equal_to<KeyType>(),
-        segment.get_allocator<ValueType>());
-  }
+  void construct_shared_memory() override;
 
   void open_shared_memory() override;
 
@@ -112,7 +90,12 @@ class unordered_map : public container {
   std::pair<bool, MappedType> LocalErase(KeyType &key);
   std::vector<std::pair<KeyType, MappedType>> LocalGetAllDataInServer();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+  bool Put(KeyType key, MappedType data);
+  std::pair<bool, MappedType> Get(KeyType &key);
+  std::pair<bool, MappedType> Erase(KeyType &key);
+  std::vector<std::pair<KeyType, MappedType>> GetAllData();
+  std::vector<std::pair<KeyType, MappedType>> GetAllDataInServer();
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
 
   // void ThalliumLocalPut(const tl::request &thallium_req, tl::bulk
@@ -136,15 +119,7 @@ class unordered_map : public container {
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
   THALLIUM_DEFINE1(LocalGetAllDataInServer)
 #endif
-
-  bool Put(KeyType key, MappedType data);
-  std::pair<bool, MappedType> Get(KeyType &key);
-  std::pair<bool, MappedType> Erase(KeyType &key);
-  std::vector<std::pair<KeyType, MappedType>> GetAllData();
-  std::vector<std::pair<KeyType, MappedType>> GetAllDataInServer();
 };
-
-#include "unordered_map.cpp"
 
 }  // namespace hcl
 

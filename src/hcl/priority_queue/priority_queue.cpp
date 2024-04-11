@@ -9,22 +9,51 @@
  * the COPYING file, which can be found at the top directory. If you do not  *
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+#include <hcl/common/debug.h>
+#include <hcl/common/macros.h>
+#include <hcl/common/singleton.h>
+#include <hcl/priority_queue/priority_queue.h>
+/** MPI Headers**/
+#include <mpi.h>
+/** RPC Lib Headers**/
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
+#include <rpc/client.h>
+#include <rpc/rpc_error.h>
+#include <rpc/server.h>
+#endif
+/** Thallium Headers **/
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#include <thallium.hpp>
+#endif
 
-#ifndef INCLUDE_HCL_PRIORITY_QUEUE_PRIORITY_QUEUE_CPP_
-#define INCLUDE_HCL_PRIORITY_QUEUE_PRIORITY_QUEUE_CPP_
+namespace hcl {
+template <typename MappedType, typename Compare, typename Allocator,
+          typename SharedType>
+std::priority_queue<
+    MappedType,
+    std::vector<
+        MappedType,
+        bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>>,
+    Compare> *
+priority_queue<MappedType, Compare, Allocator, SharedType>::data() {
+  if (server_on_node || is_server)
+    return queue;
+  else
+    nullptr;
+}
 
 /* Constructor to deallocate the shared memory*/
 template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::~priority_queue() {
-  this->container::~container();
+  this->Container::~Container();
 }
 
 template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::priority_queue(
     CharStruct name_, uint16_t port)
-    : container(name_, port), queue() {
+    : Container(name_, port), queue() {
   AutoTrace trace = AutoTrace("hcl::priority_queue");
   if (is_server) {
     construct_shared_memory();
@@ -207,7 +236,7 @@ void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
     case RPCLIB: {
       std::function<bool(MappedType &)> pushFunc(
           std::bind(&hcl::priority_queue<MappedType, Compare>::LocalPush, this,
@@ -225,13 +254,13 @@ void priority_queue<MappedType, Compare, Allocator,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
 #ifdef HCL_ENABLE_THALLIUM_ROCE
     case THALLIUM_ROCE:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
       std::function<void(const tl::request &, MappedType &)> pushFunc(std::bind(
           &hcl::priority_queue<MappedType, Compare>::ThalliumLocalPush, this,
@@ -254,5 +283,4 @@ void priority_queue<MappedType, Compare, Allocator,
 #endif
   }
 }
-
-#endif  // INCLUDE_HCL_PRIORITY_QUEUE_PRIORITY_QUEUE_CPP_
+}  // namespace hcl

@@ -12,18 +12,25 @@
 
 #ifndef INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
 #define INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
+/**
+ * Include Headers
+ */
 #include <hcl/common/container.h>
-#include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-#include <mpi.h>
-#include <stdint-gcc.h>
-
+/** Boost Headers **/
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+/** Standard C++ Headers**/
+#include <stdint-gcc.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -31,93 +38,26 @@
 namespace bip = boost::interprocess;
 
 namespace hcl {
-class global_sequence : public container {
+class global_sequence : public Container {
  private:
   uint64_t *value;
 
  public:
-  ~global_sequence() { this->container::~container(); }
+  ~global_sequence();
 
-  void construct_shared_memory() override {
-    value = segment.construct<uint64_t>(name.c_str())(0);
-  }
+  void construct_shared_memory();
 
-  void open_shared_memory() override {
-    std::pair<uint64_t *, bip::managed_mapped_file::size_type> res;
-    res = segment.find<uint64_t>(name.c_str());
-    value = res.first;
-  }
+  void open_shared_memory() override;
 
-  void bind_functions() override {
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
-      case RPCLIB: {
-        std::function<uint64_t(void)> getNextSequence(
-            std::bind(&hcl::global_sequence::LocalGetNextSequence, this));
-        rpc->bind(func_prefix + "_GetNextSequence", getNextSequence);
-        break;
-      }
-#endif
-#ifdef HCL_ENABLE_THALLIUM_TCP
-      case THALLIUM_TCP:
-#endif
-#ifdef HCL_ENABLE_THALLIUM_ROCE
-      case THALLIUM_ROCE:
-#endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-      {
-        std::function<void(const tl::request &)> getNextSequence(
-            std::bind(&hcl::global_sequence::ThalliumLocalGetNextSequence, this,
-                      std::placeholders::_1));
-        rpc->bind(func_prefix + "_GetNextSequence", getNextSequence);
-        break;
-      }
-#endif
-    }
-  }
+  void bind_functions() override;
 
   global_sequence(CharStruct name_ = "TEST_GLOBAL_SEQUENCE",
-                  uint16_t port = HCL_CONF->RPC_PORT)
-      : container(name_, port) {
-    AutoTrace trace = AutoTrace("hcl::global_sequence");
-    if (is_server) {
-      construct_shared_memory();
-      bind_functions();
-    } else if (!is_server && server_on_node) {
-      open_shared_memory();
-    }
-  }
-  uint64_t *data() {
-    if (server_on_node || is_server)
-      return value;
-    else
-      nullptr;
-  }
-  uint64_t GetNextSequence() {
-    if (is_local()) {
-      return LocalGetNextSequence();
-    } else {
-      auto my_server_i = my_server;
-      return RPC_CALL_WRAPPER1("_GetNextSequence", my_server_i, uint64_t);
-    }
-  }
-  uint64_t GetNextSequenceServer(uint16_t &server) {
-    if (is_local(server)) {
-      return LocalGetNextSequence();
-    } else {
-      return RPC_CALL_WRAPPER1("_GetNextSequence", server, uint64_t);
-    }
-  }
+                  uint16_t port = -1);
+  uint64_t *data();
+  uint64_t GetNextSequence();
+  uint64_t GetNextSequenceServer(uint16_t &server);
 
-  uint64_t LocalGetNextSequence() {
-    boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
-        lock(*mutex);
-    return ++*value;
-  }
-
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-  THALLIUM_DEFINE1(LocalGetNextSequence)
-#endif
+  uint64_t LocalGetNextSequence();
 };
 
 }  // namespace hcl

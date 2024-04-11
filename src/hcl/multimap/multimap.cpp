@@ -10,21 +10,53 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef INCLUDE_HCL_MULTIMAP_MULTIMAP_CPP_
-#define INCLUDE_HCL_MULTIMAP_MULTIMAP_CPP_
+#include <hcl/multimap/multimap.h>
+/** Include Headers**/
+#include <hcl/common/debug.h>
+#include <hcl/common/macros.h>
+#include <hcl/common/singleton.h>
+
+/** MPI Headers**/
+#include <mpi.h>
+/** RPC Lib Headers**/
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
+#include <rpc/client.h>
+#include <rpc/rpc_error.h>
+#include <rpc/server.h>
+#endif
+/** Thallium Headers **/
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#include <thallium.hpp>
+#endif
+
+namespace hcl {
+template <typename KeyType, typename MappedType, typename Compare,
+          typename Allocator, typename SharedType>
+boost::interprocess::multimap<
+    KeyType, MappedType, Compare,
+    boost::interprocess::allocator<
+        std::pair<const KeyType, MappedType>,
+        boost::interprocess::managed_mapped_file::segment_manager>> *
+multimap<KeyType, MappedType, Compare, Allocator, SharedType>::data() {
+  if (server_on_node || is_server)
+    return mymap;
+  else
+    nullptr;
+}
+
 
 /* Constructor to deallocate the shared memory*/
 template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 multimap<KeyType, MappedType, Compare, Allocator, SharedType>::~multimap() {
-  this->container::~container();
+  this->Container::~Container();
 }
 
 template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 multimap<KeyType, MappedType, Compare, Allocator, SharedType>::multimap(
     CharStruct name_, uint16_t port)
-    : container(name_, port), mymap() {
+    : Container(name_, port), mymap() {
   AutoTrace trace = AutoTrace("hcl::multimap");
   if (is_server) {
     construct_shared_memory();
@@ -308,7 +340,7 @@ void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::bind_functions() {
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
     case RPCLIB: {
       std::function<bool(KeyType &, MappedType &)> putFunc(
           std::bind(&multimap<KeyType, MappedType, Compare, Allocator,
@@ -340,13 +372,13 @@ void multimap<KeyType, MappedType, Compare, Allocator,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
 #ifdef HCL_ENABLE_THALLIUM_ROCE
     case THALLIUM_ROCE:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
 
       std::function<void(const tl::request &, KeyType &, MappedType &)> putFunc(
@@ -381,5 +413,4 @@ void multimap<KeyType, MappedType, Compare, Allocator,
 #endif
   }
 }
-
-#endif  // INCLUDE_HCL_MULTIMAP_MULTIMAP_CPP_
+}  // namespace hcl

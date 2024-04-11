@@ -12,27 +12,23 @@
 
 #ifndef HCL_RPC_FACTORY_H
 #define HCL_RPC_FACTORY_H
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
+#include <hcl/communication/rpc_lib.h>
 
 #include <memory>
 #include <unordered_map>
-
-#include "rpc_lib.h"
-
+namespace hcl {
 class RPCFactory {
  private:
   std::unordered_map<uint16_t, std::shared_ptr<RPC>> rpcs;
 
  public:
   RPCFactory() : rpcs() {}
-  std::shared_ptr<RPC> GetRPC(uint16_t server_port) {
-    auto iter = rpcs.find(server_port);
-    if (iter != rpcs.end()) return iter->second;
-    auto temp = HCL_CONF->RPC_PORT;
-    HCL_CONF->RPC_PORT = server_port;
-    auto rpc = std::make_shared<RPC>();
-    rpcs.emplace(server_port, rpc);
-    HCL_CONF->RPC_PORT = temp;
-    return rpc;
-  }
+  std::shared_ptr<RPC> GetRPC(uint16_t server_port);
 };
+}  // namespace hcl
 #endif  // HCL_RPC_FACTORY_H

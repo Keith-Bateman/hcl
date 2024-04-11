@@ -10,24 +10,66 @@
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_CPP_
-#define INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_CPP_
+#include <hcl/unordered_map/unordered_map.h>
+/** Include Headers**/
+#include <hcl/common/debug.h>
+#include <hcl/common/macros.h>
+#include <hcl/common/singleton.h>
+#include <hcl/common/typedefs.h>
+
+/** MPI Headers**/
+#include <mpi.h>
+/** RPC Lib Headers**/
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
+#include <rpc/client.h>
+#include <rpc/rpc_error.h>
+#include <rpc/server.h>
+#endif
+/** Thallium Headers **/
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#include <thallium.hpp>
+#endif
 
 #include <boost/interprocess/file_mapping.hpp>
+namespace hcl {
 
+
+
+template <typename KeyType, typename MappedType, typename Hash,
+          typename Allocator, typename SharedType>
+boost::unordered::unordered_map<
+    KeyType, MappedType, Hash, std::equal_to<KeyType>,
+    boost::interprocess::allocator<
+        std::pair<const KeyType, MappedType>,
+        boost::interprocess::managed_mapped_file::segment_manager>> *
+unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::data() {
+  if (server_on_node || is_server)
+    return myHashMap;
+  else
+    nullptr;
+}
+template <typename KeyType, typename MappedType, typename Hash,
+          typename Allocator, typename SharedType>
+void unordered_map<KeyType, MappedType, Hash, Allocator,
+                   SharedType>::construct_shared_memory() {
+  /* Construct unordered_map in the shared memory space. */
+  myHashMap = segment.construct<MyHashMap>(name.c_str())(
+      128, Hash(), std::equal_to<KeyType>(),
+      segment.get_allocator<ValueType>());
+}
 /* Constructor to deallocate the shared memory*/
 template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 unordered_map<KeyType, MappedType, Hash, Allocator,
               SharedType>::~unordered_map() {
-  this->container::~container();
+  this->Container::~Container();
 }
 
 template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::unordered_map(
     CharStruct name_, uint16_t port)
-    : container(name_, port), myHashMap(), size_occupied(0) {
+    : Container(name_, port), myHashMap(), size_occupied(0) {
   // init my_server, num_servers, server_on_node, processor_name from RPC
   AutoTrace trace = AutoTrace("hcl::unordered_map");
   if (is_server) {
@@ -248,7 +290,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 void unordered_map<KeyType, MappedType, Hash, Allocator,
                    SharedType>::bind_functions() {
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
-#ifdef HCL_ENABLE_RPCLIB
+#ifdef HCL_COMMUNICATION_ENABLE_RPCLIB
     case RPCLIB: {
       std::function<bool(KeyType &, MappedType &)> putFunc(
           std::bind(&unordered_map<KeyType, MappedType, Hash, Allocator,
@@ -274,13 +316,13 @@ void unordered_map<KeyType, MappedType, Hash, Allocator,
       break;
     }
 #endif
-#ifdef HCL_ENABLE_THALLIUM_TCP
+#ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
 #ifdef HCL_ENABLE_THALLIUM_ROCE
     case THALLIUM_ROCE:
 #endif
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
 
       std::function<void(const tl::request &, KeyType &, MappedType &)> putFunc(
@@ -316,5 +358,4 @@ void unordered_map<KeyType, MappedType, Hash, Allocator,
 #endif
   }
 }
-
-#endif  // INCLUDE_HCL_UNORDERED_MAP_UNORDERED_MAP_CPP_
+}  // namespace hcl

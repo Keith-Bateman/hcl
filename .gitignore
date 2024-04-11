@@ -39,3 +39,4 @@ spack.lock
 install
 build
 __pycache__
+.cache

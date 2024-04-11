@@ -12,27 +12,19 @@
 
 #ifndef INCLUDE_HCL_PRIORITY_QUEUE_PRIORITY_QUEUE_H_
 #define INCLUDE_HCL_PRIORITY_QUEUE_PRIORITY_QUEUE_H_
-
+#if defined(HCL_HAS_CONFIG)
+#include <hcl/hcl_config.hpp>
+#else
+#error "no config"
+#endif
 /**
  * Include Headers
  */
-#include <hcl/common/debug.h>
-#include <hcl/common/singleton.h>
+#include <hcl/common/container.h>
+#include <hcl/common/macros.h>
 #include <hcl/common/typedefs.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
-/** RPC Lib Headers**/
-#ifdef HCL_ENABLE_RPCLIB
-#include <rpc/client.h>
-#include <rpc/rpc_error.h>
-#include <rpc/server.h>
-#endif
-/** Thallium Headers **/
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
-#include <thallium.hpp>
-#endif
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -41,7 +33,6 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 /** Standard C++ Headers**/
-#include <hcl/common/container.h>
 
 #include <functional>
 #include <iostream>
@@ -65,7 +56,7 @@ namespace hcl {
  */
 template <typename MappedType, typename Compare = std::less<MappedType>,
           class Allocator = nullptr_t, class SharedType = nullptr_t>
-class priority_queue : public container {
+class priority_queue : public Container {
  private:
   /** Class Typedefs for ease of use **/
   typedef bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>
@@ -87,32 +78,24 @@ class priority_queue : public container {
   void bind_functions() override;
 
   explicit priority_queue(CharStruct name_ = "TEST_PRIORITY_QUEUE",
-                          uint16_t port = HCL_CONF->RPC_PORT);
-  Queue *data() {
-    if (server_on_node || is_server)
-      return queue;
-    else
-      nullptr;
-  }
+                          uint16_t port = 0);
+  Queue *data();
   bool LocalPush(MappedType &data);
   std::pair<bool, MappedType> LocalPop();
   std::pair<bool, MappedType> LocalTop();
   size_t LocalSize();
 
-#if defined(HCL_ENABLE_THALLIUM_TCP) || defined(HCL_ENABLE_THALLIUM_ROCE)
+  bool Push(MappedType &data, uint16_t &key_int);
+  std::pair<bool, MappedType> Pop(uint16_t &key_int);
+  std::pair<bool, MappedType> Top(uint16_t &key_int);
+  size_t Size(uint16_t &key_int);
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPush, (data), MappedType &data)
   THALLIUM_DEFINE1(LocalPop)
   THALLIUM_DEFINE1(LocalTop)
   THALLIUM_DEFINE1(LocalSize)
 #endif
-
-  bool Push(MappedType &data, uint16_t &key_int);
-  std::pair<bool, MappedType> Pop(uint16_t &key_int);
-  std::pair<bool, MappedType> Top(uint16_t &key_int);
-  size_t Size(uint16_t &key_int);
 };
-
-#include "priority_queue.cpp"
 
 }  // namespace hcl
 

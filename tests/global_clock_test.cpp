@@ -12,6 +12,7 @@
 
 #include <hcl/clock/global_clock.h>
 #include <mpi.h>
+const int TEST_REQUEST_SIZE = 1024;
 
 #include <iostream>
 
