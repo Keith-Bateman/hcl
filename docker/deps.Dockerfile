@@ -40,8 +40,6 @@ RUN echo $INSTALL_DIR && mkdir -p $INSTALL_DIR
 RUN git clone https://github.com/spack/spack ${SPACK_DIR}
 RUN git clone https://github.com/hariharan-devarajan/hcl.git ${PROJECT_DIR}
 
-RUN echo 1
-
 ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
 
@@ -49,8 +47,8 @@ RUN . ${SPACK_DIR}/share/spack/setup-env.sh
 ENV HCL_VERSION=dev
 
 #RUN $spack spec "hcl@${HCL_VERSION}"
-
-RUN cd ${PROJECT_DIR} && git checkout feature/fix_ci && git pull
+RUN echo 1
+RUN cd ${PROJECT_DIR} && git fetch && git checkout feature/no_rpclib && git pull
 
 RUN $spack repo add ${PROJECT_DIR}/ci/hcl
 
