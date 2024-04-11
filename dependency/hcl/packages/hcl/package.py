@@ -61,7 +61,7 @@ class Hcl(CMakePackage):
     depends_on('rpclib@2.2.1:', when='+rpclib')
     depends_on('mochi-thallium~cereal@0.11.3', when='+thallium')
     depends_on('ucx@1.13.1:', when='+ucx')
-    depends_on('boost@1.74.0:')
+    depends_on('boost@1.71.0:')
 
     def cmake_args(self):
         spec = self.spec
