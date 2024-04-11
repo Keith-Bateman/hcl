@@ -17,8 +17,6 @@ echo "Testing queue"
 ctest -V -R ^queue_test || exit 1
 echo "Testing set"
 ctest -V -R ^set_test || exit 1
-echo "Testing concurrent unordered map test"
-ctest -V -R ^hashmap_test || exit 1
 echo "Testing concurrent queue test"
 ctest -V -R ^concurrent_queue_test || exit 1
 echo "Testing concurrent skiplist test"

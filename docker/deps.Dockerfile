@@ -54,9 +54,9 @@ ENV HCL_SPEC=hcl@${HCL_VERSION}
 RUN eval $SPACK_SOURCE && spack env create -d ${INSTALL_DIR}
 RUN cd ${PROJECT_DIR}/dependency/hcl && git pull
 RUN apt-get install openmpi-bin openmpi-common libopenmpi-dev
-RUN eval $SPACK_SOURCE && spack env activate --sh -p ${INSTALL_DIR} && spack install --only dependencies ${HCL_SPEC} +rpclib +thallium
+RUN eval $SPACK_SOURCE && spack -e ${INSTALL_DIR} add ${HCL_SPEC} +rpclib +thallium && spack -e ${INSTALL_DIR} install --only dependencies
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
-
+RUN echo ${INSTALL_DIR}
 SHELL ["/bin/bash", "-c"]

@@ -1,5 +1,6 @@
 #!/bin/bash
-
+eval $SPACK_SOURCE 
+spack env activate -p ${INSTALL_DIR}
 export INSTALL_DIR=/root/install
 export VIEW_DIR=/root/install/.spack-env/view
 export SPACK_DIR=/root/spack
