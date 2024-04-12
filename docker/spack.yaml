@@ -1,0 +1,112 @@
+# This is a Spack Environment file.
+#
+# It describes a set of packages to be installed, along with
+# configuration settings.
+spack:
+  # add package specs to the `specs` list
+  specs:
+    - mochi-thallium@0.11.3~cereal ^mercury@2.3.1+ofi+ucx ^libfabric@1.20.1 fabrics=rxm,sockets,tcp,verbs ^ucx@1.15
+    - boost@1.71.0
+    - mpich@3.3.2
+  view: true
+  concretizer:
+    unify: true
+  packages:
+    pkgconf:
+      buildable: False
+      externals:
+        - spec: "pkgconf@1.8.0"
+          prefix: /usr
+    libtool:
+      buildable: False
+      externals:
+        - spec: "libtool@2.4.6"
+          prefix: /usr
+    mpich:
+      buildable: False
+      externals:
+        - spec: mpich@3.3.2
+          prefix: /usr
+    findutils:
+      externals:
+        - spec: findutils@4.7.0
+          prefix: /usr
+    m4:
+      externals:
+        - spec: m4@1.4.18
+          prefix: /usr
+    diffutils:
+      externals:
+        - spec: diffutils@3.7
+          prefix: /usr
+    sed:
+      externals:
+        - spec: sed@4.7
+          prefix: /usr
+    autoconf:
+      externals:
+        - spec: autoconf@2.69
+          prefix: /usr
+    openssh:
+      externals:
+        - spec: openssh@8.2p1
+          prefix: /usr
+    gmake:
+      externals:
+        - spec: gmake@4.2.1
+          prefix: /usr
+    tar:
+      externals:
+        - spec: tar@1.30
+          prefix: /usr
+    pkg-config:
+      externals:
+        - spec: pkg-config@0.29.1
+          prefix: /usr
+    git:
+      externals:
+        - spec: git@2.25.1~tcltk
+          prefix: /usr
+    hwloc:
+      buildable: False
+      externals:
+        - spec: "hwloc@2.7.0"
+          prefix: /usr
+    python:
+      externals:
+        - spec: python@3.8.10+bz2+crypt+ctypes+dbm+lzma+nis+pyexpat~pythoncmd+readline+sqlite3+ssl~tkinter+uuid+zlib
+          prefix: /usr
+    binutils:
+      externals:
+        - spec: binutils@2.34
+          prefix: /usr
+    curl:
+      externals:
+        - spec: curl@7.68.0+gssapi+ldap+nghttp2
+          prefix: /usr
+    automake:
+      externals:
+        - spec: automake@1.16.1
+          prefix: /usr
+    perl:
+      externals:
+        - spec: perl@5.30.0~cpanm+opcode+open+shared+threads
+          prefix: /usr
+    cmake:
+      buildable: False
+      externals:
+        - spec: cmake@3.16.3
+          prefix: /usr
+    openssl:
+      externals:
+        - spec: openssl@1.1.1f
+          prefix: /usr
+    coreutils:
+      externals:
+        - spec: coreutils@8.30
+          prefix: /usr
+    boost:
+      buildable: False
+      externals:
+        - spec: boost@1.71.0
+          prefix: /usr

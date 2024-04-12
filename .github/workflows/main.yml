@@ -23,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         COMMUNICATION: ["THALLIUM"]
+        PROTOCOL: ["TCP","UCT"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,8 +37,10 @@ jobs:
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
+          HCL_COMMUNICATION_PROTOCOL: ${{matrix.PROTOCOL}}
         run: .github/install_hcl.sh
       - name: Test
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
+          HCL_COMMUNICATION_PROTOCOL: ${{matrix.PROTOCOL}}
         run: .github/run_hcl.sh

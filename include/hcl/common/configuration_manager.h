@@ -39,6 +39,7 @@ class ConfigurationManager {
   uint16_t RPC_THREADS;
   RPCImplementation RPC_IMPLEMENTATION;
   CharStruct URI;
+  CharStruct DEVICE;
   really_long MEMORY_ALLOCATED;
 
   bool IS_SERVER;
@@ -59,11 +60,14 @@ class ConfigurationManager {
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_VERBS)
-        URI("ofi+verbs://mlx5_0/"),
+        URI("ofi+verbs;ofi_rxm"),
+#elif defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCT)
+        URI("ucx+tcp"),
 #else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_TCP)
-        URI("ofi+tcp://"),
+        URI("ofi+tcp"),
 #endif
 #endif
+        DEVICE(""),
         MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
         IS_SERVER(false),
         MY_SERVER(0),

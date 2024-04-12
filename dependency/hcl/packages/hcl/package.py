@@ -27,48 +27,32 @@ class Hcl(CMakePackage):
     url = "https://github.com/HDFGroup/hcl/tarball/master"
     git = "https://github.com/HDFGroup/hcl.git"
 
-    version('dev', branch='dev')
-    version('0.1', branch='v0.1')
-    variant('communication',
-            default='thallium',
-            values=('thallium',),
-            multi=False,
-            description='Which communication interface to build.')
-    variant('protocol',
-            default='tcp',
-            values=('tcp', 'roce'),
-            multi=True,
-            description='Which communication protocol to use.')
+    version('develop', branch='develop')
+    version('0.0.1', tag='0.0.1', commit='4647b14a11cd0650eb26c0eafcc22968b54c4f53')
+    version('0.0.2', tag='0.0.2', commit='cc9ced060536ccab32dfc53cff83ac8a09c120f5')
+
+    variant("thallium", default=True, description="Enable thallium based RPC communication")
+    variant("tcp", default=True, description="Enable TCP protocol")
+    variant("verbs", default=True, description="Enable Verbs protocol")
+    variant("uct", default=True, description="Enable UCT protocol")
+    
     depends_on('mpi')
-    depends_on('mochi-thallium~cereal@0.11.3', when='communication=thallium')
-    depends_on('mercury@2.3.1+ofi', when='communication=thallium')
+    depends_on('mochi-thallium~cereal@0.11.3:', when='+thallium')
+    depends_on('mercury@2.3.1+ofi', when='+thallium+verbs')
+    depends_on('mercury@2.3.1+ucx', when='+thallium+uct')
     depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
     depends_on('boost@1.71.0:')
+    depends_on('ucx@1.13.1:', when='+uct')
 
     def cmake_args(self):
         spec = self.spec
         args = ['-DCMAKE_INSTALL_PREFIX={}'.format(self.prefix)]
-        if 'communication=thallium' in spec:
-            if 'protocol=tcp' in spec:
-                args.append("-DHCL_COMMUNICATION=THALLIUM")
+        if self.spec.satisfies("+thallium"):
+            args.append("-DHCL_COMMUNICATION=THALLIUM")
+        if self.spec.satisfies("+tcp"):
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=TCP")
+        elif self.spec.satisfies("+verbs"):
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=VERBS")
+        elif self.spec.satisfies("+uct"):
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=UCT")                
         return args
-
-    def set_include(self, env, path):
-        env.append_flags('CFLAGS', '-I{}'.format(path))
-        env.append_flags('CXXFLAGS', '-I{}'.format(path))
-
-    def set_lib(self, env, path):
-        env.prepend_path('LD_LIBRARY_PATH', path)
-        env.append_flags('LDFLAGS', '-L{}'.format(path))
-
-    def set_flags(self, env):
-        self.set_include(env, '{}/include'.format(self.prefix))
-        self.set_include(env, '{}/include'.format(self.prefix))
-        self.set_lib(env, '{}/lib'.format(self.prefix))
-        self.set_lib(env, '{}/lib64'.format(self.prefix))
-
-    def setup_dependent_environment(self, spack_env, run_env, dependent_spec):
-        self.set_flags(spack_env)
-
-    def setup_run_environment(self, env):
-        self.set_flags(env)

@@ -38,36 +38,16 @@ ENV SDS_DIR=$HOME/sds
 # install spack
 RUN echo $INSTALL_DIR && mkdir -p $INSTALL_DIR
 RUN git clone https://github.com/spack/spack ${SPACK_DIR}
-RUN git clone https://github.com/hariharan-devarajan/hcl.git ${PROJECT_DIR}
 
 ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
 
-# install software
-ENV HCL_VERSION=dev
+RUN mkdir -p ${INSTALL_DIR}
+COPY ./spack.yaml ${INSTALL_DIR}/spack.yaml
 
-#RUN $spack spec "hcl@${HCL_VERSION}"
-RUN echo 1
-RUN cd ${PROJECT_DIR} && git fetch && git checkout feature/no_rpclib && git pull
-
-RUN $spack repo add ${PROJECT_DIR}/dependency/hcl
-
-
-COPY ./packages.yaml /root/.spack/packages.yaml
-
-ENV HCL_SPEC=hcl@${HCL_VERSION}
-
-RUN $spack install --only dependencies ${HCL_SPEC} communication=thallium
-
-RUN apt-get install -y cmake pkg-config mpich
-
-# COPY ./packages.yaml /root/.spack/packages.yaml
-# RUN $spack external find
-
-# RUN $spack install mpich@3.3.2
-
-# ## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} mpich@3.3.2 libfabric mochi-thallium~cereal@0.11.3 mercury@2.3.1 boost@1.71.0
+RUN   . ${SPACK_DIR}/share/spack/setup-env.sh && \
+   spack env activate -p ${INSTALL_DIR} && \
+   spack install
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc

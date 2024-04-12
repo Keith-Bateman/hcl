@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTALL_DIR=/root/install
+INSTALL_DIR=/root/install/.spack-env/view
 SPACK_DIR=/root/spack
 
 mkdir build
@@ -23,9 +23,10 @@ cmake \
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} \
     -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER} \
     -DHCL_COMMUNICATION=${HCL_COMMUNICATION} \
+    -DHCL_COMMUNICATION_PROTOCOL=${HCL_COMMUNICATION_PROTOCOL} \
     -DHCL_ENABLE_TESTING=ON \
     ..
 
-cmake --build . -- -j 2 VERBOSE=1 || exit 1
+cmake --build . -- -j 8 VERBOSE=1 || exit 1
 
 popd
