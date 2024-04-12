@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTALL_DIR=/root/install/.spack_env/view
+INSTALL_DIR=/root/install/.spack-env/view
 SPACK_DIR=/root/spack
 
 mkdir build
@@ -27,6 +27,6 @@ cmake \
     -DHCL_ENABLE_TESTING=ON \
     ..
 
-cmake --build . -- -j 2 VERBOSE=1 || exit 1
+cmake --build . -- -j 8 VERBOSE=1 || exit 1
 
 popd
