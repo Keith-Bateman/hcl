@@ -54,3 +54,5 @@ foreach (example ${examples})
     add_test(NAME ${example} COMMAND ${MPIEXEC_EXECUTABLE} ${test_parameters})
     set_tests_properties(${example} PROPERTIES ENVIRONMENT "LD_PRELOAD=${CMAKE_BINARY_DIR}/${HCL_LIBDIR}/libhcl.so;LD_LIBRARY_PATH=${CMAKE_SOURCE_DIR}/.spack-env/view/lib:$ENV{LD_LIBRARY_PATH};SERVER_LIST_PATH=${CMAKE_BINARY_DIR}/test/")
 endforeach ()
+
+add_subdirectory(poc)

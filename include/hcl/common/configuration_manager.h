@@ -60,9 +60,9 @@ class ConfigurationManager {
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_VERBS)
-        URI("ofi+verbs"),
+        URI("ofi+verbs;ofi_rxm"),
 #elif defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCT)
-        URI("ucx+all"),
+        URI("ucx+tcp"),
 #else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_TCP)
         URI("ofi+tcp"),
 #endif
