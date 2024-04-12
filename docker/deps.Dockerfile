@@ -57,9 +57,8 @@ COPY ./packages.yaml /root/.spack/packages.yaml
 
 ENV HCL_SPEC=hcl@${HCL_VERSION}
 
-RUN $spack install --only dependencies ${HCL_SPEC} communication=thallium
+RUN $spack install mochi-thallium@0.11.3~cereal ^mercury@2.3.1+ofi+ucx ^libfabric@1.23.1 fabrics=rxm,sockets,tcp ^ucx@1.15.1 boost@1.71.0
 
-RUN apt-get install -y cmake pkg-config mpich
 
 # COPY ./packages.yaml /root/.spack/packages.yaml
 # RUN $spack external find
@@ -67,7 +66,7 @@ RUN apt-get install -y cmake pkg-config mpich
 # RUN $spack install mpich@3.3.2
 
 # ## Link Software
-RUN $spack view symlink -i ${INSTALL_DIR} mpich@3.3.2 libfabric mochi-thallium~cereal@0.11.3 mercury@2.3.1 boost@1.71.0
+RUN $spack view symlink -i ${INSTALL_DIR} mpich@3.3.2 mochi-thallium@0.11.3~cereal ^mercury@2.3.1+ofi+ucx ^libfabric@1.23.1 fabrics=rxm,sockets,tcp ^ucx@1.15.1 boost@1.71.0
 
 RUN echo "export PATH=${SPACK_ROOT}/bin:$PATH" >> /root/.bashrc
 RUN echo ". $SPACK_ROOT/share/spack/setup-env.sh" >> /root/.bashrc
