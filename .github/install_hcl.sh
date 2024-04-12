@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTALL_DIR=/root/install
+INSTALL_DIR=/root/install/.spack_env/view
 SPACK_DIR=/root/spack
 
 mkdir build
