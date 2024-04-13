@@ -32,27 +32,24 @@ class Hcl(CMakePackage):
     version('0.0.2', tag='0.0.2', commit='cc9ced060536ccab32dfc53cff83ac8a09c120f5')
 
     variant("thallium", default=True, description="Enable thallium based RPC communication")
-    variant("tcp", default=True, description="Enable TCP protocol")
-    variant("verbs", default=True, description="Enable Verbs protocol")
-    variant("uct", default=True, description="Enable UCT protocol")
+    variant("ofi", default=False, description="Enable Verbs protocol")
+    variant("ucx", default=False, description="Enable UCX protocol")
     
     depends_on('mpi')
     depends_on('mochi-thallium~cereal@0.11.3:', when='+thallium')
-    depends_on('mercury@2.3.1+ofi', when='+thallium+verbs')
-    depends_on('mercury@2.3.1+ucx', when='+thallium+uct')
+    depends_on('mercury@2.3.1+ofi', when='+thallium+ofi')
+    depends_on('mercury@2.3.1+ucx', when='+thallium+ucx')
     depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
     depends_on('boost@1.71.0:')
-    depends_on('ucx@1.13.1:', when='+uct')
+    depends_on('ucx@1.13.1:', when='+ucx')
 
     def cmake_args(self):
         spec = self.spec
         args = ['-DCMAKE_INSTALL_PREFIX={}'.format(self.prefix)]
         if self.spec.satisfies("+thallium"):
             args.append("-DHCL_COMMUNICATION=THALLIUM")
-        if self.spec.satisfies("+tcp"):
-            args.append("-DHCL_COMMUNICATION_PROTOCOL=TCP")
-        elif self.spec.satisfies("+verbs"):
-            args.append("-DHCL_COMMUNICATION_PROTOCOL=VERBS")
-        elif self.spec.satisfies("+uct"):
-            args.append("-DHCL_COMMUNICATION_PROTOCOL=UCT")                
+        elif self.spec.satisfies("+ofi"):
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=OFI")
+        elif self.spec.satisfies("+ucx"):
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=UCX")                
         return args

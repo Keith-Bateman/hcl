@@ -83,25 +83,25 @@ class RPC {
   std::shared_ptr<tl::engine> thallium_client;
   CharStruct engine_init_str;
   std::vector<tl::endpoint> thallium_endpoints;
-  tl::endpoint get_endpoint(CharStruct protocol, CharStruct server_name,
+  tl::endpoint get_endpoint(CharStruct server_name,
                             uint16_t server_port) {
     // We use addr lookup because mercury addresses must be exactly 15 char
     char ip[16];
     struct hostent *he = gethostbyname(server_name.c_str());
     in_addr **addr_list = (struct in_addr **)he->h_addr_list;
     strcpy(ip, inet_ntoa(*addr_list[0]));
-    CharStruct lookup_str = protocol + "://" + HCL_CONF->DEVICE +
+    CharStruct lookup_str = HCL_CONF->PROTOCOL + "://" + 
                             std::string(ip) + ":" + std::to_string(server_port);
     return thallium_client->lookup(lookup_str.c_str());
   }
-  void init_engine_and_endpoints(CharStruct protocol) {
+  void init_engine_and_endpoints() {
     thallium_client = hcl::Singleton<tl::engine>::GetInstance(
-        protocol.c_str(), MARGO_CLIENT_MODE);
+        HCL_CONF->URI.c_str(), MARGO_CLIENT_MODE);
     thallium_endpoints.reserve(server_list.size());
     for (std::vector<CharStruct>::size_type i = 0; i < server_list.size();
          ++i) {
       thallium_endpoints.push_back(
-          get_endpoint(protocol, server_list[i], server_port + i));
+          get_endpoint( server_list[i], server_port + i));
     }
   }
 
@@ -147,9 +147,10 @@ class RPC {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
         case THALLIUM_TCP: {
-          engine_init_str = HCL_CONF->URI + "://" + HCL_CONF->DEVICE +
-                            HCL_CONF->SERVER_LIST[HCL_CONF->MY_SERVER] + ":" +
-                            std::to_string(server_port + HCL_CONF->MY_SERVER);
+          engine_init_str = HCL_CONF->PROTOCOL + "://";
+          if (strlen(HCL_CONF->DEVICE.data()) > 0)  engine_init_str += (HCL_CONF->DEVICE + "/");
+          engine_init_str += HCL_CONF->SERVER_LIST[HCL_CONF->MY_SERVER] + ":" +
+                             std::to_string(server_port + HCL_CONF->MY_SERVER);
           break;
         }
 #endif
@@ -173,6 +174,7 @@ class RPC {
           thallium_server = hcl::Singleton<tl::engine>::GetInstance(
               engine_init_str.c_str(), THALLIUM_SERVER_MODE, true,
               HCL_CONF->RPC_THREADS);
+          //printf("Running server on URI %s\n", engine_init_str.c_str());
           break;
         }
 #endif
@@ -181,7 +183,8 @@ class RPC {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP: {
-        init_engine_and_endpoints(HCL_CONF->URI);
+        init_engine_and_endpoints();
+        //printf("Running client on URI %s\n", HCL_CONF->URI.c_str());
         break;
       }
 #endif
