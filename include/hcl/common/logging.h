@@ -78,7 +78,17 @@ extern "C" {
   #else
     #define HCL_LOG_ERROR(...) HCL_NOOP_MACRO
   #endif
-#endif // HCL_LOGGER_FLUX ----------------------------------------------------
+#else
+#define HCL_LOGGER_INIT()              HCL_NOOP_MACRO
+#define HCL_LOG_ERROR(...)   fprintf(stderr, __VA_ARGS__);
+#define HCL_LOG_WARN(...)    HCL_NOOP_MACRO
+#define HCL_LOG_INFO(...)    HCL_NOOP_MACRO
+#define HCL_LOG_DEBUG(...)   HCL_NOOP_MACRO
+#define HCL_LOG_TRACE(...)   HCL_NOOP_MACRO
+#define HCL_LOG_STDOUT_REDIRECT(fpath) HCL_NOOP_MACRO
+#define HCL_LOG_STDERR_REDIRECT(fpath) HCL_NOOP_MACRO
+#endif // HCL_LOGGER_CPP_LOGGER -----------------------------------------------
+
 //=============================================================================
 #endif // HCL_LOGGER_NO_LOG
 //=============================================================================
