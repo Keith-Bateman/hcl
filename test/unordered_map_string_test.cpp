@@ -27,6 +27,16 @@
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
+
+  KeyType(const KeyType& t) {
+    a = t.a;
+  }
+  KeyType(KeyType& t) {
+    a = t.a;
+  }
+  KeyType(KeyType&& t) {
+    a = t.a;
+  }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -62,7 +72,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   int ranks_per_server = comm_size, num_request = 100;
-  long size_of_request = 1024 * 16;
+  unsigned long size_of_request = 1024 * 16;
   bool debug = false;
   bool server_on_node = true;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
@@ -90,8 +100,8 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   // The following is used to switch to 40g network on Ares.
   // This is necessary when we use RoCE on Ares.

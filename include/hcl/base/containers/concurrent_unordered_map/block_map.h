@@ -5,6 +5,8 @@
 #else
 #error "no config"
 #endif
+#include <hcl/common/logging.h>
+
 #include <algorithm>
 #include <atomic>
 #include <cassert>
@@ -55,6 +57,7 @@ class BlockMap {
   KeyT emptyKey;
 
   uint64_t KeyToIndex(KeyT &k) {
+    HCL_LOG_TRACE();
     uint64_t hashval = HashFcn()(k);
     return hashval % maxSize;
   }
@@ -63,6 +66,7 @@ class BlockMap {
   BlockMap(uint64_t n, memory_pool<KeyT, ValueT, HashFcn, EqualFcn> *m,
            KeyT maxKey)
       : maxSize(n), pl(m), emptyKey(maxKey) {
+    HCL_LOG_TRACE();
     assert(maxSize > 0);
     table = (fnode_type *)std::malloc(maxSize * sizeof(fnode_type));
     assert(table != nullptr);
@@ -77,9 +81,13 @@ class BlockMap {
     assert(maxSize < UINT64_MAX);
   }
 
-  ~BlockMap() { std::free(table); }
+  ~BlockMap() {
+    HCL_LOG_TRACE();
+    std::free(table);
+  }
 
   uint32_t insert(KeyT &k, ValueT &v) {
+    HCL_LOG_TRACE();
     uint64_t pos = KeyToIndex(k);
 
     table[pos].mutex_t.lock();
@@ -115,6 +123,7 @@ class BlockMap {
   }
 
   uint64_t find(KeyT &k) {
+    HCL_LOG_TRACE();
     uint64_t pos = KeyToIndex(k);
 
     table[pos].mutex_t.lock();
@@ -135,6 +144,7 @@ class BlockMap {
   }
 
   bool update(KeyT &k, ValueT &v) {
+    HCL_LOG_TRACE();
     uint64_t pos = KeyToIndex(k);
 
     table[pos].mutex_t.lock();
@@ -156,6 +166,7 @@ class BlockMap {
   }
 
   bool get(KeyT &k, ValueT *v) {
+    HCL_LOG_TRACE();
     bool found = false;
 
     uint64_t pos = KeyToIndex(k);
@@ -181,6 +192,7 @@ class BlockMap {
   template <typename... Args>
   bool update_field(KeyT &k, void (*fn)(ValueT *, Args &&...args),
                     Args &&...args_) {
+    HCL_LOG_TRACE();
     bool found = false;
     uint64_t pos = KeyToIndex(k);
 
@@ -203,6 +215,7 @@ class BlockMap {
   }
 
   bool erase(KeyT &k) {
+    HCL_LOG_TRACE();
     uint64_t pos = KeyToIndex(k);
 
     table[pos].mutex_t.lock();
@@ -233,11 +246,18 @@ class BlockMap {
     return found;
   }
 
-  uint64_t allocated_nodes() { return allocated.load(); }
+  uint64_t allocated_nodes() {
+    HCL_LOG_TRACE();
+    return allocated.load();
+  }
 
-  uint64_t removed_nodes() { return removed.load(); }
+  uint64_t removed_nodes() {
+    HCL_LOG_TRACE();
+    return removed.load();
+  }
 
   uint64_t count_block_entries() {
+    HCL_LOG_TRACE();
     uint64_t num_entries = 0;
     for (size_t i = 0; i < maxSize; i++) {
       num_entries += table[i].num_nodes;

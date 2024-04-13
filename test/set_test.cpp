@@ -27,6 +27,16 @@
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
+
+  KeyType(const KeyType& t) {
+    a = t.a;
+  }
+  KeyType(KeyType& t) {
+    a = t.a;
+  }
+  KeyType(KeyType&& t) {
+    a = t.a;
+  }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -91,8 +101,8 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   // The following is used to switch to 40g network on Ares.
   // This is necessary when we use RoCE on Ares.
@@ -104,7 +114,7 @@ int main(int argc, char *argv[]) {
 
   size_t size_of_elem = sizeof(int);
 
-  printf("rank %d, is_server %d, my_server %d, num_servers %d\n", my_rank,
+  printf("rank %d, is_server %d, my_server %ld, num_servers %ld\n", my_rank,
          is_server, my_server, num_servers);
 
   const int array_size = TEST_REQUEST_SIZE;
@@ -190,7 +200,6 @@ int main(int argc, char *argv[]) {
 
     if (HCL_CONF->SERVER_ON_NODE) {
       Timer local_set_timer = Timer();
-      uint16_t my_server_key = my_server % num_servers;
       /*Local set test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -214,6 +223,7 @@ int main(int argc, char *argv[]) {
         local_get_set_timer.resumeTime();
         auto result = set->Get(key);
         local_get_set_timer.pauseTime();
+        (void) result;
       }
 
       double local_get_set_throughput =
@@ -243,7 +253,6 @@ int main(int argc, char *argv[]) {
     if (!HCL_CONF->SERVER_ON_NODE) {
       Timer remote_set_timer = Timer();
       /*Remote set test*/
-      uint16_t my_server_remote_key = (my_server + 1) % num_servers;
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;
         auto key = KeyType(val);

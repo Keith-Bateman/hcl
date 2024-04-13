@@ -67,9 +67,10 @@ class concurrent_queue : public container {
     if (queue != nullptr) delete queue;
   }
 
-  void construct_shared_memory() override {}
-  void open_shared_memory() override {}
+  void construct_shared_memory() override { HCL_LOG_TRACE(); }
+  void open_shared_memory() override { HCL_LOG_TRACE(); }
   void bind_functions() override {
+    HCL_LOG_TRACE();
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -95,8 +96,8 @@ class concurrent_queue : public container {
   explicit concurrent_queue(CharStruct name_ = "TEST_CONCURRENT_QUEUE",
                             uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
+    HCL_LOG_TRACE();
     queue = nullptr;
-    AutoTrace trace = AutoTrace("hcl::concurrent_queue");
     if (is_server) {
       queue = new queue_type(128);
       bind_functions();
@@ -104,10 +105,17 @@ class concurrent_queue : public container {
     }
   }
 
-  queue_type *data() { return queue; }
+  queue_type *data() {
+    HCL_LOG_TRACE();
+    return queue;
+  }
 
-  bool LocalPush(ValueT &v) { return queue->push(v); }
+  bool LocalPush(ValueT &v) {
+    HCL_LOG_TRACE();
+    return queue->push(v);
+  }
   std::pair<bool, ValueT> LocalPop() {
+    HCL_LOG_TRACE();
     ValueT v;
     bool b = queue->pop(v);
     if (b)

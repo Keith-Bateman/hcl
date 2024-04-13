@@ -79,6 +79,7 @@ class concurrent_unordered_map : public container {
 
  public:
   bool isLocal(KeyT &k) {
+    HCL_LOG_TRACE();
     uint64_t hashval = HashFcn()(k);
     uint64_t pos = hashval % totalSize;
     if (is_server && pos >= min_range && pos < max_range)
@@ -88,13 +89,14 @@ class concurrent_unordered_map : public container {
   }
 
   uint64_t serverLocation(KeyT &k) {
+    HCL_LOG_TRACE();
     uint64_t localSize = totalSize / num_servers;
     uint64_t rem = totalSize % num_servers;
     uint64_t hashval = HashFcn()(k);
     uint64_t v = hashval % totalSize;
     uint64_t offset = rem * (localSize + 1);
     uint64_t id = -1;
-    if (v >= 0 && v < totalSize) {
+    if (v < totalSize) {
       if (v < offset)
         id = v / (localSize + 1);
       else
@@ -105,6 +107,7 @@ class concurrent_unordered_map : public container {
   }
 
   void initialize_tables(uint64_t n, uint32_t np, uint32_t rank, KeyT maxKey) {
+    HCL_LOG_TRACE();
     totalSize = n;
     nservers = np;
     serverid = rank;
@@ -139,9 +142,10 @@ class concurrent_unordered_map : public container {
     if (pl != nullptr) delete pl;
   }
 
-  void construct_shared_memory() override {}
-  void open_shared_memory() override {}
+  void construct_shared_memory() override { HCL_LOG_TRACE(); }
+  void open_shared_memory() override { HCL_LOG_TRACE(); }
   void bind_functions() override {
+    HCL_LOG_TRACE();
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -187,49 +191,68 @@ class concurrent_unordered_map : public container {
       CharStruct name_ = "TEST_UNORDERED_MAP_CONCURRENT",
       uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
+    HCL_LOG_TRACE();
     my_table = nullptr;
     pl = nullptr;
-    AutoTrace trace = AutoTrace("hcl::map");
     if (is_server) {
       bind_functions();
     } else if (!is_server && server_on_node) {
     }
   }
 
-  map_type *data() { return my_table; }
+  map_type *data() {
+    HCL_LOG_TRACE();
+    return my_table;
+  }
 
   bool LocalInsert(KeyT &k, ValueT &v) {
-    uint32_t r = my_table->insert(k, v);
-    if (r != NOT_IN_TABLE)
-      return true;
-    else
-      return false;
+    HCL_LOG_TRACE();
+    my_table->insert(k, v);
+    return true;
   }
   bool LocalFind(KeyT &k) {
+    HCL_LOG_TRACE();
     if (my_table->find(k) != NOT_IN_TABLE)
       return true;
     else
       return false;
   }
-  bool LocalErase(KeyT &k) { return my_table->erase(k); }
-  bool LocalUpdate(KeyT &k, ValueT &v) { return my_table->update(k, v); }
-  bool LocalGet(KeyT &k, ValueT *v) { return my_table->get(k, v); }
+  bool LocalErase(KeyT &k) {
+    HCL_LOG_TRACE();
+    return my_table->erase(k);
+  }
+  bool LocalUpdate(KeyT &k, ValueT &v) {
+    HCL_LOG_TRACE();
+    return my_table->update(k, v);
+  }
+  bool LocalGet(KeyT &k, ValueT *v) {
+    HCL_LOG_TRACE();
+    return my_table->get(k, v);
+  }
   ValueT LocalGetValue(KeyT &k) {
+    HCL_LOG_TRACE();
     ValueT v;
     new (&v) ValueT();
-    bool b = LocalGet(k, &v);
+    LocalGet(k, &v);
     return v;
   }
 
   template <typename... Args>
   bool LocalUpdateField(KeyT &k, void (*f)(ValueT *, Args &&...args),
                         Args &&...args_) {
+    HCL_LOG_TRACE();
     return my_table->update_field(k, f, std::forward<Args>(args_)...);
   }
 
-  uint64_t allocated() { return my_table->allocated_nodes(); }
+  uint64_t allocated() {
+    HCL_LOG_TRACE();
+    return my_table->allocated_nodes();
+  }
 
-  uint64_t removed() { return my_table->removed_nodes(); }
+  uint64_t removed() {
+    HCL_LOG_TRACE();
+    return my_table->removed_nodes();
+  }
 
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalInsert, (k, v), KeyT &k, ValueT &v)

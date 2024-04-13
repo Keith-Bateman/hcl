@@ -22,14 +22,11 @@ int main(int argc, char **argv) {
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
 
   bool debug = false;
-  int ranks_per_server = comm_size, num_request = 100;
-  long size_of_request = 1024 * 16;
+  int ranks_per_server = comm_size;
   bool server_on_node = true;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
-  if (argc > 2) num_request = atoi(argv[2]);
-  if (argc > 3) size_of_request = (long)atol(argv[3]);
-  if (argc > 4) server_on_node = (bool)atoi(argv[4]);
-  if (argc > 5) debug = (bool)atoi(argv[5]);
+  if (argc > 2) server_on_node = (bool)atoi(argv[2]);
+  if (argc > 3) debug = (bool)atoi(argv[3]);
   if (debug && my_rank == 0) {
     printf("%d ready for attach\n", comm_size);
     fflush(stdout);
@@ -39,8 +36,8 @@ int main(int argc, char **argv) {
 
   char *server_list_path = std::getenv("SERVER_LIST_PATH");
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   if (my_rank == 0) {
     std::cout << num_servers << " Server Test" << std::endl;

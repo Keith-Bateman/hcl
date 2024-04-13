@@ -89,6 +89,7 @@ class unordered_map : public container {
   explicit unordered_map(CharStruct name_ = std::string("TEST_UNORDERED_MAP"),
                          uint16_t port = HCL_CONF->RPC_PORT);
   MyHashMap *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return myHashMap;
     else

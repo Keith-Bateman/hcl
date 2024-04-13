@@ -17,7 +17,7 @@ queue<MappedType, Allocator, SharedType>::~queue() {
 template <typename MappedType, typename Allocator, typename SharedType>
 queue<MappedType, Allocator, SharedType>::queue(CharStruct name_, uint16_t port)
     : container(name_, port), my_queue() {
-  AutoTrace trace = AutoTrace("hcl::queue(local)");
+  HCL_LOG_TRACE();
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -34,7 +34,7 @@ queue<MappedType, Allocator, SharedType>::queue(CharStruct name_, uint16_t port)
  */
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::LocalPush(MappedType &data) {
-  AutoTrace trace = AutoTrace("hcl::queue::Push(local)", data);
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto value = GetData<Allocator, MappedType, SharedType>(data);
   my_queue->push_back(std::move(value));
@@ -50,10 +50,10 @@ bool queue<MappedType, Allocator, SharedType>::LocalPush(MappedType &data) {
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::Push(MappedType &data,
                                                     uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalPush(data);
   } else {
-    AutoTrace trace = AutoTrace("hcl::queue::Push(remote)", data, key_int);
     return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
   }
 }
@@ -67,7 +67,7 @@ bool queue<MappedType, Allocator, SharedType>::Push(MappedType &data,
 template <typename MappedType, typename Allocator, typename SharedType>
 std::pair<bool, MappedType>
 queue<MappedType, Allocator, SharedType>::LocalPop() {
-  AutoTrace trace = AutoTrace("hcl::queue::Pop(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (my_queue->size() > 0) {
     MappedType value = my_queue->front();
@@ -87,10 +87,10 @@ queue<MappedType, Allocator, SharedType>::LocalPop() {
 template <typename MappedType, typename Allocator, typename SharedType>
 std::pair<bool, MappedType> queue<MappedType, Allocator, SharedType>::Pop(
     uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalPop();
   } else {
-    AutoTrace trace = AutoTrace("hcl::queue::Pop(remote)", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
   }
@@ -98,7 +98,7 @@ std::pair<bool, MappedType> queue<MappedType, Allocator, SharedType>::Pop(
 
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::LocalWaitForElement() {
-  AutoTrace trace = AutoTrace("hcl::queue::WaitForElement(local)");
+  HCL_LOG_TRACE();
   int count = 0;
   while (my_queue->size() == 0) {
     usleep(10);
@@ -111,10 +111,10 @@ bool queue<MappedType, Allocator, SharedType>::LocalWaitForElement() {
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::WaitForElement(
     uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalWaitForElement();
   } else {
-    AutoTrace trace = AutoTrace("hcl::queue::WaitForElement(remote)", key_int);
     return RPC_CALL_WRAPPER1("_WaitForElement", key_int, bool);
   }
 }
@@ -126,7 +126,7 @@ bool queue<MappedType, Allocator, SharedType>::WaitForElement(
  */
 template <typename MappedType, typename Allocator, typename SharedType>
 size_t queue<MappedType, Allocator, SharedType>::LocalSize() {
-  AutoTrace trace = AutoTrace("hcl::queue::Size(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   size_t value = my_queue->size();
   return value;
@@ -139,10 +139,10 @@ size_t queue<MappedType, Allocator, SharedType>::LocalSize() {
  */
 template <typename MappedType, typename Allocator, typename SharedType>
 size_t queue<MappedType, Allocator, SharedType>::Size(uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalSize();
   } else {
-    AutoTrace trace = AutoTrace("hcl::queue::Size(remote)", key_int);
     return RPC_CALL_WRAPPER1("_Size", key_int, size_t);
   }
 }

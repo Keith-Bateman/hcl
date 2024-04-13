@@ -56,14 +56,17 @@ void stl_map_operations(struct thread_arg *t)
      {
 	std::pair<int,int> p(k,k);
 	auto b = stl_map->insert(p);
+  (void) b;
      }
      else if(op==1)
      {
 	auto b = stl_map->find(k);
+  (void) b;
      }
      else if(op==2)
      {
 	 auto b = stl_map->erase(k);
+  (void) b;
      }
      m.unlock();
    }
@@ -77,9 +80,10 @@ void hcl_map_operations(struct thread_arg *t)
   {
        uint32_t op = random()%3;
        int k = random()%1000000;
-       if(op==0) uint32_t ret = block_map->LocalInsert(k,k);
-       else if(op==1) bool s = block_map->LocalFind(k);
-       else if(op==2) bool s = block_map->LocalErase(k);
+       if(op==0) block_map->LocalInsert(k,k);
+       else if(op==1) block_map->LocalFind(k);
+       else if(op==2) block_map->LocalErase(k);
+
   }
 
 }
@@ -119,15 +123,12 @@ int main(int argc, char *argv[]) {
     getchar();
   }
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   assert (comm_size%ranks_per_server==0);
 
   std::string proc_name = std::string(processor_name);
-
-  size_t size_of_elem = sizeof(int);
-
   /*printf("rank %d, is_server %d, my_server %d, num_servers %d\n", my_rank,
          is_server, my_server, num_servers);*/
 
@@ -138,8 +139,6 @@ int main(int argc, char *argv[]) {
     if(my_rank==0)
 	 std::cout <<" Please set request size and number of RPC threads in constants.h. Default value for request size is "<<TEST_REQUEST_SIZE<<" and number of RPC_THREADS is 1"<<std::endl;
   }
-
-  std::array<int, array_size> my_vals = std::array<int, array_size>();
 
   HCL_CONF->IS_SERVER = is_server;
   HCL_CONF->MY_SERVER = my_server;
@@ -152,7 +151,7 @@ int main(int argc, char *argv[]) {
 
   rd.seed(my_rank);
   auto die = std::bind(dist,rd);
-
+  (void) die;
   block_map = new hcl::concurrent_unordered_map<int,int>();
   stl_map = new std::unordered_map<int,int>();
 
@@ -241,17 +240,17 @@ int main(int argc, char *argv[]) {
 	if(op==0)
 	{
 	    int k = dist(rd);
-	    bool s = block_map->Insert(k,k);
+	    block_map->Insert(k,k);
 	}
 	else if(op==1)
 	{
 	   int k = dist(rd);
-	   bool s = block_map->Find(k);
+	   block_map->Find(k);
 	}
 	else if(op==2)
 	{
 	  int k = dist(rd);
-	  bool s = block_map->Erase(k);
+	  block_map->Erase(k);
 	}
     }
 
