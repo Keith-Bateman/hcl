@@ -27,8 +27,9 @@ class RPCFactory {
   std::unordered_map<uint16_t, std::shared_ptr<RPC>> rpcs;
 
  public:
-  RPCFactory() : rpcs() {}
+  RPCFactory() : rpcs() { HCL_LOG_TRACE(); }
   std::shared_ptr<RPC> GetRPC(uint16_t server_port) {
+    HCL_LOG_TRACE();
     auto iter = rpcs.find(server_port);
     if (iter != rpcs.end()) return iter->second;
     auto temp = HCL_CONF->RPC_PORT;

@@ -34,37 +34,54 @@ class ConcurrentSkipList {
 
   explicit ConcurrentSkipList(int height, const NodeAlloc& alloc)
       : recycler_(alloc),
-        head_(recycler_.pop(height, true))  // NodeType::create(recycler_.alloc(),
-                                            // height, value_type(), true))
-  {}
+        head_(
+            recycler_.pop(height, true))  // NodeType::create(recycler_.alloc(),
+                                          // height, value_type(), true))
+  {
+    HCL_LOG_TRACE();
+  }
 
   explicit ConcurrentSkipList(int height)
       : recycler_(),
-        head_(recycler_.pop(height, true))  // NodeType::create(recycler_.alloc(),
-                                            // height, value_type(), true))
-  {}
+        head_(
+            recycler_.pop(height, true))  // NodeType::create(recycler_.alloc(),
+                                          // height, value_type(), true))
+  {
+    HCL_LOG_TRACE();
+  }
 
   static Accessor create(int height, const NodeAlloc& alloc) {
+    HCL_LOG_TRACE();
     return Accessor(createInstance(height, alloc));
   }
 
   static Accessor create(int height = 1) {
+    HCL_LOG_TRACE();
     return Accessor(createInstance(height));
   }
 
   static std::shared_ptr<SkipListType> createInstance(int height,
                                                       const NodeAlloc& alloc) {
+    HCL_LOG_TRACE();
     return std::make_shared<ConcurrentSkipList>(height, alloc);
   }
 
   static std::shared_ptr<SkipListType> createInstance(int height = 1) {
+    HCL_LOG_TRACE();
     return std::make_shared<ConcurrentSkipList>(height);
   }
 
-  size_t size() const { return size_.load(std::memory_order_relaxed); }
-  bool empty() const { return size() == 0; }
+  size_t size() const {
+    HCL_LOG_TRACE();
+    return size_.load(std::memory_order_relaxed);
+  }
+  bool empty() const {
+    HCL_LOG_TRACE();
+    return size() == 0;
+  }
 
   ~ConcurrentSkipList() {
+    HCL_LOG_TRACE();
     /*if (NodeType::template DestroyIsNoOp<NodeAlloc>::value)
     {
       return;
@@ -78,16 +95,19 @@ class ConcurrentSkipList {
 
  private:
   static bool greater(const value_type& data, const NodeType* node) {
+    HCL_LOG_TRACE();
     return node && Comp()(node->data(), data);
   }
 
   static bool less(const value_type& data, const NodeType* node) {
+    HCL_LOG_TRACE();
     return (node == nullptr) || Comp()(data, node->data());
   }
 
   static int findInsertionPoint(NodeType* cur, int cur_layer,
                                 const value_type& data, NodeType* preds[],
                                 NodeType* succs[]) {
+    HCL_LOG_TRACE();
     int foundLayer = -1;
     NodeType* pred = cur;
     NodeType* foundNode = nullptr;
@@ -108,15 +128,23 @@ class ConcurrentSkipList {
     return foundLayer;
   }
 
-  int height() const { return head_.load(std::memory_order_acquire)->height(); }
+  int height() const {
+    HCL_LOG_TRACE();
+    return head_.load(std::memory_order_acquire)->height();
+  }
 
-  int maxLayer() const { return height() - 1; }
+  int maxLayer() const {
+    HCL_LOG_TRACE();
+    return height() - 1;
+  }
 
   size_t incrementSize(int delta) {
+    HCL_LOG_TRACE();
     return size_.fetch_add(delta, std::memory_order_relaxed) + delta;
   }
 
   NodeType* find(const value_type& data) {
+    HCL_LOG_TRACE();
     auto ret = findNode(data);
     if (ret.second && !ret.first->markedForRemoval()) {
       return ret.first;
@@ -127,6 +155,7 @@ class ConcurrentSkipList {
   bool lockNodesForChange(int nodeHeight, bool guards[MAX_HEIGHT],
                           NodeType* preds[MAX_HEIGHT],
                           NodeType* succs[MAX_HEIGHT], bool adding = true) {
+    HCL_LOG_TRACE();
     NodeType *pred, *succ, *prevPred = nullptr;
     bool valid = true;
     for (int layer = 0; valid && layer < nodeHeight; ++layer) {
@@ -149,6 +178,7 @@ class ConcurrentSkipList {
 
   template <typename U>
   std::pair<NodeType*, size_t> addOrGetData(U&& data) {
+    HCL_LOG_TRACE();
     NodeType *preds[MAX_HEIGHT], *succs[MAX_HEIGHT];
     NodeType* newNode;
     size_t newSize;
@@ -205,6 +235,7 @@ class ConcurrentSkipList {
   }
 
   bool remove(const value_type& data) {
+    HCL_LOG_TRACE();
     NodeType* nodeToDelete = nullptr;
     bool isMarked = false;
     int nodeHeight = 0;
@@ -253,6 +284,7 @@ class ConcurrentSkipList {
   }
 
   const value_type* first() const {
+    HCL_LOG_TRACE();
     auto node = head_.load(std::memory_order_acquire)->skip(0);
     return node ? &node->data() : nullptr;
   }
@@ -261,6 +293,7 @@ class ConcurrentSkipList {
     NodeType* pred = head_.load(std::memory_order_acquire);
     NodeType* node = nullptr;
     for (int layer = maxLayer(); layer >= 0; --layer) {
+      HCL_LOG_TRACE();
       do {
         node = pred->skip(layer);
         if (node) {
@@ -273,6 +306,7 @@ class ConcurrentSkipList {
   }
 
   static bool okToDelete(NodeType* candidate, int layer) {
+    HCL_LOG_TRACE();
     assert(candidate != nullptr);
     return candidate->fullyLinked() && candidate->maxLayer() == layer &&
            !candidate->markedForRemoval();
@@ -280,16 +314,19 @@ class ConcurrentSkipList {
 
   int findInsertionPointGetMaxLayer(const value_type& data, NodeType* preds[],
                                     NodeType* succs[], int* max_layer) const {
+    HCL_LOG_TRACE();
     *max_layer = maxLayer();
     return findInsertionPoint(head_.load(std::memory_order_acquire), *max_layer,
                               data, preds, succs);
   }
 
   std::pair<NodeType*, int> findNode(const value_type& data) const {
+    HCL_LOG_TRACE();
     return findNodeDownRight(data);
   }
 
   std::pair<NodeType*, int> findNodeDownRight(const value_type& data) const {
+    HCL_LOG_TRACE();
     NodeType* pred = head_.load(std::memory_order_acquire);
     int ht = pred->height();
     NodeType* node = nullptr;
@@ -313,6 +350,7 @@ class ConcurrentSkipList {
   }
 
   std::pair<NodeType*, int> findNodeRightDown(const value_type& data) const {
+    HCL_LOG_TRACE();
     NodeType* pred = head_.load(std::memory_order_acquire);
     NodeType* node = nullptr;
     auto top = maxLayer();
@@ -329,6 +367,7 @@ class ConcurrentSkipList {
   }
 
   NodeType* lower_bound(const value_type& data) const {
+    HCL_LOG_TRACE();
     auto node = findNode(data).first;
     while (node != nullptr && node->markedForRemoval()) {
       node = node->skip(0);
@@ -337,6 +376,7 @@ class ConcurrentSkipList {
   }
 
   void growHeight(int height) {
+    HCL_LOG_TRACE();
     NodeType* oldHead = head_.load(std::memory_order_acquire);
     if (oldHead->height() >= height) {
       return;
@@ -362,7 +402,10 @@ class ConcurrentSkipList {
     // recycle(oldHead);
   }
 
-  void recycle(NodeType* node) { recycler_.add(node); }
+  void recycle(NodeType* node) {
+    HCL_LOG_TRACE();
+    recycler_.add(node);
+  }
 
   NodeRecycler<NodeType, NodeAlloc> recycler_;
   std::atomic<NodeType*> head_;

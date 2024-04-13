@@ -31,6 +31,7 @@
 #include <execinfo.h>
 #include <unistd.h>
 
+#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <tuple>
@@ -50,48 +51,6 @@ inline void handler(int sig) {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(0);
 }
-/**
- * various macros to print variables and messages.
- */
-
-#ifdef HCL_DEBUG
-#define DBGVAR(var)                                                   \
-  std::cout << "DBG: " << __FILE__ << "(" << __LINE__ << ") " << #var \
-            << " = [" << (var) << "]" << std::endl
-
-#define DBGVAR2(var1, var2)                                                \
-  std::cout << "DBG: " << __FILE__ << "(" << __LINE__ << ") " << #var1     \
-            << " = [" << (var1) << "]" << #var2 << " = [" << (var2) << "]" \
-            << std::endl
-#define DBGVAR3(var1, var2, var3)                                          \
-  std::cout << "DBG: " << __FILE__ << "(" << __LINE__ << ") " << #var1     \
-            << " = [" << (var1) << "]" << #var2 << " = [" << (var2) << "]" \
-            << #var3 << " = [" << (var3) << "]" << std::endl
-
-#define DBGMSG(msg)                                                  \
-  std::cout << "DBG: " << __FILE__ << "(" << __LINE__ << ") " << msg \
-            << std::endl
-#else
-#define DBGVAR(var)
-#define DBGVAR2(var1, var2)
-#define DBGVAR3(var1, var2, var3)
-#define DBGMSG(msg)
-#endif
-#endif  // INCLUDE_HCL_COMMON_DEBUG_H_
-
-#ifndef INCLUDE_HCL_COMMON_DEBUG_TIMER_H_
-#define INCLUDE_HCL_COMMON_DEBUG_TIMER_H_
-/**
- * Time all functions and instrument it
- */
-
-#include <mpi.h>
-#include <stdarg.h>
-
-#include <chrono>
-#include <sstream>
-#include <stack>
-#include <string>
 
 class Timer {
  public:
@@ -111,99 +70,4 @@ class Timer {
   double elapsed_time;
 };
 
-#endif  // INCLUDE_HCL_COMMON_DEBUG_TIMER_H_
-#ifndef INCLUDE_HCL_COMMON_DEBUG_AUTOTRACE_H_
-#define INCLUDE_HCL_COMMON_DEBUG_AUTOTRACE_H_
-/**
- * Implement Auto tracing Mechanism.
- */
-using std::cout;
-using std::endl;
-using std::string;
-
-using namespace std;
-
-class AutoTrace {
-#if defined(HCL_TIMER)
-  Timer timer;
-#endif
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-  static int rank, item;
-  string m_line;
-#endif
- public:
-  template <typename... Args>
-  AutoTrace(
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-      std::string string,
-#endif
-      Args... args)
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-      : m_line(string)
-#endif
-  {
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-    char thread_name[256];
-    pthread_getname_np(pthread_self(), thread_name, 256);
-    std::stringstream stream;
-
-    if (rank == -1) MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    stream << "\033[31m";
-    stream << ++item << ";" << thread_name << ";" << rank << ";" << m_line
-           << ";";
-#endif
-#if defined(HCL_TIMER)
-    stream << ";;";
-#endif
-#ifdef HCL_TRACE
-    auto args_obj = std::make_tuple(args...);
-    const ulong args_size = std::tuple_size<decltype(args_obj)>::value;
-    stream << "args(";
-
-    if (args_size == 0)
-      stream << "Void";
-    else {
-      std::apply([&stream](auto &&...args) { ((stream << args << ", "), ...); },
-                 args_obj);
-    }
-    stream << ");";
-#endif
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-    stream << "start" << endl;
-    stream << "\033[00m";
-    cout << stream.str();
-#endif
-#ifdef HCL_TIMER
-    timer.resumeTime();
-#endif
-  }
-
-  ~AutoTrace() {
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-    std::stringstream stream;
-    char thread_name[256];
-    pthread_getname_np(pthread_self(), thread_name, 256);
-    stream << "\033[31m";
-    stream << item-- << ";" << std::string(thread_name) << ";" << rank << ";"
-           << m_line << ";";
-#endif
-#if defined(HCL_TRACE)
-    stream << ";";
-#endif
-#ifdef HCL_TIMER
-    double end_time = timer.pauseTime();
-    stream << end_time << ";msecs;";
-#endif
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-    stream << "finish" << endl;
-    stream << "\033[00m";
-    cout << stream.str();
-#endif
-  }
-};
-
-#if defined(HCL_TRACE) || defined(HCL_TIMER)
-int AutoTrace::rank = -1;
-int AutoTrace::item = 0;
-#endif
-#endif  // INCLUDE_HCL_COMMON_DEBUG_AUTOTRACE_H_
+#endif  // INCLUDE_HCL_COMMON_DEBUG_H_

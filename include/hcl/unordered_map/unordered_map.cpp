@@ -28,8 +28,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::unordered_map(
     CharStruct name_, uint16_t port)
     : container(name_, port), myHashMap(), size_occupied(0) {
-  // init my_server, num_servers, server_on_node, processor_name from RPC
-  AutoTrace trace = AutoTrace("hcl::unordered_map");
+  HCL_LOG_TRACE();
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -48,6 +47,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 bool unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::LocalPut(
     KeyType &key, MappedType &data) {
+  HCL_LOG_TRACE();
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -76,6 +76,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 bool unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::Put(
     KeyType key, MappedType data) {
+  HCL_LOG_TRACE();
   uint16_t key_int = (uint16_t)keyHash(key) % num_servers;
   if (is_local(key_int)) {
     return LocalPut(key, data);
@@ -94,6 +95,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType> unordered_map<KeyType, MappedType, Hash, Allocator,
                                           SharedType>::LocalGet(KeyType &key) {
+  HCL_LOG_TRACE();
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -124,6 +126,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType> unordered_map<KeyType, MappedType, Hash, Allocator,
                                           SharedType>::Get(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
@@ -139,6 +142,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::pair<bool, MappedType>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::LocalErase(
     KeyType &key) {
+  HCL_LOG_TRACE();
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -182,6 +186,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 std::vector<std::pair<KeyType, MappedType>>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::GetAllData() {
+  HCL_LOG_TRACE();
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = GetAllDataInServer();
@@ -202,6 +207,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::vector<std::pair<KeyType, MappedType>>
 unordered_map<KeyType, MappedType, Hash, Allocator,
               SharedType>::LocalGetAllDataInServer() {
+  HCL_LOG_TRACE();
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   {
@@ -224,6 +230,7 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 std::vector<std::pair<KeyType, MappedType>> unordered_map<
     KeyType, MappedType, Hash, Allocator, SharedType>::GetAllDataInServer() {
+  HCL_LOG_TRACE();
   if (is_local()) {
     return LocalGetAllDataInServer();
   } else {
@@ -247,11 +254,12 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 void unordered_map<KeyType, MappedType, Hash, Allocator,
                    SharedType>::bind_functions() {
+  HCL_LOG_TRACE();
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
 #endif
-#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM) 
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
 
       std::function<void(const tl::request &, KeyType &, MappedType &)> putFunc(

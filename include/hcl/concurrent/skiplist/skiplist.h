@@ -75,6 +75,7 @@ class concurrent_skiplist : public container {
   SkipListAccessor *a;
 
   uint64_t power_of_two(int n) {
+    HCL_LOG_TRACE();
     int c = 1;
     while (c < n) {
       c = 2 * c;
@@ -84,6 +85,7 @@ class concurrent_skiplist : public container {
 
  public:
   uint64_t serverLocation(T &k) {
+    HCL_LOG_TRACE();
     uint64_t id = -1;
     uint64_t hashval = HashFcn()(k);
     uint64_t mask = UINT64_MAX;
@@ -95,6 +97,7 @@ class concurrent_skiplist : public container {
   }
 
   bool isLocal(T &k) {
+    HCL_LOG_TRACE();
     if (is_server && serverLocation(k) == serverid)
       return true;
     else
@@ -119,9 +122,10 @@ class concurrent_skiplist : public container {
     if (s != nullptr) delete s;
   }
 
-  void construct_shared_memory() override {}
-  void open_shared_memory() override {}
+  void construct_shared_memory() override { HCL_LOG_TRACE(); }
+  void open_shared_memory() override { HCL_LOG_TRACE(); }
   void bind_functions() override {
+    HCL_LOG_TRACE();
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -154,9 +158,9 @@ class concurrent_skiplist : public container {
   explicit concurrent_skiplist(CharStruct name_ = "TEST_CONCURRENT_SKIPLIST",
                                uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
+    HCL_LOG_TRACE();
     a = nullptr;
     s = nullptr;
-    AutoTrace trace = AutoTrace("hcl::concurrent_skiplist");
     if (is_server) {
       bind_functions();
     } else if (!is_server && server_on_node) {
@@ -164,11 +168,18 @@ class concurrent_skiplist : public container {
   }
 
   bool LocalInsert(T &k) {
+    HCL_LOG_TRACE();
     auto ret = a->insert(k);
     return ret.second;
   }
-  bool LocalFind(T &k) { return a->contains(k); }
-  bool LocalErase(T &k) { return a->remove(k); }
+  bool LocalFind(T &k) {
+    HCL_LOG_TRACE();
+    return a->contains(k);
+  }
+  bool LocalErase(T &k) {
+    HCL_LOG_TRACE();
+    return a->remove(k);
+  }
 
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalInsert, (k), T &k)

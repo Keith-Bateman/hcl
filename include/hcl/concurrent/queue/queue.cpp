@@ -14,20 +14,18 @@
 #define INCLUDE_HCL_CONCURRENT_QUEUE_CPP_
 
 template <typename ValueT>
-bool concurrent_queue<ValueT>::Push(uint64_t& s, ValueT &data) 
-{
+bool concurrent_queue<ValueT>::Push(uint64_t &s, ValueT &data) {
+  HCL_LOG_TRACE();
   uint16_t key_int = static_cast<uint16_t>(s);
-  AutoTrace trace = AutoTrace("hcl::concurrent_queue::Push(remote)", data);
-  return RPC_CALL_WRAPPER("_Push", key_int,bool,data);
+  return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
 }
 
 template <typename ValueT>
-std::pair<bool,ValueT> concurrent_queue<ValueT>::Pop(uint64_t &s) 
-{
+std::pair<bool, ValueT> concurrent_queue<ValueT>::Pop(uint64_t &s) {
+  HCL_LOG_TRACE();
   uint16_t key_int = static_cast<uint16_t>(s);
-  AutoTrace trace = AutoTrace("hcl::concurrent_queue::Pop(remote)");
-  typedef std::pair<bool,ValueT> ret_type;
-  return RPC_CALL_WRAPPER1("_Pop", key_int,ret_type);
+  typedef std::pair<bool, ValueT> ret_type;
+  return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
 }
 
-#endif  
+#endif

@@ -12,6 +12,7 @@
 
 #include <execinfo.h>
 #include <hcl/common/data_structures.h>
+#include <hcl/common/logging.h>
 #include <hcl/unordered_map/unordered_map.h>
 #include <mpi.h>
 #include <signal.h>
@@ -28,15 +29,9 @@ struct KeyType {
   size_t a;
   KeyType() : a(0) {}
 
-  KeyType(const KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType&& t) {
-    a = t.a;
-  }
+  KeyType(const KeyType &t) { a = t.a; }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -160,7 +155,7 @@ int main(int argc, char *argv[]) {
       auto iterator = lmap.find(KeyType(val));
       auto result = iterator->second;
       llocal_get_map_timer.pauseTime();
-      (void) result;
+      (void)result;
     }
     double llocal_get_map_throughput =
         num_request / llocal_get_map_timer.getElapsedTime() * 1000 *
@@ -194,7 +189,7 @@ int main(int argc, char *argv[]) {
         local_get_map_timer.resumeTime();
         auto result = map->Get(key);
         local_get_map_timer.pauseTime();
-        (void) result;
+        (void)result;
       }
 
       double local_get_map_throughput =

@@ -28,6 +28,8 @@
 #else
 #error "no config"
 #endif
+#include <hcl/common/logging.h>
+
 #include <boost/concept_check.hpp>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/containers/vector.hpp>
@@ -44,72 +46,101 @@ typedef struct CharStruct {
  private:
   char value[256];
   void Set(char *data_, size_t size) {
+    HCL_LOG_TRACE();
     snprintf(this->value, size + 1, "%s", data_);
   }
   void Set(std::string data_) {
+    HCL_LOG_TRACE();
     snprintf(this->value, data_.length() + 1, "%s", data_.c_str());
   }
 
  public:
   CharStruct() {}
-  CharStruct(const CharStruct &other)
-      : CharStruct(other.value) {} /* copy constructor*/
-  CharStruct(CharStruct &&other)
-      : CharStruct(other.value) {} /* move constructor*/
+  CharStruct(const CharStruct &other) : CharStruct(other.value) {
+    HCL_LOG_TRACE();
+  } /* copy constructor*/
+  CharStruct(CharStruct &&other) : CharStruct(other.value) {
+    HCL_LOG_TRACE();
+  } /* move constructor*/
 
   CharStruct(const char *data_) {
+    HCL_LOG_TRACE();
     snprintf(this->value, strlen(data_) + 1, "%s", data_);
   }
-  CharStruct(std::string data_) : CharStruct(data_.c_str()) {}
+  CharStruct(std::string data_) : CharStruct(data_.c_str()) { HCL_LOG_TRACE(); }
 
   CharStruct(char *data_, size_t size) {
+    HCL_LOG_TRACE();
     snprintf(this->value, size, "%s", data_);
   }
-  const char *c_str() const { return value; }
-  std::string string() const { return std::string(value); }
+  const char *c_str() const {
+    HCL_LOG_TRACE();
+    return value;
+  }
+  std::string string() const {
+    HCL_LOG_TRACE();
+    return std::string(value);
+  }
 
-  char *data() { return value; }
-  size_t size() const { return strlen(value); }
+  char *data() {
+    HCL_LOG_TRACE();
+    return value;
+  }
+  size_t size() const {
+    HCL_LOG_TRACE();
+    return strlen(value);
+  }
   /**
    * Operators
    */
   CharStruct &operator=(const CharStruct &other) {
+    HCL_LOG_TRACE();
     strcpy(value, other.c_str());
     return *this;
   }
   /* equal operator for comparing two Chars. */
   bool operator==(const CharStruct &o) const {
+    HCL_LOG_TRACE();
     return strcmp(value, o.value) == 0;
   }
   CharStruct operator+(const CharStruct &o) {
+    HCL_LOG_TRACE();
     std::string added = std::string(this->c_str()) + std::string(o.c_str());
     return CharStruct(added);
   }
   CharStruct operator+(std::string &o) {
+    HCL_LOG_TRACE();
     std::string added = std::string(this->c_str()) + o;
     return CharStruct(added);
   }
   CharStruct &operator+=(const CharStruct &rhs) {
+    HCL_LOG_TRACE();
     std::string added = std::string(this->c_str()) + std::string(rhs.c_str());
     Set(added);
     return *this;
   }
   bool operator>(const CharStruct &o) const {
+    HCL_LOG_TRACE();
     return strcmp(this->value, o.c_str()) > 0;
   }
   bool operator>=(const CharStruct &o) const {
+    HCL_LOG_TRACE();
     return strcmp(this->value, o.c_str()) >= 0;
   }
   bool operator<(const CharStruct &o) const {
+    HCL_LOG_TRACE();
     return strcmp(this->value, o.c_str()) < 0;
   }
   bool operator<=(const CharStruct &o) const {
+    HCL_LOG_TRACE();
     return strcmp(this->value, o.c_str()) <= 0;
   }
 
 } CharStruct;
 
-[[maybe_unused]] static CharStruct operator+(const std::string &a1, const CharStruct &a2) {
+[[maybe_unused]] static CharStruct operator+(const std::string &a1,
+                                             const CharStruct &a2) {
+  HCL_LOG_TRACE();
   std::string added = a1 + std::string(a2.c_str());
   return CharStruct(added);
 }
@@ -118,6 +149,7 @@ namespace std {
 template <>
 struct hash<CharStruct> {
   size_t operator()(const CharStruct &k) const {
+    HCL_LOG_TRACE();
     std::string val(k.c_str());
     return std::hash<std::string>()(val);
   }
@@ -130,26 +162,31 @@ struct hash<CharStruct> {
 
 template <typename T, typename O>
 inline std::ostream &operator<<(std::ostream &os, std::pair<T, O> const m) {
+  HCL_LOG_TRACE();
   return os << "{TYPE:pair,"
             << "first:" << m.first << ","
             << "second:" << m.second << "}";
 }
 
 inline std::ostream &operator<<(std::ostream &os, char const *m) {
+  HCL_LOG_TRACE();
   return os << std::string(m);
 }
 
 inline std::ostream &operator<<(std::ostream &os, uint8_t const &m) {
+  HCL_LOG_TRACE();
   return os << std::to_string(m);
 }
 
 inline std::ostream &operator<<(std::ostream &os, CharStruct const &m) {
+  HCL_LOG_TRACE();
   return os << "{TYPE:CharStruct,"
             << "value:" << m.c_str() << "}";
 }
 
 template <typename T>
 inline std::ostream &operator<<(std::ostream &os, std::vector<T> const &ms) {
+  HCL_LOG_TRACE();
   os << "[";
   for (auto m : ms) {
     os << m << ",";
@@ -161,17 +198,26 @@ inline std::ostream &operator<<(std::ostream &os, std::vector<T> const &ms) {
 template <typename T>
 class CalculateSize {
  public:
-  really_long GetSize(T value) { return sizeof(value); }
+  really_long GetSize(T value) {
+    HCL_LOG_TRACE();
+    return sizeof(value);
+  }
 };
 template <>
 class CalculateSize<std::string> {
  public:
-  really_long GetSize(std::string value) { return strlen(value.c_str()) + 1; }
+  really_long GetSize(std::string value) {
+    HCL_LOG_TRACE();
+    return strlen(value.c_str()) + 1;
+  }
 };
 template <>
 class CalculateSize<bip::string> {
  public:
-  really_long GetSize(bip::string value) { return strlen(value.c_str()) + 1; }
+  really_long GetSize(bip::string value) {
+    HCL_LOG_TRACE();
+    return strlen(value.c_str()) + 1;
+  }
 };
 
 #endif  // INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_

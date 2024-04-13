@@ -17,12 +17,12 @@
 #else
 #error "no config"
 #endif
+#include <hcl/common/constants.h>
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/enumerations.h>
-#include <hcl/common/singleton.h>
-#include <hcl/common/constants.h>
 #include <hcl/common/logging.h>
+#include <hcl/common/singleton.h>
 
 #include <boost/thread/mutex.hpp>
 #include <fstream>
@@ -79,8 +79,8 @@ class ConfigurationManager {
         SERVER_LIST(),
         BACKED_FILE_DIR("/dev/shm"),
         DYN_CONFIG(false) {
-    AutoTrace trace = AutoTrace("ConfigurationManager");
     HCL_LOGGER_INIT();
+    HCL_LOG_TRACE();
     char* uri_str = getenv(HCL_THALLIUM_URI_ENV);
     if (uri_str != nullptr) {
       URI = CharStruct(uri_str);
@@ -92,7 +92,7 @@ class ConfigurationManager {
         PROTOCOL = URI.string().substr(0, protocol_end_pos);
         auto device_start_pos = protocol_end_pos + 3;
         auto rest = URI.string().substr(device_start_pos);
-        //printf("rest %s\n", rest.c_str());
+        // printf("rest %s\n", rest.c_str());
         auto device_end_pos = rest.find("/");
         auto interface_start_pos = device_end_pos + 1;
         if (device_end_pos == std::string::npos) {
@@ -110,14 +110,17 @@ class ConfigurationManager {
       if (strlen(DEVICE.data()) > 0) URI += (DEVICE + "/");
       if (strlen(INTERFACE.data()) > 0) URI += INTERFACE;
     }
-    printf("Thallium is using URI %s with PROTOCOL %s, DEVICE %s, INTERFACE %s\n", URI.c_str(), PROTOCOL.c_str(), DEVICE.c_str(), INTERFACE.c_str());
+    printf(
+        "Thallium is using URI %s with PROTOCOL %s, DEVICE %s, INTERFACE %s\n",
+        URI.c_str(), PROTOCOL.c_str(), DEVICE.c_str(), INTERFACE.c_str());
   }
 
   std::vector<CharStruct> LoadServers() {
+    HCL_LOG_TRACE();
     file_load.lock();
     SERVER_LIST = std::vector<CharStruct>();
-    fstream file;
-    file.open(SERVER_LIST_PATH.c_str(), ios::in);
+    std::fstream file;
+    file.open(SERVER_LIST_PATH.c_str(), std::ios::in);
     if (file.is_open()) {
       std::string file_line;
 
@@ -154,6 +157,7 @@ class ConfigurationManager {
     return SERVER_LIST;
   }
   void ConfigureDefaultClient(std::string server_list_path = "") {
+    HCL_LOG_TRACE();
     if (server_list_path != "") SERVER_LIST_PATH = server_list_path;
     LoadServers();
     IS_SERVER = false;
@@ -162,14 +166,14 @@ class ConfigurationManager {
   }
 
   void ConfigureDefaultServer(std::string server_list_path = "") {
+    HCL_LOG_TRACE();
     if (server_list_path != "") SERVER_LIST_PATH = server_list_path;
     LoadServers();
     IS_SERVER = true;
     MY_SERVER = false;
     SERVER_ON_NODE = true;
   }
-  ~ConfigurationManager() {
-  }
+  ~ConfigurationManager() {}
 };
 
 }  // namespace hcl

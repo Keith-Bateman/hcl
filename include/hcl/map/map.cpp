@@ -23,7 +23,7 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 bool map<KeyType, MappedType, Compare, Allocator, SharedType>::LocalPut(
     KeyType &key, MappedType &data) {
-  AutoTrace trace = AutoTrace("hcl::map::Put(local)", key, data);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   auto value = GetData<Allocator, MappedType, SharedType>(data);
@@ -41,12 +41,12 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 bool map<KeyType, MappedType, Compare, Allocator, SharedType>::Put(
     KeyType &key, MappedType &data) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
     return LocalPut(key, data);
   } else {
-    AutoTrace trace = AutoTrace("hcl::map::Put(remote)", key, data);
     return RPC_CALL_WRAPPER("_Put", key_int, bool, key, data);
   }
 }
@@ -61,7 +61,7 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType> map<KeyType, MappedType, Compare, Allocator,
                                 SharedType>::LocalGet(KeyType &key) {
-  AutoTrace trace = AutoTrace("hcl::map::Get(local)", key);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   typename MyMap::iterator iterator = mymap->find(key);
@@ -82,12 +82,12 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::Get(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
     return LocalGet(key);
   } else {
-    AutoTrace trace = AutoTrace("hcl::map::Get(remote)", key);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Get", key_int, ret_type, key);
   }
@@ -97,7 +97,7 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType> map<KeyType, MappedType, Compare, Allocator,
                                 SharedType>::LocalErase(KeyType &key) {
-  AutoTrace trace = AutoTrace("hcl::map::Erase(local)", key);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   size_t s = mymap->erase(key);
@@ -108,12 +108,12 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::Erase(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
     return LocalErase(key);
   } else {
-    AutoTrace trace = AutoTrace("hcl::map::Erase(remote)", key);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Erase", key_int, ret_type, key);
   }
@@ -130,7 +130,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::Contains(
     KeyType &key_start, KeyType &key_end) {
-  AutoTrace trace = AutoTrace("hcl::map::Contains", key_start, key_end);
+  HCL_LOG_TRACE();
   auto final_values = std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = ContainsInServer(key_start, key_end);
   final_values.insert(final_values.end(), current_server.begin(),
@@ -150,7 +150,7 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllData() {
-  AutoTrace trace = AutoTrace("hcl::map::GetAllData");
+  HCL_LOG_TRACE();
   auto final_values = std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = GetAllDataInServer();
   final_values.insert(final_values.end(), current_server.begin(),
@@ -170,7 +170,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::LocalContainsInServer(
     KeyType &key_start, KeyType &key_end) {
-  AutoTrace trace = AutoTrace("hcl::map::ContainsInServer", key_start, key_end);
+  HCL_LOG_TRACE();
   auto final_values = std::vector<std::pair<KeyType, MappedType>>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -209,6 +209,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::ContainsInServer(
     KeyType &key_start, KeyType &key_end) {
+  HCL_LOG_TRACE();
   if (is_local()) {
     return LocalContainsInServer(key_start, key_end);
   } else {
@@ -224,7 +225,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator,
     SharedType>::LocalGetAllDataInServer() {
-  AutoTrace trace = AutoTrace("hcl::map::GetAllDataInServer", NULL);
+  HCL_LOG_TRACE();
   auto final_values = std::vector<std::pair<KeyType, MappedType>>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -245,6 +246,7 @@ template <typename KeyType, typename MappedType, typename Compare,
           typename Allocator, typename SharedType>
 std::vector<std::pair<KeyType, MappedType>>
 map<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllDataInServer() {
+  HCL_LOG_TRACE();
   if (is_local()) {
     return LocalGetAllDataInServer();
   } else {

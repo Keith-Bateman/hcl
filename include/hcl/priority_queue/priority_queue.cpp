@@ -25,7 +25,7 @@ template <typename MappedType, typename Compare, typename Allocator,
 priority_queue<MappedType, Compare, Allocator, SharedType>::priority_queue(
     CharStruct name_, uint16_t port)
     : container(name_, port), queue() {
-  AutoTrace trace = AutoTrace("hcl::priority_queue");
+  HCL_LOG_TRACE();
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -44,7 +44,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 bool priority_queue<MappedType, Compare, Allocator, SharedType>::LocalPush(
     MappedType &data) {
-  AutoTrace trace = AutoTrace("hcl::priority_queue::Push(local)", data);
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto value = GetData<Allocator, MappedType, SharedType>(data);
   queue->push(value);
@@ -62,11 +62,10 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 bool priority_queue<MappedType, Compare, Allocator, SharedType>::Push(
     MappedType &data, uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalPush(data);
   } else {
-    AutoTrace trace =
-        AutoTrace("hcl::priority_queue::Push(remote)", data, key_int);
     return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
   }
 }
@@ -81,7 +80,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, MappedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::LocalPop() {
-  AutoTrace trace = AutoTrace("hcl::priority_queue::Pop(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (queue->size() > 0) {
     MappedType value = queue->top();
@@ -102,10 +101,10 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, MappedType> priority_queue<MappedType, Compare, Allocator,
                                            SharedType>::Pop(uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalPop();
   } else {
-    AutoTrace trace = AutoTrace("hcl::priority_queue::Pop(remote)", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
   }
@@ -121,7 +120,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, MappedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::LocalTop() {
-  AutoTrace trace = AutoTrace("hcl::priority_queue::Top(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (queue->size() > 0) {
     MappedType value = queue->top();
@@ -142,10 +141,10 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, MappedType> priority_queue<MappedType, Compare, Allocator,
                                            SharedType>::Top(uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalTop();
   } else {
-    AutoTrace trace = AutoTrace("hcl::priority_queue::Top(remote)", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Top", key_int, ret_type);
   }
@@ -159,7 +158,7 @@ std::pair<bool, MappedType> priority_queue<MappedType, Compare, Allocator,
 template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 size_t priority_queue<MappedType, Compare, Allocator, SharedType>::LocalSize() {
-  AutoTrace trace = AutoTrace("hcl::priority_queue::Size(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   size_t value = queue->size();
   return value;
@@ -178,7 +177,7 @@ size_t priority_queue<MappedType, Compare, Allocator, SharedType>::Size(
   if (is_local(key_int)) {
     return LocalSize();
   } else {
-    AutoTrace trace = AutoTrace("hcl::priority_queue::Top(remote)", key_int);
+    HCL_LOG_TRACE();
     return RPC_CALL_WRAPPER1("_Size", key_int, size_t);
   }
 }
@@ -187,6 +186,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::construct_shared_memory() {
+  HCL_LOG_TRACE();
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct priority queue in the shared memory space. */
   queue = segment.construct<Queue>("Queue")(Compare(), alloc_inst);
@@ -196,6 +196,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::open_shared_memory() {
+  HCL_LOG_TRACE();
   std::pair<Queue *, bip::managed_mapped_file::size_type> res;
   res = segment.find<Queue>("Queue");
   queue = res.first;
@@ -205,6 +206,7 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::bind_functions() {
+  HCL_LOG_TRACE();
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

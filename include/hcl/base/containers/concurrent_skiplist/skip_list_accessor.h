@@ -32,26 +32,26 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor {
 
   explicit Accessor(std::shared_ptr<ConcurrentSkipList> skip_list)
       : slHolder_(std::move(skip_list)) {
-    HCL_LOG_TRACE("Accessor::Accessor(skip_list)");
+    HCL_LOG_TRACE();
     sl_ = slHolder_.get();
     assert(sl_ != nullptr);
     sl_->recycler_.addRef();
   }
 
   explicit Accessor(ConcurrentSkipList* skip_list) : sl_(skip_list) {
-    HCL_LOG_TRACE("Accessor::Accessor(skip_list*)");
+    HCL_LOG_TRACE();
     assert(sl_ != nullptr);
     sl_->recycler_.addRef();
   }
 
   Accessor(const Accessor& accessor)
       : sl_(accessor.sl_), slHolder_(accessor.slHolder_) {
-    HCL_LOG_TRACE("Accessor::Accessor(copy)");
+    HCL_LOG_TRACE();
     sl_->recycler_.addRef();
   }
 
   Accessor& operator=(const Accessor& accessor) {
-    HCL_LOG_TRACE("Accessor::operator=");
+    HCL_LOG_TRACE();
     if (this != &accessor) {
       slHolder_ = accessor.slHolder_;
       sl_->recycler_.releaseRef();
@@ -64,107 +64,107 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor {
   ~Accessor() { sl_->recycler_.releaseRef(); }
 
   bool empty() const {
-    HCL_LOG_TRACE("Accessor::empty");
+    HCL_LOG_TRACE();
     return sl_->size() == 0;
   }
   size_t size() const {
-    HCL_LOG_TRACE("Accessor::size");
+    HCL_LOG_TRACE();
     return sl_->size();
   }
   size_type max_size() const {
-    HCL_LOG_TRACE("Accessor::max_size");
+    HCL_LOG_TRACE();
     return std::numeric_limits<size_type>::max();
   }
 
   iterator find(const key_type& value) {
-    HCL_LOG_TRACE("Accessor::find");
+    HCL_LOG_TRACE();
     return iterator(sl_->find(value));
   }
   const_iterator find(const key_type& value) const {
-    HCL_LOG_TRACE("Accessor::find");
+    HCL_LOG_TRACE();
     return iterator(sl_->find(value));
   }
   size_type count(const key_type& data) const {
-    HCL_LOG_TRACE("Accessor::count");
+    HCL_LOG_TRACE();
     return contains(data);
   }
 
   iterator begin() const {
-    HCL_LOG_TRACE("Accessor::begin");
+    HCL_LOG_TRACE();
     NodeType* head = sl_->head_.load(std::memory_order_acquire);
     return iterator(head->next());
   }
   iterator end() const {
-    HCL_LOG_TRACE("Accessor::end");
+    HCL_LOG_TRACE();
     return iterator(nullptr);
   }
   const_iterator cbegin() const {
-    HCL_LOG_TRACE("Accessor::cbegin");
+    HCL_LOG_TRACE();
     return begin();
   }
   const_iterator cend() const {
-    HCL_LOG_TRACE("Accessor::cend");
+    HCL_LOG_TRACE();
     return end();
   }
 
   template <typename U, typename = typename std::enable_if<
                             std::is_convertible<U, T>::value>::type>
   std::pair<iterator, bool> insert(U&& data) {
-    HCL_LOG_TRACE("Accessor::insert");
+    HCL_LOG_TRACE();
     auto ret = sl_->addOrGetData(std::forward<U>(data));
     return std::make_pair(iterator(ret.first), ret.second);
   }
   size_t erase(const key_type& data) {
-    HCL_LOG_TRACE("Accessor::erase");
+    HCL_LOG_TRACE();
     return remove(data);
   }
 
   iterator lower_bound(const key_type& data) const {
-    HCL_LOG_TRACE("Accessor::lower_bound");
+    HCL_LOG_TRACE();
     return iterator(sl_->lower_bound(data));
   }
 
   size_t height() const {
-    HCL_LOG_TRACE("Accessor::height");
+    HCL_LOG_TRACE();
     return sl_->height();
   }
 
   const key_type* first() const {
-    HCL_LOG_TRACE("Accessor::first");
+    HCL_LOG_TRACE();
     return sl_->first();
   }
   const key_type* last() const {
-    HCL_LOG_TRACE("Accessor::last");
+    HCL_LOG_TRACE();
     return sl_->last();
   }
 
   bool pop_back() {
-    HCL_LOG_TRACE("Accessor::pop_back");
+    HCL_LOG_TRACE();
     auto last = sl_->last();
     return last ? sl_->remove(*last) : false;
   }
 
   std::pair<key_type*, bool> addOrGetData(const key_type& data) {
-    HCL_LOG_TRACE("Accessor::addOrGetData");
+    HCL_LOG_TRACE();
     auto ret = sl_->addOrGetData(data);
     return std::make_pair(&ret.first->data(), ret.second);
   }
 
   SkipListType* skiplist() const {
-    HCL_LOG_TRACE("Accessor::skiplist");
+    HCL_LOG_TRACE();
     return sl_;
   }
 
   bool contains(const key_type& data) const {
-    HCL_LOG_TRACE("Accessor::contains");
+    HCL_LOG_TRACE();
     return sl_->find(data);
   }
   bool add(const key_type& data) {
-    HCL_LOG_TRACE("Accessor::add");
+    HCL_LOG_TRACE();
     return sl_->addOrGetData(data).second;
   }
   bool remove(const key_type& data) {
-    HCL_LOG_TRACE("Accessor::remove");
+    HCL_LOG_TRACE();
     return sl_->remove(data);
   }
 };
@@ -179,46 +179,46 @@ class IteratorFacade {
   using iterator_category = Tag;
 
   friend bool operator==(D const& lhs, D const& rhs) {
-    HCL_LOG_TRACE("IteratorFacade::operator==");
+    HCL_LOG_TRACE();
     return equal(lhs, rhs);
   }
 
   friend bool operator!=(D const& lhs, D const& rhs) {
-    HCL_LOG_TRACE("IteratorFacade::operator!=");
+    HCL_LOG_TRACE();
     return !(lhs == rhs);
   }
 
   V& operator*() const {
-    HCL_LOG_TRACE("IteratorFacade::operator*");
+    HCL_LOG_TRACE();
     return asDerivedConst().dereference();
   }
 
   V* operator->() const {
-    HCL_LOG_TRACE("IteratorFacade::operator->");
+    HCL_LOG_TRACE();
     return std::addressof(operator*());
   }
 
   D& operator++() {
-    HCL_LOG_TRACE("IteratorFacade::operator++");
+    HCL_LOG_TRACE();
     asDerived().increment();
     return asDerived();
   }
 
   D operator++(int) {
-    HCL_LOG_TRACE("IteratorFacade::operator++=int");
+    HCL_LOG_TRACE();
     auto ret = asDerived();
     asDerived().increment();
     return ret;
   }
 
   D& operator--() {
-    HCL_LOG_TRACE("IteratorFacade::operator--");
+    HCL_LOG_TRACE();
     asDerived().decrement();
     return asDerived();
   }
 
   D operator--(int) {
-    HCL_LOG_TRACE("IteratorFacade::operator--=int");
+    HCL_LOG_TRACE();
     auto ret = asDerived();
     asDerived().decrement();
     return ret;
@@ -226,17 +226,17 @@ class IteratorFacade {
 
  private:
   D& asDerived() {
-    HCL_LOG_TRACE("IteratorFacade::asDerived");
+    HCL_LOG_TRACE();
     return static_cast<D&>(*this);
   }
 
   D const& asDerivedConst() const {
-    HCL_LOG_TRACE("IteratorFacade::asDerivedConst");
+    HCL_LOG_TRACE();
     return static_cast<D const&>(*this);
   }
 
   static bool equal(D const& lhs, D const& rhs) {
-    HCL_LOG_TRACE("IteratorFacade::equal");
+    HCL_LOG_TRACE();
     return lhs.equal(rhs);
   }
 };
@@ -260,13 +260,13 @@ class csl_iterator : public IteratorFacade<csl_iterator<ValT, NodeT>, ValT,
       : node_(other.node_) {}
 
   size_t nodeSize() const {
-    HCL_LOG_TRACE("csl_iterator::nodeSize");
+    HCL_LOG_TRACE();
     return node_ == nullptr ? 0
                             : node_->height() * sizeof(NodeT*) + sizeof(*this);
   }
 
   bool good() const {
-    HCL_LOG_TRACE("csl_iterator::good");
+    HCL_LOG_TRACE();
     return node_ != nullptr;
   }
 
@@ -276,15 +276,15 @@ class csl_iterator : public IteratorFacade<csl_iterator<ValT, NodeT>, ValT,
   friend class IteratorFacade<csl_iterator, ValT, std::forward_iterator_tag>;
 
   void increment() {
-    HCL_LOG_TRACE("csl_iterator::increment");
+    HCL_LOG_TRACE();
     node_ = node_->next();
   }
   bool equal(const csl_iterator& other) const {
-    HCL_LOG_TRACE("csl_iterator::equal");
+    HCL_LOG_TRACE();
     return node_ == other.node_;
   }
   value_type& dereference() const {
-    HCL_LOG_TRACE("csl_iterator::dereference");
+    HCL_LOG_TRACE();
     return node_->data();
   }
 
@@ -305,17 +305,17 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
 
   Skipper(std::shared_ptr<SkipListType> skipList)
       : accessor_(std::move(skipList)) {
-    HCL_LOG_TRACE("Skipper::Skipper");
+    HCL_LOG_TRACE();
     init();
   }
 
   Skipper(const Accessor& accessor) : accessor_(accessor) {
-    HCL_LOG_TRACE("Skipper::Skipper copy");
+    HCL_LOG_TRACE();
     init();
   }
 
   void init() {
-    HCL_LOG_TRACE("Skipper::init");
+    HCL_LOG_TRACE();
     NodeType* head_node = head();
     headHeight_ = head_node->height();
     for (int i = 0; i < headHeight_; ++i) {
@@ -330,7 +330,7 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
   }
 
   Skipper& operator++() {
-    HCL_LOG_TRACE("Skipper::operator++");
+    HCL_LOG_TRACE();
     preds_[0] = succs_[0];
     succs_[0] = preds_[0]->skip(0);
     int height = curHeight();
@@ -342,49 +342,49 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
   }
 
   Accessor& accessor() {
-    HCL_LOG_TRACE("Skipper::accessor");
+    HCL_LOG_TRACE();
     return accessor_;
   }
   const Accessor& accessor() const {
-    HCL_LOG_TRACE("Skipper::accessor const");
+    HCL_LOG_TRACE();
     return accessor_;
   }
 
   bool good() const {
-    HCL_LOG_TRACE("Skipper::good");
+    HCL_LOG_TRACE();
     return succs_[0] != nullptr;
   }
 
   int maxLayer() const {
-    HCL_LOG_TRACE("Skipper::maxLayer");
+    HCL_LOG_TRACE();
     return headHeight_ - 1;
   }
 
   int curHeight() const {
-    HCL_LOG_TRACE("Skipper::curHeight");
+    HCL_LOG_TRACE();
     return succs_[0] ? std::min(headHeight_, succs_[0]->height()) : 0;
   }
 
   const value_type& data() const {
-    HCL_LOG_TRACE("Skipper::value_type");
+    HCL_LOG_TRACE();
     assert(succs_[0] != nullptr);
     return succs_[0]->data();
   }
 
   value_type& operator*() const {
-    HCL_LOG_TRACE("Skipper::operator*");
+    HCL_LOG_TRACE();
     assert(succs_[0] != nullptr);
     return succs_[0]->data();
   }
 
   value_type* operator->() {
-    HCL_LOG_TRACE("Skipper::operator->");
+    HCL_LOG_TRACE();
     assert(succs_[0] != nullptr);
     return &succs_[0]->data();
   }
 
   bool to(const value_type& data) {
-    HCL_LOG_TRACE("Skipper::to");
+    HCL_LOG_TRACE();
     int layer = curHeight() - 1;
     if (layer < 0) {
       return false;
@@ -409,7 +409,7 @@ class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Skipper {
 
  private:
   NodeType* head() const {
-    HCL_LOG_TRACE("Skipper::head");
+    HCL_LOG_TRACE();
     return accessor_.skiplist()->head_.load(std::memory_order_acquire);
   }
 

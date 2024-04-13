@@ -57,7 +57,6 @@ class global_clock {
    * Destructor removes shared memory from the server
    */
   ~global_clock() {
-    AutoTrace trace = AutoTrace("hcl::~global_clock", NULL);
     if (is_server) bip::file_mapping::remove(backed_file.c_str());
   }
 
@@ -74,7 +73,7 @@ class global_clock {
         func_prefix(name_),
         server_on_node(HCL_CONF->SERVER_ON_NODE),
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_) {
-    AutoTrace trace = AutoTrace("hcl::global_clock");
+    HCL_LOG_TRACE();
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     name = name + "_" + std::to_string(my_server);
@@ -114,22 +113,26 @@ class global_clock {
     }
   }
   chrono_time *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return start;
     else
       return nullptr;
   }
   void lock() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server) mutex->lock();
   }
 
   void unlock() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server) mutex->unlock();
   }
   /*
    * GetTime() returns the time on the server
    */
   HTime GetTime() {
+    HCL_LOG_TRACE();
     if (server_on_node) {
       return LocalGetTime();
     } else {
@@ -143,7 +146,7 @@ class global_clock {
    * or the local time if the server requested is the current client server
    */
   HTime GetTimeServer(uint16_t &server) {
-    AutoTrace trace = AutoTrace("hcl::global_clock::GetTimeServer", server);
+    HCL_LOG_TRACE();
     if (my_server == server && server_on_node) {
       return LocalGetTime();
     } else {
@@ -156,7 +159,7 @@ class global_clock {
    * high_resolution_clock
    */
   HTime LocalGetTime() {
-    AutoTrace trace = AutoTrace("hcl::global_clock::GetTime", NULL);
+    HCL_LOG_TRACE();
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
     auto t2 = std::chrono::high_resolution_clock::now();

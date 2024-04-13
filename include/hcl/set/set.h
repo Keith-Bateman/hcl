@@ -84,6 +84,7 @@ class set : public container {
   void bind_functions() override;
 
   MySet *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return myset;
     else

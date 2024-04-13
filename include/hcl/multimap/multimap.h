@@ -84,6 +84,7 @@ class multimap : public container {
   void bind_functions() override;
 
   MyMap *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return mymap;
     else

@@ -83,6 +83,7 @@ class queue : public container {
   explicit queue(CharStruct name_ = "TEST_QUEUE",
                  uint16_t port = HCL_CONF->RPC_PORT);
   Queue *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return my_queue;
     else

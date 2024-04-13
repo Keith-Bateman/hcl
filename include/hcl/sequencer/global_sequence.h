@@ -43,16 +43,19 @@ class global_sequence : public container {
   ~global_sequence() { this->container::~container(); }
 
   void construct_shared_memory() override {
+    HCL_LOG_TRACE();
     value = segment.construct<uint64_t>(name.c_str())(0);
   }
 
   void open_shared_memory() override {
+    HCL_LOG_TRACE();
     std::pair<uint64_t *, bip::managed_mapped_file::size_type> res;
     res = segment.find<uint64_t>(name.c_str());
     value = res.first;
   }
 
   void bind_functions() override {
+    HCL_LOG_TRACE();
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -72,7 +75,7 @@ class global_sequence : public container {
   global_sequence(CharStruct name_ = "TEST_GLOBAL_SEQUENCE",
                   uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
-    AutoTrace trace = AutoTrace("hcl::global_sequence");
+    HCL_LOG_TRACE();
     if (is_server) {
       construct_shared_memory();
       bind_functions();
@@ -81,12 +84,14 @@ class global_sequence : public container {
     }
   }
   uint64_t *data() {
+    HCL_LOG_TRACE();
     if (server_on_node || is_server)
       return value;
     else
       nullptr;
   }
   uint64_t GetNextSequence() {
+    HCL_LOG_TRACE();
     if (is_local()) {
       return LocalGetNextSequence();
     } else {
@@ -95,6 +100,7 @@ class global_sequence : public container {
     }
   }
   uint64_t GetNextSequenceServer(uint16_t &server) {
+    HCL_LOG_TRACE();
     if (is_local(server)) {
       return LocalGetNextSequence();
     } else {
@@ -103,6 +109,7 @@ class global_sequence : public container {
   }
 
   uint64_t LocalGetNextSequence() {
+    HCL_LOG_TRACE();
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
     return ++*value;

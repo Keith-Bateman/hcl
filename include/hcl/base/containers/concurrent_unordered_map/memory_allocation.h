@@ -5,6 +5,8 @@
 #else
 #error "no config"
 #endif
+#include <hcl/common/logging.h>
+
 #include <algorithm>
 #include <boost/lockfree/queue.hpp>
 #include <cstdarg>
@@ -50,6 +52,7 @@ class memory_pool {
 
  public:
   memory_pool(uint32_t csize) : chunk_size(csize) {
+    HCL_LOG_TRACE();
     memory_chunks = new boost::lockfree::queue<node_type *>(1024);
     active_queue = new boost::lockfree::queue<node_type *>(1024);
     free_queue = new boost::lockfree::queue<node_type *>(1024);
@@ -69,6 +72,7 @@ class memory_pool {
   }
 
   ~memory_pool() {
+    HCL_LOG_TRACE();
     int n = 0;
     node_type *chunk = nullptr;
     while (memory_chunks->pop(chunk)) {
@@ -81,6 +85,7 @@ class memory_pool {
   }
 
   node_type *memory_pool_pop() {
+    HCL_LOG_TRACE();
     node_type *n = nullptr;
     while (!active_queue->pop(n)) {
       node_type *t = nullptr;
@@ -110,6 +115,7 @@ class memory_pool {
     return n;
   }
   void memory_pool_push(node_type *n) {
+    HCL_LOG_TRACE();
     free_queue->push(n);
     free_nodes.fetch_add(1);
   }

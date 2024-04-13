@@ -26,7 +26,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 set<KeyType, Hash, Compare, Allocator, SharedType>::set(CharStruct name_,
                                                         uint16_t port)
     : container(name_, port), myset() {
-  AutoTrace trace = AutoTrace("hcl::set");
+  HCL_LOG_TRACE();
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -45,7 +45,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPut(
     KeyType &key) {
-  AutoTrace trace = AutoTrace("hcl::set::Put(local)", key);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   auto value = GetData<Allocator, KeyType, SharedType>(key);
@@ -63,12 +63,12 @@ bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPut(
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Put(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
     return LocalPut(key);
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::Put(remote)", key);
     return RPC_CALL_WRAPPER("_Put", key_int, bool, key);
   }
 }
@@ -83,7 +83,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGet(
     KeyType &key) {
-  AutoTrace trace = AutoTrace("hcl::set::Get(local)", key);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   typename MySet::iterator iterator = myset->find(key);
@@ -103,12 +103,12 @@ bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGet(
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Get(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
     return LocalGet(key);
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::Get(remote)", key);
     typedef bool ret_type;
     return RPC_CALL_WRAPPER("_Get", key_int, ret_type, key);
   }
@@ -118,7 +118,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalErase(
     KeyType &key) {
-  AutoTrace trace = AutoTrace("hcl::set::Erase(local)", key);
+  HCL_LOG_TRACE();
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   size_t s = myset->erase(key);
@@ -129,12 +129,12 @@ bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalErase(
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Erase(KeyType &key) {
+  HCL_LOG_TRACE();
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
     return LocalErase(key);
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::Erase(remote)", key);
     typedef bool ret_type;
     return RPC_CALL_WRAPPER("_Erase", key_int, ret_type, key);
   }
@@ -151,7 +151,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::Contains(KeyType &key_start,
                                                              KeyType &key_end) {
-  AutoTrace trace = AutoTrace("hcl::set::Contains", key_start, key_end);
+  HCL_LOG_TRACE();
   std::vector<KeyType> final_values = std::vector<KeyType>();
   auto current_server = ContainsInServer(key_start, key_end);
   final_values.insert(final_values.end(), current_server.begin(),
@@ -171,7 +171,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::GetAllData() {
-  AutoTrace trace = AutoTrace("hcl::set::GetAllData");
+  HCL_LOG_TRACE();
   std::vector<KeyType> final_values = std::vector<KeyType>();
   auto current_server = GetAllDataInServer();
   final_values.insert(final_values.end(), current_server.begin(),
@@ -191,7 +191,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType> set<KeyType, Hash, Compare, Allocator,
                          SharedType>::LocalContainsInServer(KeyType &key_start,
                                                             KeyType &key_end) {
-  AutoTrace trace = AutoTrace("hcl::set::ContainsInServer", key_start, key_end);
+  HCL_LOG_TRACE();
   std::vector<KeyType> final_values = std::vector<KeyType>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -228,6 +228,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType> set<KeyType, Hash, Compare, Allocator,
                          SharedType>::ContainsInServer(KeyType &key_start,
                                                        KeyType &key_end) {
+  HCL_LOG_TRACE();
   if (is_local()) {
     return LocalContainsInServer(key_start, key_end);
   } else {
@@ -242,7 +243,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGetAllDataInServer() {
-  AutoTrace trace = AutoTrace("hcl::set::GetAllDataInServer", NULL);
+  HCL_LOG_TRACE();
   std::vector<KeyType> final_values = std::vector<KeyType>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -261,6 +262,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::GetAllDataInServer() {
+  HCL_LOG_TRACE();
   if (is_local()) {
     return LocalGetAllDataInServer();
   } else {
@@ -274,7 +276,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirst() {
-  AutoTrace trace = AutoTrace("hcl::set::SeekFirst(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (myset->size() > 0) {
     auto iterator = myset->begin();  // We want First (smallest) value in set
@@ -288,10 +290,10 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, KeyType> set<KeyType, Hash, Compare, Allocator,
                              SharedType>::SeekFirst(uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalSeekFirst();
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::SeekFirst(remote)", key_int);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER1("_SeekFirst", key_int, ret_type);
   }
@@ -302,7 +304,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, std::vector<KeyType>>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirstN(
     uint32_t n) {
-  AutoTrace trace = AutoTrace("hcl::set::LocalSeekFirstN(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto keys = std::vector<KeyType>();
   auto iterator = myset->begin();
@@ -323,7 +325,6 @@ set<KeyType, Hash, Compare, Allocator, SharedType>::SeekFirstN(
   if (is_local(key_int)) {
     return LocalSeekFirstN(n);
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::SeekFirstN(remote)", key_int, n);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER("_SeekFirstN", key_int, ret_type, n);
   }
@@ -333,7 +334,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPopFirst() {
-  AutoTrace trace = AutoTrace("hcl::set::PopFirst(local)");
+  HCL_LOG_TRACE();
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (myset->size() > 0) {
     auto iterator = myset->begin();  // We want First (smallest) value in set
@@ -348,10 +349,10 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 std::pair<bool, KeyType> set<KeyType, Hash, Compare, Allocator,
                              SharedType>::PopFirst(uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalPopFirst();
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::PopFirst(remote)", key_int);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER1("_PopFirst", key_int, ret_type);
   }
@@ -360,7 +361,7 @@ std::pair<bool, KeyType> set<KeyType, Hash, Compare, Allocator,
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 size_t set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSize() {
-  AutoTrace trace = AutoTrace("hcl::set::Size(local)");
+  HCL_LOG_TRACE();
   return myset->size();
 }
 
@@ -368,10 +369,10 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 size_t set<KeyType, Hash, Compare, Allocator, SharedType>::Size(
     uint16_t &key_int) {
+  HCL_LOG_TRACE();
   if (is_local(key_int)) {
     return LocalSize();
   } else {
-    AutoTrace trace = AutoTrace("hcl::set::Size(remote)", key_int);
     typedef size_t ret_type;
     return RPC_CALL_WRAPPER1("_Size", key_int, ret_type);
   }
@@ -381,6 +382,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 void set<KeyType, Hash, Compare, Allocator,
          SharedType>::construct_shared_memory() {
+  HCL_LOG_TRACE();
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct set in the shared memory space. */
   myset = segment.construct<MySet>(name.c_str())(Compare(), alloc_inst);
@@ -389,6 +391,7 @@ void set<KeyType, Hash, Compare, Allocator,
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 void set<KeyType, Hash, Compare, Allocator, SharedType>::open_shared_memory() {
+  HCL_LOG_TRACE();
   std::pair<MySet *, boost::interprocess::managed_mapped_file::size_type> res;
   res = segment.find<MySet>(name.c_str());
   myset = res.first;
@@ -397,6 +400,7 @@ void set<KeyType, Hash, Compare, Allocator, SharedType>::open_shared_memory() {
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
+  HCL_LOG_TRACE();
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
