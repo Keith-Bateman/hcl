@@ -27,6 +27,6 @@ cmake \
     -DHCL_ENABLE_TESTING=ON \
     ..
 
-cmake --build . -- -j 8 VERBOSE=1 || exit 1
+cmake --build . -- -j 8 || exit 1
 
 popd
