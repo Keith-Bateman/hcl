@@ -35,7 +35,9 @@ extern "C" {
 
   #define HCL_LOGGER_NAME "HCL"
 
-  #ifdef HCL_LOGGER_LEVEL_DEBUG
+  #ifdef HCL_LOGGER_LEVEL_TRACE
+    #define HCL_LOGGER_INIT() cpp_logger_clog_level(CPP_LOGGER_TRACE, HCL_LOGGER_NAME);
+  #elif defined(HCL_LOGGER_LEVEL_DEBUG)
     #define HCL_LOGGER_INIT() cpp_logger_clog_level(CPP_LOGGER_DEBUG, HCL_LOGGER_NAME);
   #elif defined(HCL_LOGGER_LEVEL_INFO)
     #define HCL_LOGGER_INIT() cpp_logger_clog_level(CPP_LOGGER_INFO, HCL_LOGGER_NAME);
