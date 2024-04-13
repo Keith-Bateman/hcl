@@ -14,6 +14,7 @@
 #define INCLUDE_HCL_SET_SET_CPP_
 
 /* Constructor to deallocate the shared memory*/
+#include <cstdint>
 template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::~set() {
@@ -305,7 +306,7 @@ set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirstN(
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto keys = std::vector<KeyType>();
   auto iterator = myset->begin();
-  int i = 0;
+  uint32_t i = 0;
   while (iterator != myset->end() && i < n) {
     keys.push_back(*iterator);
     i++;

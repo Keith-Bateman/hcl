@@ -70,14 +70,17 @@ void hcl_set_operations(struct thread_arg *t)
        if(op==0)
        {
 	     auto b = s->LocalInsert(k);
+  (void) b;
        }
        else if(op==1)
        {
 	       auto b = s->LocalFind(k);
+  (void) b;
        }
        else
        {
 	       auto b = s->LocalErase(k);
+  (void) b;
        }
   }
 }
@@ -94,14 +97,12 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   int ranks_per_server = comm_size, num_request = 10000;
-  long size_of_request = 1000;
   bool debug = false;
   bool server_on_node = false;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
   if (argc > 2) num_request = atoi(argv[2]);
-  if (argc > 3) size_of_request = (long)atol(argv[3]);
-  if (argc > 4) server_on_node = (bool)atoi(argv[4]);
-  if (argc > 5) debug = (bool)atoi(argv[5]);
+    if (argc > 3) server_on_node = (bool)atoi(argv[3]);
+  if (argc > 4) debug = (bool)atoi(argv[4]);
 
   int len;
   char processor_name[MPI_MAX_PROCESSOR_NAME];
@@ -117,12 +118,11 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   std::string proc_name = std::string(processor_name);
 
-  size_t size_of_elem = sizeof(int);
 
   HCL_CONF->IS_SERVER = is_server;
   HCL_CONF->MY_SERVER = my_server;
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
     std::uniform_int_distribution<int> dist(0,100000000);
 
     rd.seed(my_rank);
-    auto die = std::bind(dist,rd);
+    std::bind(dist,rd);
 
     int num_ops = num_request / client_comm_size;
     int rem = num_request % client_comm_size;

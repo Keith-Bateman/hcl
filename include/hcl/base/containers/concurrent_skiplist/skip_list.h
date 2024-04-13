@@ -220,7 +220,7 @@ class ConcurrentSkipList {
       if (!isMarked) {
         nodeToDelete = succs[layer];
         nodeHeight = nodeToDelete->height();
-        bool ng = nodeToDelete->acquireGuard();
+        nodeToDelete->acquireGuard();
         if (nodeToDelete->markedForRemoval()) {
           nodeToDelete->releaseGuard();
           return false;
@@ -346,7 +346,7 @@ class ConcurrentSkipList {
     // NodeType::create(recycler_.alloc(), height, value_type(), true);
 
     {
-      bool g = oldHead->acquireGuard();
+      oldHead->acquireGuard();
       newHead->copyHead(oldHead);
       NodeType* expected = oldHead;
       if (!head_.compare_exchange_strong(expected, newHead,

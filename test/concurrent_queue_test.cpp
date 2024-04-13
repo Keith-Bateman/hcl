@@ -51,6 +51,7 @@ void stl_queue_operations(struct thread_arg *t)
       auto k = stl_queue->front();
       stl_queue->pop();
       m.unlock();
+      (void) k;
    }
 }
 void hcl_queue_operations(struct thread_arg *t)
@@ -60,11 +61,13 @@ void hcl_queue_operations(struct thread_arg *t)
   {
        int k = random()%1000000;
        auto b = hcl_queue->LocalPush(k);
+      (void) b;
   }
 
   for(int i=0;i<t->num_operations;i++)
   {
        auto b = hcl_queue->LocalPop();
+       (void) b;
   }
 }
 
@@ -80,14 +83,12 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   int ranks_per_server = comm_size, num_request = 10000;
-  long size_of_request = 1000;
   bool debug = false;
   bool server_on_node = false;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
   if (argc > 2) num_request = atoi(argv[2]);
-  if (argc > 3) size_of_request = (long)atol(argv[3]);
-  if (argc > 4) server_on_node = (bool)atoi(argv[4]);
-  if (argc > 5) debug = (bool)atoi(argv[5]);
+  if (argc > 3) server_on_node = (bool)atoi(argv[3]);
+  if (argc > 4) debug = (bool)atoi(argv[4]);
 
   int len;
   char processor_name[MPI_MAX_PROCESSOR_NAME];
@@ -103,8 +104,8 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   std::string proc_name = std::string(processor_name);
 
@@ -128,7 +129,7 @@ int main(int argc, char *argv[]) {
 
   rd.seed(my_rank);
   auto die = std::bind(dist,rd);
-  
+  (void) die;
   double local_queue_throughput_l=0,local_queue_throughput=0;
   double elapsed_time = 0;
   double remote_queue_throughput_l=0,remote_queue_throughput=0;
@@ -206,6 +207,7 @@ int main(int argc, char *argv[]) {
     {
 	uint64_t s = random()%num_servers;
 	std::pair<bool,int> r = hcl_queue->Pop(s);
+  (void) r;
     }
   
     auto t2 = std::chrono::high_resolution_clock::now();

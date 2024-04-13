@@ -94,7 +94,7 @@ class concurrent_unordered_map : public container {
     uint64_t v = hashval % totalSize;
     uint64_t offset = rem * (localSize + 1);
     uint64_t id = -1;
-    if (v >= 0 && v < totalSize) {
+    if (v < totalSize) {
       if (v < offset)
         id = v / (localSize + 1);
       else
@@ -199,11 +199,8 @@ class concurrent_unordered_map : public container {
   map_type *data() { return my_table; }
 
   bool LocalInsert(KeyT &k, ValueT &v) {
-    uint32_t r = my_table->insert(k, v);
-    if (r != NOT_IN_TABLE)
-      return true;
-    else
-      return false;
+    my_table->insert(k, v);
+    return true;
   }
   bool LocalFind(KeyT &k) {
     if (my_table->find(k) != NOT_IN_TABLE)
@@ -217,7 +214,7 @@ class concurrent_unordered_map : public container {
   ValueT LocalGetValue(KeyT &k) {
     ValueT v;
     new (&v) ValueT();
-    bool b = LocalGet(k, &v);
+    LocalGet(k, &v);
     return v;
   }
 

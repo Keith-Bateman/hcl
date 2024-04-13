@@ -63,7 +63,7 @@ class container {
     Allocator allocator(segment.get_segment_manager());
     SharedType value(allocator);
     value.assign(data);
-    return std::move(value);
+    return value;
   }
 
   virtual ~container() {

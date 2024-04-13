@@ -36,8 +36,8 @@ int main(int argc, char **argv) {
 
   char *server_list_path = std::getenv("SERVER_LIST_PATH");
   bool is_server = (my_rank + 1) % ranks_per_server == 0;
-  int my_server = my_rank / ranks_per_server;
-  int num_servers = comm_size / ranks_per_server;
+  size_t my_server = my_rank / ranks_per_server;
+  size_t num_servers = comm_size / ranks_per_server;
 
   if (my_rank == 0) {
     std::cout << num_servers << " Server Test" << std::endl;

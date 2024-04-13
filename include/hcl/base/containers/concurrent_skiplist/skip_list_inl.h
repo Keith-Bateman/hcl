@@ -146,7 +146,7 @@ class SkipListNode {
 
   value_type data_;
 
-  std::atomic<SkipListNode*> skip_[0];
+  std::atomic<SkipListNode*> skip_[1];
 };
 
 class SkipListRandomHeight {
@@ -232,7 +232,7 @@ class NodeRecycler<NodeType,
   explicit NodeRecycler() : refs_(0), dirty_(false) {
     chunk_size = 100;
     node_queues.resize(64);
-    for (int i = 0; i < node_queues.size(); i++)
+    for (long unsigned int i = 0; i < node_queues.size(); i++)
       node_queues[i] = new boost::lockfree::queue<NodeType*>(128);
   }
 
@@ -243,17 +243,16 @@ class NodeRecycler<NodeType,
         NodeType::destroy(alloc_, node);
       }
     }
-    for (int i = 0; i < node_queues.size(); i++) delete node_queues[i];
+    for (long unsigned int i = 0; i < node_queues.size(); i++) delete node_queues[i];
   }
 
   void push(int h, NodeType* node) {
     assert(h >= 0 && h < 64);
     node_queues[h]->push(node);
-    bool b = false;
     bool p = false;
     bool n = true;
     assert(refs() > 0);
-    b = dirty_.compare_exchange_strong(p, n, std::memory_order_relaxed);
+    dirty_.compare_exchange_strong(p, n, std::memory_order_relaxed);
   }
   NodeType* pop(int h, bool ishead) {
     NodeType* n = nullptr;
@@ -268,10 +267,9 @@ class NodeRecycler<NodeType,
     }
 
     assert(refs() >= 0);
-    bool b = false;
     bool p = false;
     bool p_n = true;
-    b = dirty_.compare_exchange_strong(p, p_n, std::memory_order_relaxed);
+    dirty_.compare_exchange_strong(p, p_n, std::memory_order_relaxed);
     n->setFlags(0);
     if (ishead) n->setIsHeadNode();
     return n;
