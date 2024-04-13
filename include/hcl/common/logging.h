@@ -36,7 +36,7 @@ std::string get_time() {
 #ifdef HCL_LOGGER_NO_LOG
 //=============================================================================
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
-#define HCL_LOG_ERROR(format, ...) fprintf(stderr, __VA_ARGS__);
+#define HCL_LOG_ERROR(format, ...) fprintf(stderr, format, __VA_ARGS__);
 #define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_DEBUG(format, ...) HCL_NOOP_MACRO
@@ -127,7 +127,7 @@ std::string get_time() {
 #endif
 #else
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
-#define HCL_LOG_ERROR(format, ...) fprintf(stderr, __VA_ARGS__);
+#define HCL_LOG_ERROR(format, ...) fprintf(stderr, format, __VA_ARGS__);
 #define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_DEBUG(format, ...) HCL_NOOP_MACRO
