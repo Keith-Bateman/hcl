@@ -282,6 +282,7 @@ std::vector<std::pair<KeyType, MappedType>> multimap<
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
     auto my_server_i = my_server;
+    return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);
   }
 }
 

@@ -110,7 +110,7 @@ class ConfigurationManager {
       if (strlen(DEVICE.data()) > 0) URI += (DEVICE + "/");
       if (strlen(INTERFACE.data()) > 0) URI += INTERFACE;
     }
-    printf(
+    HCL_LOG_DEBUG(
         "Thallium is using URI %s with PROTOCOL %s, DEVICE %s, INTERFACE %s\n",
         URI.c_str(), PROTOCOL.c_str(), DEVICE.c_str(), INTERFACE.c_str());
   }
