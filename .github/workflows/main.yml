@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         COMMUNICATION: ["THALLIUM"]
-        PROTOCOL: ["TCP","UCT"]
+        PROTOCOL: ["OFI","UCX"]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
