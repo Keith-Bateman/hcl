@@ -22,6 +22,7 @@
 #include <hcl/common/enumerations.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/constants.h>
+#include <hcl/common/logging.h>
 
 #include <boost/thread/mutex.hpp>
 #include <fstream>
@@ -79,6 +80,7 @@ class ConfigurationManager {
         BACKED_FILE_DIR("/dev/shm"),
         DYN_CONFIG(false) {
     AutoTrace trace = AutoTrace("ConfigurationManager");
+    HCL_LOGGER_INIT();
     char* uri_str = getenv(HCL_THALLIUM_URI_ENV);
     if (uri_str != nullptr) {
       URI = CharStruct(uri_str);
@@ -165,6 +167,8 @@ class ConfigurationManager {
     IS_SERVER = true;
     MY_SERVER = false;
     SERVER_ON_NODE = true;
+  }
+  ~ConfigurationManager() {
   }
 };
 

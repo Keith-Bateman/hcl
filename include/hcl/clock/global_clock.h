@@ -64,16 +64,16 @@ class global_clock {
   global_clock(std::string name_ = "TEST_GLOBAL_CLOCK",
                uint16_t port = HCL_CONF->RPC_PORT)
       : is_server(HCL_CONF->IS_SERVER),
-        my_server(HCL_CONF->MY_SERVER),
-        num_servers(HCL_CONF->NUM_SERVERS),
-        comm_size(1),
-        my_rank(0),
         memory_allocated(1024ULL * 1024ULL * 128ULL),
-        name(name_),
+        my_rank(0),
+        comm_size(1),
+        num_servers(HCL_CONF->NUM_SERVERS),
+        my_server(HCL_CONF->MY_SERVER),
         segment(),
+        name(name_),
         func_prefix(name_),
-        backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_),
-        server_on_node(HCL_CONF->SERVER_ON_NODE) {
+        server_on_node(HCL_CONF->SERVER_ON_NODE),
+        backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_) {
     AutoTrace trace = AutoTrace("hcl::global_clock");
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -117,7 +117,7 @@ class global_clock {
     if (server_on_node || is_server)
       return start;
     else
-      nullptr;
+      return nullptr;
   }
   void lock() {
     if (server_on_node || is_server) mutex->lock();

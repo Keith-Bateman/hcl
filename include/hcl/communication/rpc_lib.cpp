@@ -12,6 +12,7 @@
 
 #ifndef INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
 #define INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
+#include <stdexcept>
 #if defined(HCL_HAS_CONFIG)
 #include <hcl/hcl_config.hpp>
 #else
@@ -56,8 +57,6 @@ template <typename Response, typename... Args>
 Response RPC::call(uint16_t server_index, CharStruct const &func_name,
                    Args... args) {
   AutoTrace trace = AutoTrace("RPC::call", server_index, func_name);
-  int16_t port = server_port + server_index;
-
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
@@ -69,6 +68,7 @@ Response RPC::call(uint16_t server_index, CharStruct const &func_name,
     }
 #endif
   }
+  throw std::logic_error("Function not implemented error.");
 }
 
 template <typename Response, typename... Args>
@@ -86,6 +86,7 @@ Response RPC::call(CharStruct &server, uint16_t &port,
     }
 #endif
   }
+  throw std::logic_error("Function not implemented error.");
 }
 
 template <typename Response, typename... Args>

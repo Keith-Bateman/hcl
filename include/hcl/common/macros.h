@@ -61,6 +61,7 @@
       RPC_CALL_WRAPPER_THALLIUM_TCP()                      \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
+    throw std::logic_error("Function not yet implemented"); \
   }();
 #define RPC_CALL_WRAPPER(funcname, serverVar, ret, ...)                \
   [&]() -> ret {                                                       \
@@ -68,6 +69,7 @@
       RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
     }                                                                  \
+    throw std::logic_error("Function not yet implemented"); \
   }();
 #define RPC_CALL_WRAPPER1_CB(funcname, serverVar, ret)     \
   [&]() -> ret {                                           \
@@ -75,6 +77,7 @@
       RPC_CALL_WRAPPER_THALLIUM_TCP()                      \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret) \
     }                                                      \
+    throw std::logic_error("Function not yet implemented"); \
   }();
 
 #define RPC_CALL_WRAPPER_CB(funcname, serverVar, ret, ...)             \
@@ -83,6 +86,7 @@
       RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
     }                                                                  \
+    throw std::logic_error("Function not yet implemented"); \
   }();
 
 #endif  // INCLUDE_HCL_COMMON_MACROS_H_

@@ -2,6 +2,7 @@
     "cmake.configureArgs": [
         "-DCMAKE_PREFIX_PATH=/usr/workspace/haridev/hcl-2/install/.spack-env/view",
         "-DHCL_ENABLE_TESTING=ON",
-        "-DHCL_COMMUNICATION_PROTOCOL=UCX"
+        "-DHCL_COMMUNICATION_PROTOCOL=UCX",
+        "-DHCL_LOGGER=CPP_LOGGER"
     ]
 }

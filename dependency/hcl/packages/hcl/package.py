@@ -34,6 +34,8 @@ class Hcl(CMakePackage):
     variant("thallium", default=True, description="Enable thallium based RPC communication")
     variant("ofi", default=False, description="Enable Verbs protocol")
     variant("ucx", default=False, description="Enable UCX protocol")
+    variant("cpp-logger", default=False, description="Enable CPP Logger based logging")
+    variant("verbose", default=False, description="Enable verbose logging")
     
     depends_on('mpi')
     depends_on('mochi-thallium~cereal@0.11.3:', when='+thallium')
@@ -42,6 +44,7 @@ class Hcl(CMakePackage):
     depends_on("libfabric fabrics=rxm,sockets,tcp", when="^mercury@2:+ofi")
     depends_on('boost@1.71.0:')
     depends_on('ucx@1.13.1:', when='+ucx')
+    depends_on('cpp-logger@0.0.3:', when='+cpp-logger')
 
     def cmake_args(self):
         spec = self.spec
@@ -51,5 +54,12 @@ class Hcl(CMakePackage):
         elif self.spec.satisfies("+ofi"):
             args.append("-DHCL_COMMUNICATION_PROTOCOL=OFI")
         elif self.spec.satisfies("+ucx"):
-            args.append("-DHCL_COMMUNICATION_PROTOCOL=UCX")                
+            args.append("-DHCL_COMMUNICATION_PROTOCOL=UCX")   
+        if self.spec.satisfies("+cpp-logger"):
+            args.append("-DHCL_LOGGING=CPP_LOGGER")   
+        if self.spec.satisfies("+verbose"):
+            args.append("-DHCL_LOG_LEVEL=INFO")      
+        if self.spec.satisfies("+debug"):
+            args.append("-DHCL_LOG_LEVEL=DEBUG")
+
         return args

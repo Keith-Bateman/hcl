@@ -109,7 +109,7 @@ typedef struct CharStruct {
 
 } CharStruct;
 
-static CharStruct operator+(const std::string &a1, const CharStruct &a2) {
+[[maybe_unused]] static CharStruct operator+(const std::string &a1, const CharStruct &a2) {
   std::string added = a1 + std::string(a2.c_str());
   return CharStruct(added);
 }
