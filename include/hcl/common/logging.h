@@ -36,9 +36,9 @@ std::string get_time() {
 #ifdef HCL_LOGGER_NO_LOG
 //=============================================================================
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
-#define HCL_LOG_ERROR(...) fprintf(stderr, __VA_ARGS__);
-#define HCL_LOG_WARN(...) HCL_NOOP_MACRO
-#define HCL_LOG_INFO(...) HCL_NOOP_MACRO
+#define HCL_LOG_ERROR(format, ...) fprintf(stderr, __VA_ARGS__);
+#define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
+#define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_DEBUG(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_TRACE() HCL_NOOP_MACRO
 #define HCL_LOG_TRACE_FORMAT(...) HCL_NOOP_MACRO
@@ -97,36 +97,39 @@ std::string get_time() {
 #ifdef HCL_LOGGER_LEVEL_DEBUG
 #define HCL_LOG_DEBUG(format, ...)                                             \
   HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
-                            CPP_LOGGER_TRACE, format, __VA_ARGS__);
+                            CPP_LOGGER_DEBUG, format, __VA_ARGS__);
 #else
 #define HCL_LOG_DEBUG(format, ...) HCL_NOOP_MACRO
 #endif
 
 #ifdef HCL_LOGGER_LEVEL_INFO
-#define HCL_LOG_INFO(...) \
-  cpp_logger_clog(CPP_LOGGER_INFO, HCL_LOGGER_NAME, __VA_ARGS__);
+#define HCL_LOG_INFO(format, ...)                                              \
+  HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
+                            CPP_LOGGER_INFO, format, __VA_ARGS__);
 #else
-#define HCL_LOG_INFO(...) HCL_NOOP_MACRO
+#define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #endif
 
 #ifdef HCL_LOGGER_LEVEL_WARN
-#define HCL_LOG_WARN(...) \
-  cpp_logger_clog(CPP_LOGGER_WARN, HCL_LOGGER_NAME, __VA_ARGS__);
+#define HCL_LOG_WARN(format, ...)                                              \
+  HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
+                            CPP_LOGGER_WARN, format, __VA_ARGS__);
 #else
-#define HCL_LOG_WARN(...) HCL_NOOP_MACRO
+#define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
 #endif
 
 #ifdef HCL_LOGGER_LEVEL_ERROR
-#define HCL_LOG_ERROR(...) \
-  cpp_logger_clog(CPP_LOGGER_ERROR, HCL_LOGGER_NAME, __VA_ARGS__);
+#define HCL_LOG_ERROR(format, ...)                                             \
+  HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
+                            CPP_LOGGER_ERROR, format, __VA_ARGS__);
 #else
-#define HCL_LOG_ERROR(...) HCL_NOOP_MACRO
+#define HCL_LOG_ERROR(format, ...) HCL_NOOP_MACRO
 #endif
 #else
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
-#define HCL_LOG_ERROR(...) fprintf(stderr, __VA_ARGS__);
-#define HCL_LOG_WARN(...) HCL_NOOP_MACRO
-#define HCL_LOG_INFO(...) HCL_NOOP_MACRO
+#define HCL_LOG_ERROR(format, ...) fprintf(stderr, __VA_ARGS__);
+#define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
+#define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_DEBUG(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_TRACE() HCL_NOOP_MACRO
 #define HCL_LOG_TRACE_FORMAT(...) HCL_NOOP_MACRO
