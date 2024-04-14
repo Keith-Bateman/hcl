@@ -21,6 +21,7 @@
 template <typename F>
 void RPC::bind(CharStruct str, F func) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:

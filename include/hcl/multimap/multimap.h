@@ -85,6 +85,8 @@ class multimap : public container {
 
   MyMap *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     if (server_on_node || is_server)
       return mymap;
     else

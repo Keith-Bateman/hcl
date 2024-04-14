@@ -76,6 +76,7 @@ class concurrent_skiplist : public container {
 
   uint64_t power_of_two(int n) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     int c = 1;
     while (c < n) {
       c = 2 * c;
@@ -86,6 +87,7 @@ class concurrent_skiplist : public container {
  public:
   uint64_t serverLocation(T &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     uint64_t id = -1;
     uint64_t hashval = HashFcn()(k);
     uint64_t mask = UINT64_MAX;
@@ -98,6 +100,7 @@ class concurrent_skiplist : public container {
 
   bool isLocal(T &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_server && serverLocation(k) == serverid)
       return true;
     else
@@ -122,10 +125,17 @@ class concurrent_skiplist : public container {
     if (s != nullptr) delete s;
   }
 
-  void construct_shared_memory() override { HCL_LOG_TRACE(); }
-  void open_shared_memory() override { HCL_LOG_TRACE(); }
+  void construct_shared_memory() override {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  }
+  void open_shared_memory() override {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  }
   void bind_functions() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -159,6 +169,7 @@ class concurrent_skiplist : public container {
                                uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     a = nullptr;
     s = nullptr;
     if (is_server) {
@@ -169,15 +180,21 @@ class concurrent_skiplist : public container {
 
   bool LocalInsert(T &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     auto ret = a->insert(k);
     return ret.second;
   }
   bool LocalFind(T &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return a->contains(k);
   }
   bool LocalErase(T &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return a->remove(k);
   }
 

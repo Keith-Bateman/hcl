@@ -18,6 +18,7 @@ template <typename MappedType, typename Allocator, typename SharedType>
 queue<MappedType, Allocator, SharedType>::queue(CharStruct name_, uint16_t port)
     : container(name_, port), my_queue() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -35,6 +36,8 @@ queue<MappedType, Allocator, SharedType>::queue(CharStruct name_, uint16_t port)
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::LocalPush(MappedType &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto value = GetData<Allocator, MappedType, SharedType>(data);
   my_queue->push_back(std::move(value));
@@ -51,9 +54,13 @@ template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::Push(MappedType &data,
                                                     uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPush(data);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
   }
 }
@@ -68,6 +75,8 @@ template <typename MappedType, typename Allocator, typename SharedType>
 std::pair<bool, MappedType>
 queue<MappedType, Allocator, SharedType>::LocalPop() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (my_queue->size() > 0) {
     MappedType value = my_queue->front();
@@ -88,9 +97,13 @@ template <typename MappedType, typename Allocator, typename SharedType>
 std::pair<bool, MappedType> queue<MappedType, Allocator, SharedType>::Pop(
     uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPop();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
   }
@@ -99,6 +112,7 @@ std::pair<bool, MappedType> queue<MappedType, Allocator, SharedType>::Pop(
 template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::LocalWaitForElement() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   int count = 0;
   while (my_queue->size() == 0) {
     usleep(10);
@@ -112,9 +126,13 @@ template <typename MappedType, typename Allocator, typename SharedType>
 bool queue<MappedType, Allocator, SharedType>::WaitForElement(
     uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalWaitForElement();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     return RPC_CALL_WRAPPER1("_WaitForElement", key_int, bool);
   }
 }
@@ -127,6 +145,7 @@ bool queue<MappedType, Allocator, SharedType>::WaitForElement(
 template <typename MappedType, typename Allocator, typename SharedType>
 size_t queue<MappedType, Allocator, SharedType>::LocalSize() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   size_t value = my_queue->size();
   return value;
@@ -140,15 +159,22 @@ size_t queue<MappedType, Allocator, SharedType>::LocalSize() {
 template <typename MappedType, typename Allocator, typename SharedType>
 size_t queue<MappedType, Allocator, SharedType>::Size(uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalSize();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     return RPC_CALL_WRAPPER1("_Size", key_int, size_t);
   }
 }
 
 template <typename MappedType, typename Allocator, typename SharedType>
 void queue<MappedType, Allocator, SharedType>::construct_shared_memory() {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct queue in the shared memory space. */
   my_queue = segment.construct<Queue>("Queue")(alloc_inst);
@@ -156,6 +182,9 @@ void queue<MappedType, Allocator, SharedType>::construct_shared_memory() {
 
 template <typename MappedType, typename Allocator, typename SharedType>
 void queue<MappedType, Allocator, SharedType>::open_shared_memory() {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::pair<Queue *, bip::managed_mapped_file::size_type> res;
   res = segment.find<Queue>("Queue");
   my_queue = res.first;
@@ -163,6 +192,9 @@ void queue<MappedType, Allocator, SharedType>::open_shared_memory() {
 
 template <typename MappedType, typename Allocator, typename SharedType>
 void queue<MappedType, Allocator, SharedType>::bind_functions() {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

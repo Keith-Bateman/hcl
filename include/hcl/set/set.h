@@ -85,6 +85,7 @@ class set : public container {
 
   MySet *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server)
       return myset;
     else

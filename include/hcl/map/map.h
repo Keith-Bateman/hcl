@@ -80,18 +80,21 @@ class map : public container {
 
   void construct_shared_memory() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     ShmemAllocator alloc_inst(segment.get_segment_manager());
     /* Construct map in the shared memory space. */
     mymap = segment.construct<MyMap>(name.c_str())(Compare(), alloc_inst);
   }
   void open_shared_memory() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     std::pair<MyMap *, boost::interprocess::managed_mapped_file::size_type> res;
     res = segment.find<MyMap>(name.c_str());
     mymap = res.first;
   }
   void bind_functions() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     /* Create a RPC server and map the methods to it. */
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
@@ -137,6 +140,7 @@ class map : public container {
                uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port), mymap() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_server) {
       construct_shared_memory();
       bind_functions();
@@ -147,6 +151,7 @@ class map : public container {
 
   MyMap *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server)
       return mymap;
     else

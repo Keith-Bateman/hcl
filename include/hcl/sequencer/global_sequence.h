@@ -44,11 +44,13 @@ class global_sequence : public container {
 
   void construct_shared_memory() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     value = segment.construct<uint64_t>(name.c_str())(0);
   }
 
   void open_shared_memory() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     std::pair<uint64_t *, bip::managed_mapped_file::size_type> res;
     res = segment.find<uint64_t>(name.c_str());
     value = res.first;
@@ -56,6 +58,7 @@ class global_sequence : public container {
 
   void bind_functions() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -76,6 +79,7 @@ class global_sequence : public container {
                   uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_server) {
       construct_shared_memory();
       bind_functions();
@@ -85,31 +89,44 @@ class global_sequence : public container {
   }
   uint64_t *data() {
     HCL_LOG_TRACE();
-    if (server_on_node || is_server)
+    HCL_CPP_FUNCTION()
+    if (server_on_node || is_server) {
+      HCL_CPP_FUNCTION_UPDATE("access", "local");
       return value;
-    else
+    } else {
       nullptr;
+    }
   }
   uint64_t GetNextSequence() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_local()) {
+      HCL_CPP_FUNCTION_UPDATE("access", "local");
       return LocalGetNextSequence();
     } else {
       auto my_server_i = my_server;
+      HCL_CPP_FUNCTION_UPDATE("access", "remote");
+      HCL_CPP_FUNCTION_UPDATE("access", my_server_i);
       return RPC_CALL_WRAPPER1("_GetNextSequence", my_server_i, uint64_t);
     }
   }
   uint64_t GetNextSequenceServer(uint16_t &server) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_local(server)) {
+      HCL_CPP_FUNCTION_UPDATE("access", "local");
       return LocalGetNextSequence();
     } else {
+      HCL_CPP_FUNCTION_UPDATE("access", "remote");
+      HCL_CPP_FUNCTION_UPDATE("access", server);
       return RPC_CALL_WRAPPER1("_GetNextSequence", server, uint64_t);
     }
   }
 
   uint64_t LocalGetNextSequence() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
     return ++*value;

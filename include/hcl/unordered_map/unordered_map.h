@@ -90,6 +90,7 @@ class unordered_map : public container {
                          uint16_t port = HCL_CONF->RPC_PORT);
   MyHashMap *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server)
       return myHashMap;
     else

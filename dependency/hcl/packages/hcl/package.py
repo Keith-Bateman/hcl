@@ -36,6 +36,8 @@ class Hcl(CMakePackage):
     variant("ucx", default=False, description="Enable UCX protocol")
     variant("cpp-logger", default=False, description="Enable CPP Logger based logging")
     variant("verbose", default=False, description="Enable verbose logging")
+    variant("debug", default=False, description="Enable debug logging")
+    variant("dlp", default=False, description="Enable DLIO Profiler")
     
     depends_on('mpi')
     depends_on('mochi-thallium~cereal@0.11.3:', when='+thallium')
@@ -45,7 +47,8 @@ class Hcl(CMakePackage):
     depends_on('boost@1.71.0:')
     depends_on('ucx@1.13.1:', when='+ucx')
     depends_on('cpp-logger@0.0.3:', when='+cpp-logger')
-
+    depends_on('py-dlio-profiler-py@0.0.4:', when='+dlp')
+    
     def cmake_args(self):
         spec = self.spec
         args = ['-DCMAKE_INSTALL_PREFIX={}'.format(self.prefix)]
@@ -57,9 +60,13 @@ class Hcl(CMakePackage):
             args.append("-DHCL_COMMUNICATION_PROTOCOL=UCX")   
         if self.spec.satisfies("+cpp-logger"):
             args.append("-DHCL_LOGGING=CPP_LOGGER")   
-        if self.spec.satisfies("+verbose"):
-            args.append("-DHCL_LOG_LEVEL=INFO")      
         if self.spec.satisfies("+debug"):
             args.append("-DHCL_LOG_LEVEL=DEBUG")
+        elif self.spec.satisfies("+verbose"):
+            args.append("-DHCL_LOG_LEVEL=INFO")
+        else:
+            args.append("-DHCL_LOG_LEVEL=WARN")     
+        if self.spec.satisfies("+dlp"):
+            args.append("-DHCL_PROFILER=DLIO_PROFILER")
 
         return args

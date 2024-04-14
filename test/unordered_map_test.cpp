@@ -13,6 +13,7 @@
 #include <execinfo.h>
 #include <hcl/common/data_structures.h>
 #include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 #include <hcl/unordered_map/unordered_map.h>
 #include <mpi.h>
 #include <signal.h>

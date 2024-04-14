@@ -18,6 +18,7 @@
 #error "no config"
 #endif
 #include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
 
@@ -47,10 +48,12 @@ class container {
 
   inline bool is_local(uint16_t &key_int) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return key_int == my_server && server_on_node;
   }
   inline bool is_local() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return server_on_node;
   }
 
@@ -59,6 +62,7 @@ class container {
                             MappedType>
   GetData(MappedType &data) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return std::move(data);
   }
 
@@ -67,6 +71,7 @@ class container {
                             SharedType>
   GetData(MappedType &data) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     Allocator allocator(segment.get_segment_manager());
     SharedType value(allocator);
     value.assign(data);
@@ -75,6 +80,7 @@ class container {
 
   virtual ~container() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (is_server)
       boost::interprocess::file_mapping::remove(backed_file.c_str());
   }
@@ -92,6 +98,7 @@ class container {
                     std::to_string(my_server)),
         server_on_node(HCL_CONF->SERVER_ON_NODE) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     /* Initialize MPI rank and size of world */
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
@@ -122,11 +129,13 @@ class container {
   }
   void lock() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server) mutex->lock();
   }
 
   void unlock() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server) mutex->unlock();
   }
 };

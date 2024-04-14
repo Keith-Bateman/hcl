@@ -17,7 +17,10 @@ template <typename T, typename HashFcn, typename Comp, typename NodeAlloc,
 bool concurrent_skiplist<T, HashFcn, Comp, NodeAlloc, MAX_HEIGHT>::Insert(
     T &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
 
   return RPC_CALL_WRAPPER("_Insert", key_int, bool, key);
 }
@@ -27,7 +30,10 @@ template <typename T, typename HashFcn, typename Comp, typename NodeAlloc,
 bool concurrent_skiplist<T, HashFcn, Comp, NodeAlloc, MAX_HEIGHT>::Find(
     T &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Find", key_int, bool, key);
 }
 
@@ -36,7 +42,10 @@ template <typename T, typename HashFcn, typename Comp, typename NodeAlloc,
 bool concurrent_skiplist<T, HashFcn, Comp, NodeAlloc, MAX_HEIGHT>::Erase(
     T &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Erase", key_int, bool, key);
 }
 

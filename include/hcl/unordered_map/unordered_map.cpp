@@ -29,6 +29,7 @@ unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::unordered_map(
     CharStruct name_, uint16_t port)
     : container(name_, port), myHashMap(), size_occupied(0) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -48,6 +49,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 bool unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::LocalPut(
     KeyType &key, MappedType &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -77,10 +79,14 @@ template <typename KeyType, typename MappedType, typename Hash,
 bool unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::Put(
     KeyType key, MappedType data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = (uint16_t)keyHash(key) % num_servers;
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPut(key, data);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     return RPC_CALL_WRAPPER("_Put", key_int, bool, key, data);
   }
 }
@@ -96,6 +102,8 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::pair<bool, MappedType> unordered_map<KeyType, MappedType, Hash, Allocator,
                                           SharedType>::LocalGet(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -127,11 +135,15 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::pair<bool, MappedType> unordered_map<KeyType, MappedType, Hash, Allocator,
                                           SharedType>::Get(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGet(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Get", key_int, ret_type, key);
   }
@@ -143,6 +155,8 @@ std::pair<bool, MappedType>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::LocalErase(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   if (is_server && !server_on_node) {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
@@ -170,11 +184,16 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 std::pair<bool, MappedType> unordered_map<KeyType, MappedType, Hash, Allocator,
                                           SharedType>::Erase(KeyType &key) {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalErase(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Erase", key_int, ret_type, key);
     // return rpc->call(key_int, func_prefix+"_Erase",
@@ -187,6 +206,7 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::vector<std::pair<KeyType, MappedType>>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::GetAllData() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = GetAllDataInServer();
@@ -194,6 +214,9 @@ unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::GetAllData() {
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
     if (i != my_server) {
+      HCL_CPP_REGION(GetAllDataServer)
+      HCL_CPP_REGION_UPDATE(GetAllDataServer, "access", "remote");
+      HCL_CPP_REGION_UPDATE(GetAllDataServer, "server", i);
       typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
       auto server = RPC_CALL_WRAPPER1("_GetAllData", i, ret_type);
       final_values.insert(final_values.end(), server.begin(), server.end());
@@ -208,6 +231,8 @@ std::vector<std::pair<KeyType, MappedType>>
 unordered_map<KeyType, MappedType, Hash, Allocator,
               SharedType>::LocalGetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   {
@@ -231,11 +256,15 @@ template <typename KeyType, typename MappedType, typename Hash,
 std::vector<std::pair<KeyType, MappedType>> unordered_map<
     KeyType, MappedType, Hash, Allocator, SharedType>::GetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local()) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGetAllDataInServer();
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
     auto my_server_i = my_server;
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);
   }
 }
@@ -244,6 +273,9 @@ template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 void unordered_map<KeyType, MappedType, Hash, Allocator,
                    SharedType>::open_shared_memory() {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::pair<MyHashMap *, boost::interprocess::managed_mapped_file::size_type>
       res;
   res = segment.find<MyHashMap>(name.c_str());
@@ -255,6 +287,8 @@ template <typename KeyType, typename MappedType, typename Hash,
 void unordered_map<KeyType, MappedType, Hash, Allocator,
                    SharedType>::bind_functions() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:

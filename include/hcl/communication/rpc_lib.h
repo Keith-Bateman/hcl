@@ -85,6 +85,7 @@ class RPC {
   std::vector<tl::endpoint> thallium_endpoints;
   tl::endpoint get_endpoint(CharStruct server_name, uint16_t server_port) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     // We use addr lookup because mercury addresses must be exactly 15 char
     char ip[16];
     struct hostent *he = gethostbyname(server_name.c_str());
@@ -96,6 +97,7 @@ class RPC {
   }
   void init_engine_and_endpoints() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     thallium_client = hcl::Singleton<tl::engine>::GetInstance(
         HCL_CONF->URI.c_str(), MARGO_CLIENT_MODE);
     thallium_endpoints.reserve(server_list.size());
@@ -120,6 +122,7 @@ class RPC {
  public:
   void Stop() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
@@ -141,6 +144,7 @@ class RPC {
 
   RPC() : server_port(HCL_CONF->RPC_PORT), server_list(HCL_CONF->SERVER_LIST) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_list.empty() && HCL_CONF->SERVER_LIST_PATH.size() > 0) {
       server_list = HCL_CONF->LoadServers();
     }
@@ -167,6 +171,7 @@ class RPC {
 
   void run(size_t workers = RPC_THREADS) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (HCL_CONF->IS_SERVER) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

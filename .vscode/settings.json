@@ -4,7 +4,8 @@
         "-DHCL_ENABLE_TESTING=ON",
         "-DHCL_COMMUNICATION_PROTOCOL=UCX",
         "-DHCL_LOGGER=CPP_LOGGER",
-        "-DHCL_LOGGER_LEVEL=TRACE"
+        "-DHCL_LOGGER_LEVEL=TRACE",
+        "-DHCL_PROFILER=DLIO_PROFILER"
     ],
     "editor.formatOnSave": true
 }

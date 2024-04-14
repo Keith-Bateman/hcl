@@ -88,6 +88,9 @@ class priority_queue : public container {
   explicit priority_queue(CharStruct name_ = "TEST_PRIORITY_QUEUE",
                           uint16_t port = HCL_CONF->RPC_PORT);
   Queue *data() {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     if (server_on_node || is_server)
       return queue;
     else

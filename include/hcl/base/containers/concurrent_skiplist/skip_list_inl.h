@@ -6,6 +6,7 @@
 #error "no config"
 #endif
 #include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 
 #include <algorithm>
 #include <atomic>
@@ -45,6 +46,7 @@ class SkipListNode {
   static SkipListNode* create(NodeAlloc& alloc, int height, U&& data,
                               bool isHead = false) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(height >= 1 && height < 64);
 
     size_t size =
@@ -57,6 +59,7 @@ class SkipListNode {
   template <typename NodeAlloc>
   static void destroy(NodeAlloc& alloc, SkipListNode* node) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     size_t size = sizeof(SkipListNode) +
                   node->height_ * sizeof(std::atomic<SkipListNode*>);
     node->~SkipListNode();
@@ -66,6 +69,7 @@ class SkipListNode {
 
   SkipListNode* copyHead(SkipListNode* node) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(node != nullptr && height_ > node->height_);
     setFlags(node->getFlags());
     for (uint8_t i = 0; i < node->height_; ++i) {
@@ -76,12 +80,14 @@ class SkipListNode {
 
   inline SkipListNode* skip(int layer) const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(layer < height_);
     return skip_[layer].load(std::memory_order_acquire);
   }
 
   SkipListNode* next() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     SkipListNode* node;
     for (node = skip(0); (node != nullptr && node->markedForRemoval());
          node = node->skip(0)) {
@@ -91,79 +97,96 @@ class SkipListNode {
 
   void setSkip(uint8_t h, SkipListNode* next) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(h < height_);
     skip_[h].store(next, std::memory_order_release);
   }
 
   value_type& data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return data_;
   }
   const value_type& data() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return data_;
   }
   int maxLayer() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return height_ - 1;
   }
   int height() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return height_;
   }
 
   bool acquireGuard() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     spinLock_.lock();
     return true;
   }
 
   bool releaseGuard() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     spinLock_.unlock();
     return true;
   }
 
   uint16_t getFlags() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return flags_.load(std::memory_order_acquire);
   }
   void setFlags(uint16_t flags) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     flags_.store(flags, std::memory_order_release);
   }
   bool fullyLinked() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return getFlags() & FULLY_LINKED;
   }
   bool markedForRemoval() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return getFlags() & MARKED_FOR_REMOVAL;
   }
   bool isHeadNode() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return getFlags() & IS_HEAD_NODE;
   }
 
   void setIsHeadNode() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     setFlags(uint16_t(getFlags() | IS_HEAD_NODE));
   }
   void setFullyLinked() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     setFlags(uint16_t(getFlags() | FULLY_LINKED));
   }
   void setMarkedForRemoval() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     setFlags(uint16_t(getFlags() | MARKED_FOR_REMOVAL));
   }
 
   void storeData(value_type& data) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     new (&data_) value_type(std::forward<value_type>(data));
   }
   void storeData(const value_type& data) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     new (&data_) value_type(data);
   }
 
@@ -172,6 +195,7 @@ class SkipListNode {
   SkipListNode(uint8_t height, U&& data, bool isHead)
       : height_(height), data_(std::forward<U>(data)) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     setFlags(0);
     if (isHead) {
       setIsHeadNode();
@@ -183,6 +207,7 @@ class SkipListNode {
 
   ~SkipListNode() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     for (uint8_t i = 0; i < height_; ++i) {
       skip_[i].~atomic();
     }
@@ -212,6 +237,7 @@ class SkipListRandomHeight {
 
   int getHeight(int maxHeight) const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(maxHeight <= kMaxHeight);
     double p = r();
     for (int i = 0; i < maxHeight; ++i) {
@@ -224,12 +250,14 @@ class SkipListRandomHeight {
 
   size_t getSizeLimit(int height) const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(height < kMaxHeight);
     return sizeLimitTable_[height];
   }
 
   SkipListRandomHeight() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     int id = random() % 12;
     rd.seed(id);
     r = bind(dist, rd);
@@ -239,6 +267,7 @@ class SkipListRandomHeight {
  private:
   void initLookupTable() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     static const double kProbInv = exp(1);
     static const double kProb = 1.0 / kProbInv;
     static const size_t kMaxSizeLimit = std::numeric_limits<size_t>::max();
@@ -260,6 +289,7 @@ class SkipListRandomHeight {
 
   double randomProb() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return r();
   }
 
@@ -279,6 +309,7 @@ class NodeRecycler<NodeType,
   explicit NodeRecycler(const NodeAlloc& alloc)
       : refs_(0), dirty_(false), alloc_(alloc) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     chunk_size = 100;
     node_queues.resize(64);
     for (int i = 0; i < node_queues.size(); i++)
@@ -287,6 +318,7 @@ class NodeRecycler<NodeType,
 
   explicit NodeRecycler() : refs_(0), dirty_(false) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     chunk_size = 100;
     node_queues.resize(64);
     for (long unsigned int i = 0; i < node_queues.size(); i++)
@@ -295,6 +327,7 @@ class NodeRecycler<NodeType,
 
   ~NodeRecycler() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(refs() == 0);
     if (nodes_) {
       for (auto& node : *nodes_) {
@@ -307,6 +340,7 @@ class NodeRecycler<NodeType,
 
   void push(int h, NodeType* node) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     assert(h >= 0 && h < 64);
     node_queues[h]->push(node);
     bool p = false;
@@ -337,6 +371,7 @@ class NodeRecycler<NodeType,
 
   void add(NodeType* node) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     boost::unique_lock<boost::mutex> g(lock_);
     if (nodes_.get() == nullptr) {
       nodes_ = std::make_unique<std::vector<NodeType*>>(1, node);
@@ -349,11 +384,13 @@ class NodeRecycler<NodeType,
 
   int addRef() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return refs_.fetch_add(1, std::memory_order_acq_rel);
   }
 
   int releaseRef() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (!dirty_.load(std::memory_order_relaxed) || refs() > 1) {
       return refs_.fetch_add(-1, std::memory_order_acq_rel);
     }
@@ -362,6 +399,7 @@ class NodeRecycler<NodeType,
     int ret;
     {
       HCL_LOG_TRACE();
+      HCL_CPP_FUNCTION()
       boost::unique_lock<boost::mutex> g(lock_);
       ret = refs_.fetch_add(-1, std::memory_order_acq_rel);
       if (ret == 1) {
@@ -385,12 +423,14 @@ class NodeRecycler<NodeType,
 
   NodeAlloc& alloc() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return alloc_;
   }
 
  private:
   int refs() const {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return refs_.load(std::memory_order_relaxed);
   }
 
