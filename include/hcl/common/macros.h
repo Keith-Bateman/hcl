@@ -26,6 +26,7 @@
 #define THALLIUM_DEFINE(name, args, ...)                                    \
   void Thallium##name(const thallium::request &thallium_req, __VA_ARGS__) { \
     HCL_LOG_TRACE();                                                        \
+    HCL_CPP_FUNCTION()                                                      \
     auto result = name args;                                                \
     thallium_req.respond(result);                                           \
   }
@@ -33,6 +34,7 @@
 #define THALLIUM_DEFINE1(name)                                 \
   void Thallium##name(const thallium::request &thallium_req) { \
     HCL_LOG_TRACE();                                           \
+    HCL_CPP_FUNCTION()                                         \
     thallium_req.respond(name());                              \
   }
 

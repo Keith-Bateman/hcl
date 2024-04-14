@@ -74,6 +74,7 @@ class global_clock {
         server_on_node(HCL_CONF->SERVER_ON_NODE),
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     name = name + "_" + std::to_string(my_server);
@@ -114,6 +115,7 @@ class global_clock {
   }
   chrono_time *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server)
       return start;
     else
@@ -121,11 +123,13 @@ class global_clock {
   }
   void lock() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server) mutex->lock();
   }
 
   void unlock() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node || is_server) mutex->unlock();
   }
   /*
@@ -133,6 +137,7 @@ class global_clock {
    */
   HTime GetTime() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_on_node) {
       return LocalGetTime();
     } else {
@@ -147,6 +152,7 @@ class global_clock {
    */
   HTime GetTimeServer(uint16_t &server) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (my_server == server && server_on_node) {
       return LocalGetTime();
     } else {
@@ -160,6 +166,7 @@ class global_clock {
    */
   HTime LocalGetTime() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
         lock(*mutex);
     auto t2 = std::chrono::high_resolution_clock::now();

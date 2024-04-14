@@ -17,7 +17,10 @@ template <typename KeyT, typename ValueT, typename HashFcn, typename EqualFcn>
 bool concurrent_unordered_map<KeyT, ValueT, HashFcn, EqualFcn>::Insert(
     KeyT &key, ValueT &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Insert", key_int, bool, key, data);
 }
 
@@ -25,7 +28,10 @@ template <typename KeyT, typename ValueT, typename HashFcn, typename EqualFcn>
 bool concurrent_unordered_map<KeyT, ValueT, HashFcn, EqualFcn>::Find(
     KeyT &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Find", key_int, bool, key);
 }
 
@@ -33,7 +39,10 @@ template <typename KeyT, typename ValueT, typename HashFcn, typename EqualFcn>
 bool concurrent_unordered_map<KeyT, ValueT, HashFcn, EqualFcn>::Erase(
     KeyT &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Erase", key_int, bool, key);
 }
 
@@ -41,7 +50,10 @@ template <typename KeyT, typename ValueT, typename HashFcn, typename EqualFcn>
 ValueT concurrent_unordered_map<KeyT, ValueT, HashFcn, EqualFcn>::Get(
     KeyT &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Get", key_int, ValueT, key);
 }
 
@@ -49,7 +61,10 @@ template <typename KeyT, typename ValueT, typename HashFcn, typename EqualFcn>
 bool concurrent_unordered_map<KeyT, ValueT, HashFcn, EqualFcn>::Update(
     KeyT &key, ValueT &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(serverLocation(key));
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Update", key_int, bool, key, data);
 }
 

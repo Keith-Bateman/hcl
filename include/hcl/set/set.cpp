@@ -27,6 +27,7 @@ set<KeyType, Hash, Compare, Allocator, SharedType>::set(CharStruct name_,
                                                         uint16_t port)
     : container(name_, port), myset() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -46,6 +47,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPut(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   auto value = GetData<Allocator, KeyType, SharedType>(key);
@@ -64,11 +67,15 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Put(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPut(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     return RPC_CALL_WRAPPER("_Put", key_int, bool, key);
   }
 }
@@ -84,6 +91,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGet(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   typename MySet::iterator iterator = myset->find(key);
@@ -104,11 +113,15 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Get(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGet(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     typedef bool ret_type;
     return RPC_CALL_WRAPPER("_Get", key_int, ret_type, key);
   }
@@ -119,6 +132,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::LocalErase(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   size_t s = myset->erase(key);
@@ -130,11 +145,15 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 bool set<KeyType, Hash, Compare, Allocator, SharedType>::Erase(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalErase(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("access", key_int);
     typedef bool ret_type;
     return RPC_CALL_WRAPPER("_Erase", key_int, ret_type, key);
   }
@@ -152,12 +171,16 @@ std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::Contains(KeyType &key_start,
                                                              KeyType &key_end) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::vector<KeyType> final_values = std::vector<KeyType>();
   auto current_server = ContainsInServer(key_start, key_end);
   final_values.insert(final_values.end(), current_server.begin(),
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
     if (i != my_server) {
+      HCL_CPP_REGION(ContainsInServerServer)
+      HCL_CPP_REGION_UPDATE(ContainsInServerServer, "access", "remote");
+      HCL_CPP_REGION_UPDATE(ContainsInServerServer, "access", i);
       typedef std::vector<KeyType> ret_type;
       auto server =
           RPC_CALL_WRAPPER("_Contains", i, ret_type, key_start, key_end);
@@ -172,12 +195,16 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::GetAllData() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::vector<KeyType> final_values = std::vector<KeyType>();
   auto current_server = GetAllDataInServer();
   final_values.insert(final_values.end(), current_server.begin(),
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
     if (i != my_server) {
+      HCL_CPP_REGION(GetAllDataServer)
+      HCL_CPP_REGION_UPDATE(GetAllDataServer, "access", "remote");
+      HCL_CPP_REGION_UPDATE(GetAllDataServer, "access", i);
       typedef std::vector<KeyType> ret_type;
       auto server = RPC_CALL_WRAPPER1("_GetAllData", i, ret_type);
       final_values.insert(final_values.end(), server.begin(), server.end());
@@ -192,6 +219,8 @@ std::vector<KeyType> set<KeyType, Hash, Compare, Allocator,
                          SharedType>::LocalContainsInServer(KeyType &key_start,
                                                             KeyType &key_end) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::vector<KeyType> final_values = std::vector<KeyType>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -229,11 +258,15 @@ std::vector<KeyType> set<KeyType, Hash, Compare, Allocator,
                          SharedType>::ContainsInServer(KeyType &key_start,
                                                        KeyType &key_end) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local()) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalContainsInServer(key_start, key_end);
   } else {
     typedef std::vector<KeyType> ret_type;
     auto my_server_i = my_server;
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER("_Contains", my_server_i, ret_type, key_start,
                             key_end);
   }
@@ -244,6 +277,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalGetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::vector<KeyType> final_values = std::vector<KeyType>();
   {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
@@ -263,11 +298,15 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::vector<KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::GetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local()) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGetAllDataInServer();
   } else {
     typedef std::vector<KeyType> ret_type;
     auto my_server_i = my_server;
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);
   }
 }
@@ -277,6 +316,7 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirst() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (myset->size() > 0) {
     auto iterator = myset->begin();  // We want First (smallest) value in set
@@ -291,9 +331,13 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, KeyType> set<KeyType, Hash, Compare, Allocator,
                              SharedType>::SeekFirst(uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalSeekFirst();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER1("_SeekFirst", key_int, ret_type);
   }
@@ -305,6 +349,8 @@ std::pair<bool, std::vector<KeyType>>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSeekFirstN(
     uint32_t n) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto keys = std::vector<KeyType>();
   auto iterator = myset->begin();
@@ -322,9 +368,14 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, std::vector<KeyType>>
 set<KeyType, Hash, Compare, Allocator, SharedType>::SeekFirstN(
     uint16_t &key_int, uint32_t n) {
+  HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalSeekFirstN(n);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER("_SeekFirstN", key_int, ret_type, n);
   }
@@ -335,6 +386,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, KeyType>
 set<KeyType, Hash, Compare, Allocator, SharedType>::LocalPopFirst() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (myset->size() > 0) {
     auto iterator = myset->begin();  // We want First (smallest) value in set
@@ -350,9 +403,13 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 std::pair<bool, KeyType> set<KeyType, Hash, Compare, Allocator,
                              SharedType>::PopFirst(uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPopFirst();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, KeyType> ret_type;
     return RPC_CALL_WRAPPER1("_PopFirst", key_int, ret_type);
   }
@@ -362,6 +419,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 size_t set<KeyType, Hash, Compare, Allocator, SharedType>::LocalSize() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   return myset->size();
 }
 
@@ -370,9 +429,13 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 size_t set<KeyType, Hash, Compare, Allocator, SharedType>::Size(
     uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalSize();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef size_t ret_type;
     return RPC_CALL_WRAPPER1("_Size", key_int, ret_type);
   }
@@ -383,6 +446,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
 void set<KeyType, Hash, Compare, Allocator,
          SharedType>::construct_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct set in the shared memory space. */
   myset = segment.construct<MySet>(name.c_str())(Compare(), alloc_inst);
@@ -392,6 +457,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 void set<KeyType, Hash, Compare, Allocator, SharedType>::open_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::pair<MySet *, boost::interprocess::managed_mapped_file::size_type> res;
   res = segment.find<MySet>(name.c_str());
   myset = res.first;
@@ -401,6 +468,8 @@ template <typename KeyType, typename Hash, typename Compare, typename Allocator,
           typename SharedType>
 void set<KeyType, Hash, Compare, Allocator, SharedType>::bind_functions() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

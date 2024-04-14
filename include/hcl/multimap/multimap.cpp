@@ -26,6 +26,7 @@ multimap<KeyType, MappedType, Compare, Allocator, SharedType>::multimap(
     CharStruct name_, uint16_t port)
     : container(name_, port), mymap() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -45,6 +46,8 @@ template <typename KeyType, typename MappedType, typename Compare,
 bool multimap<KeyType, MappedType, Compare, Allocator, SharedType>::LocalPut(
     KeyType &key, MappedType &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   typename MyMap::iterator iterator = mymap->find(key);
@@ -68,11 +71,15 @@ template <typename KeyType, typename MappedType, typename Compare,
 bool multimap<KeyType, MappedType, Compare, Allocator, SharedType>::Put(
     KeyType &key, MappedType &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = static_cast<uint16_t>(key_hash % num_servers);
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPut(key, data);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     return RPC_CALL_WRAPPER("_Put", key_int, bool, key, data);
   }
 }
@@ -88,6 +95,8 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::pair<bool, MappedType> multimap<KeyType, MappedType, Compare, Allocator,
                                      SharedType>::LocalGet(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   typename MyMap::iterator iterator = mymap->find(key);
@@ -110,11 +119,15 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::pair<bool, MappedType> multimap<KeyType, MappedType, Compare, Allocator,
                                      SharedType>::Get(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGet(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Get", key_int, ret_type, key);
   }
@@ -125,6 +138,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::pair<bool, MappedType> multimap<KeyType, MappedType, Compare, Allocator,
                                      SharedType>::LocalErase(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex>
       lock(*mutex);
   size_t s = mymap->erase(key);
@@ -136,11 +150,15 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::pair<bool, MappedType> multimap<KeyType, MappedType, Compare, Allocator,
                                      SharedType>::Erase(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   size_t key_hash = keyHash(key);
   uint16_t key_int = key_hash % num_servers;
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalErase(key);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER("_Erase", key_int, ret_type, key);
   }
@@ -159,6 +177,7 @@ std::vector<std::pair<KeyType, MappedType>>
 multimap<KeyType, MappedType, Compare, Allocator, SharedType>::Contains(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = ContainsInServer(key);
@@ -166,6 +185,9 @@ multimap<KeyType, MappedType, Compare, Allocator, SharedType>::Contains(
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
     if (i != my_server) {
+      HCL_CPP_REGION(ContainsServer);
+      HCL_CPP_REGION_UPDATE(ContainsServer, "access", "remote");
+      HCL_CPP_REGION_UPDATE(ContainsServer, "server", i);
       typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
       auto server = RPC_CALL_WRAPPER("_Contains", i, ret_type, key);
       final_values.insert(final_values.end(), server.begin(), server.end());
@@ -179,6 +201,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>>
 multimap<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllData() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   auto current_server = GetAllDataInServer();
@@ -186,6 +209,9 @@ multimap<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllData() {
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
     if (i != my_server) {
+      HCL_CPP_REGION(ContainsGetAllData);
+      HCL_CPP_REGION_UPDATE(ContainsGetAllData, "access", "remote");
+      HCL_CPP_REGION_UPDATE(ContainsGetAllData, "server", i);
       typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
       auto server = RPC_CALL_WRAPPER1("_GetAllData", i, ret_type);
       final_values.insert(final_values.end(), server.begin(), server.end());
@@ -200,6 +226,8 @@ std::vector<std::pair<KeyType, MappedType>>
 multimap<KeyType, MappedType, Compare, Allocator,
          SharedType>::LocalContainsInServer(KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION();
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   {
@@ -240,11 +268,15 @@ std::vector<std::pair<KeyType, MappedType>>
 multimap<KeyType, MappedType, Compare, Allocator, SharedType>::ContainsInServer(
     KeyType &key) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local()) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalContainsInServer(key);
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
     auto my_server_i = my_server;
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER("_Contains", my_server_i, ret_type, key);
   }
 }
@@ -255,6 +287,8 @@ std::vector<std::pair<KeyType, MappedType>>
 multimap<KeyType, MappedType, Compare, Allocator,
          SharedType>::LocalGetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::vector<std::pair<KeyType, MappedType>> final_values =
       std::vector<std::pair<KeyType, MappedType>>();
   {
@@ -277,11 +311,15 @@ template <typename KeyType, typename MappedType, typename Compare,
 std::vector<std::pair<KeyType, MappedType>> multimap<
     KeyType, MappedType, Compare, Allocator, SharedType>::GetAllDataInServer() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local()) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalGetAllDataInServer();
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
     auto my_server_i = my_server;
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);
   }
 }
@@ -291,6 +329,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::construct_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct Multimap in the shared memory space. */
   mymap = segment.construct<MyMap>(name.c_str())(Compare(), alloc_inst);
@@ -301,6 +340,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::open_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   std::pair<MyMap *, boost::interprocess::managed_mapped_file::size_type> res;
   res = segment.find<MyMap>(name.c_str());
   mymap = res.first;
@@ -311,6 +351,7 @@ template <typename KeyType, typename MappedType, typename Compare,
 void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::bind_functions() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

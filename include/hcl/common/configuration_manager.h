@@ -22,6 +22,7 @@
 #include <hcl/common/debug.h>
 #include <hcl/common/enumerations.h>
 #include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 #include <hcl/common/singleton.h>
 
 #include <boost/thread/mutex.hpp>
@@ -81,6 +82,8 @@ class ConfigurationManager {
         DYN_CONFIG(false) {
     HCL_LOGGER_INIT();
     HCL_LOG_TRACE();
+    HCL_PROFILER_CPP_INIT(NULL);
+    HCL_CPP_FUNCTION()
     char* uri_str = getenv(HCL_THALLIUM_URI_ENV);
     if (uri_str != nullptr) {
       URI = CharStruct(uri_str);
@@ -117,6 +120,7 @@ class ConfigurationManager {
 
   std::vector<CharStruct> LoadServers() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     file_load.lock();
     SERVER_LIST = std::vector<CharStruct>();
     std::fstream file;
@@ -158,6 +162,7 @@ class ConfigurationManager {
   }
   void ConfigureDefaultClient(std::string server_list_path = "") {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_list_path != "") SERVER_LIST_PATH = server_list_path;
     LoadServers();
     IS_SERVER = false;
@@ -167,13 +172,17 @@ class ConfigurationManager {
 
   void ConfigureDefaultServer(std::string server_list_path = "") {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     if (server_list_path != "") SERVER_LIST_PATH = server_list_path;
     LoadServers();
     IS_SERVER = true;
     MY_SERVER = false;
     SERVER_ON_NODE = true;
   }
-  ~ConfigurationManager() {}
+  ~ConfigurationManager() {
+    HCL_LOG_TRACE();
+    HCL_PROFILER_CPP_FINI();
+  }
 };
 
 }  // namespace hcl

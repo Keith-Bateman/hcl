@@ -16,15 +16,21 @@
 template <typename ValueT>
 bool concurrent_queue<ValueT>::Push(uint64_t &s, ValueT &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(s);
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
 }
 
 template <typename ValueT>
 std::pair<bool, ValueT> concurrent_queue<ValueT>::Pop(uint64_t &s) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   uint16_t key_int = static_cast<uint16_t>(s);
   typedef std::pair<bool, ValueT> ret_type;
+  HCL_CPP_FUNCTION_UPDATE("access", "remote");
+  HCL_CPP_FUNCTION_UPDATE("server", key_int);
   return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
 }
 

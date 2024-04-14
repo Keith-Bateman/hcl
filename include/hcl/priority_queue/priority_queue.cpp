@@ -26,6 +26,7 @@ priority_queue<MappedType, Compare, Allocator, SharedType>::priority_queue(
     CharStruct name_, uint16_t port)
     : container(name_, port), queue() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_server) {
     construct_shared_memory();
     bind_functions();
@@ -45,6 +46,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 bool priority_queue<MappedType, Compare, Allocator, SharedType>::LocalPush(
     MappedType &data) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   auto value = GetData<Allocator, MappedType, SharedType>(data);
   queue->push(value);
@@ -63,9 +66,13 @@ template <typename MappedType, typename Compare, typename Allocator,
 bool priority_queue<MappedType, Compare, Allocator, SharedType>::Push(
     MappedType &data, uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPush(data);
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     return RPC_CALL_WRAPPER("_Push", key_int, bool, data);
   }
 }
@@ -81,6 +88,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 std::pair<bool, MappedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::LocalPop() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (queue->size() > 0) {
     MappedType value = queue->top();
@@ -102,9 +111,13 @@ template <typename MappedType, typename Compare, typename Allocator,
 std::pair<bool, MappedType> priority_queue<MappedType, Compare, Allocator,
                                            SharedType>::Pop(uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalPop();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Pop", key_int, ret_type);
   }
@@ -121,6 +134,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 std::pair<bool, MappedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::LocalTop() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   if (queue->size() > 0) {
     MappedType value = queue->top();
@@ -142,9 +157,13 @@ template <typename MappedType, typename Compare, typename Allocator,
 std::pair<bool, MappedType> priority_queue<MappedType, Compare, Allocator,
                                            SharedType>::Top(uint16_t &key_int) {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
   if (is_local(key_int)) {
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return LocalTop();
   } else {
+    HCL_CPP_FUNCTION_UPDATE("access", "remote");
+    HCL_CPP_FUNCTION_UPDATE("server", key_int);
     typedef std::pair<bool, MappedType> ret_type;
     return RPC_CALL_WRAPPER1("_Top", key_int, ret_type);
   }
@@ -159,6 +178,8 @@ template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 size_t priority_queue<MappedType, Compare, Allocator, SharedType>::LocalSize() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   bip::scoped_lock<bip::interprocess_mutex> lock(*mutex);
   size_t value = queue->size();
   return value;
@@ -178,6 +199,7 @@ size_t priority_queue<MappedType, Compare, Allocator, SharedType>::Size(
     return LocalSize();
   } else {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return RPC_CALL_WRAPPER1("_Size", key_int, size_t);
   }
 }
@@ -187,6 +209,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::construct_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   ShmemAllocator alloc_inst(segment.get_segment_manager());
   /* Construct priority queue in the shared memory space. */
   queue = segment.construct<Queue>("Queue")(Compare(), alloc_inst);
@@ -197,6 +221,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::open_shared_memory() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   std::pair<Queue *, bip::managed_mapped_file::size_type> res;
   res = segment.find<Queue>("Queue");
   queue = res.first;
@@ -207,6 +233,8 @@ template <typename MappedType, typename Compare, typename Allocator,
 void priority_queue<MappedType, Compare, Allocator,
                     SharedType>::bind_functions() {
   HCL_LOG_TRACE();
+  HCL_CPP_FUNCTION()
+  HCL_CPP_FUNCTION_UPDATE("access", "local");
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

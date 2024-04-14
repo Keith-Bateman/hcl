@@ -30,6 +30,7 @@
 #error "no config"
 #endif
 #include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 
 #include <iostream>
 #include <memory>
@@ -55,6 +56,7 @@ class Singleton {
   static std::shared_ptr<T> GetInstance(Args... args) {
     if (instance == nullptr) {
       HCL_LOG_TRACE();
+      HCL_CPP_FUNCTION()
       instance = std::shared_ptr<T>(new T(std::forward<Args>(args)...));
     }
     return instance;

@@ -80,6 +80,7 @@ class concurrent_unordered_map : public container {
  public:
   bool isLocal(KeyT &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     uint64_t hashval = HashFcn()(k);
     uint64_t pos = hashval % totalSize;
     if (is_server && pos >= min_range && pos < max_range)
@@ -90,6 +91,7 @@ class concurrent_unordered_map : public container {
 
   uint64_t serverLocation(KeyT &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     uint64_t localSize = totalSize / num_servers;
     uint64_t rem = totalSize % num_servers;
     uint64_t hashval = HashFcn()(k);
@@ -108,6 +110,7 @@ class concurrent_unordered_map : public container {
 
   void initialize_tables(uint64_t n, uint32_t np, uint32_t rank, KeyT maxKey) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     totalSize = n;
     nservers = np;
     serverid = rank;
@@ -142,10 +145,17 @@ class concurrent_unordered_map : public container {
     if (pl != nullptr) delete pl;
   }
 
-  void construct_shared_memory() override { HCL_LOG_TRACE(); }
-  void open_shared_memory() override { HCL_LOG_TRACE(); }
+  void construct_shared_memory() override {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  }
+  void open_shared_memory() override {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  }
   void bind_functions() override {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -192,6 +202,7 @@ class concurrent_unordered_map : public container {
       uint16_t port = HCL_CONF->RPC_PORT)
       : container(name_, port) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     my_table = nullptr;
     pl = nullptr;
     if (is_server) {
@@ -202,16 +213,22 @@ class concurrent_unordered_map : public container {
 
   map_type *data() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table;
   }
 
   bool LocalInsert(KeyT &k, ValueT &v) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     my_table->insert(k, v);
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return true;
   }
   bool LocalFind(KeyT &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     if (my_table->find(k) != NOT_IN_TABLE)
       return true;
     else
@@ -219,21 +236,28 @@ class concurrent_unordered_map : public container {
   }
   bool LocalErase(KeyT &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table->erase(k);
   }
   bool LocalUpdate(KeyT &k, ValueT &v) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     return my_table->update(k, v);
   }
   bool LocalGet(KeyT &k, ValueT *v) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table->get(k, v);
   }
   ValueT LocalGetValue(KeyT &k) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
     ValueT v;
     new (&v) ValueT();
     LocalGet(k, &v);
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return v;
   }
 
@@ -241,16 +265,22 @@ class concurrent_unordered_map : public container {
   bool LocalUpdateField(KeyT &k, void (*f)(ValueT *, Args &&...args),
                         Args &&...args_) {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table->update_field(k, f, std::forward<Args>(args_)...);
   }
 
   uint64_t allocated() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table->allocated_nodes();
   }
 
   uint64_t removed() {
     HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    HCL_CPP_FUNCTION_UPDATE("access", "local");
     return my_table->removed_nodes();
   }
 
