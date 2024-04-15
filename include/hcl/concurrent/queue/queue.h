@@ -12,11 +12,8 @@
 
 #ifndef INCLUDE_HCL_CONCURRENT_QUEUE_H_
 #define INCLUDE_HCL_CONCURRENT_QUEUE_H_
-#if defined(HCL_HAS_CONFIG)
+
 #include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
 /**
  * Include Headers
  */
@@ -78,6 +75,8 @@ class concurrent_queue : public container {
   void bind_functions() override {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
+
+    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:

@@ -13,18 +13,15 @@
 #ifndef INCLUDE_HCL_COMMON_CONSTANTS_H_
 #define INCLUDE_HCL_COMMON_CONSTANTS_H_
 
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
 #include <hcl/common/data_structures.h>
 #include <stdint.h>
+
+#include <hcl/hcl_config.hpp>
 
 const uint16_t RPC_PORT = 8080;
 const uint16_t RPC_THREADS = 1;
 const int TEST_REQUEST_SIZE = 1024;
 const CharStruct PATH_SEPARATOR = "/";
-const char* HCL_THALLIUM_URI_ENV="HCL_THALLIUM_URI";
+const CharStruct HCL_THALLIUM_URI_ENV = "HCL_THALLIUM_URI";
 
 #endif  // INCLUDE_HCL_COMMON_CONSTANTS_H_

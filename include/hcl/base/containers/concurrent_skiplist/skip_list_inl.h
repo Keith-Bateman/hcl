@@ -1,10 +1,6 @@
 #ifndef HCL_SKIPLIST_INL_H
 #define HCL_SKIPLIST_INL_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
 
@@ -17,6 +13,7 @@
 #include <boost/thread/shared_mutex.hpp>
 #include <climits>
 #include <cmath>
+#include <hcl/hcl_config.hpp>
 #include <memory>
 #include <mutex>
 #include <random>

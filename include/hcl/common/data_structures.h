@@ -23,11 +23,7 @@
 
 #ifndef INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
 #define INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
 
@@ -36,6 +32,7 @@
 #include <boost/interprocess/containers/vector.hpp>
 #include <chrono>
 #include <cstdint>
+#include <hcl/hcl_config.hpp>
 #include <string>
 #include <vector>
 

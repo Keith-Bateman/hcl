@@ -38,6 +38,7 @@ class Hcl(CMakePackage):
     variant("verbose", default=False, description="Enable verbose logging")
     variant("debug", default=False, description="Enable debug logging")
     variant("dlp", default=False, description="Enable DLIO Profiler")
+    variant("test", default=False, description="Enable Tests for HCL")
     
     depends_on('mpi')
     depends_on('mochi-thallium~cereal@0.11.3:', when='+thallium')
@@ -48,6 +49,7 @@ class Hcl(CMakePackage):
     depends_on('ucx@1.13.1:', when='+ucx')
     depends_on('cpp-logger@0.0.3:', when='+cpp-logger')
     depends_on('py-dlio-profiler-py@0.0.4:', when='+dlp')
+    depends_on('cmake@3.4.0:', when='+test')
     
     def cmake_args(self):
         spec = self.spec
@@ -68,5 +70,6 @@ class Hcl(CMakePackage):
             args.append("-DHCL_LOG_LEVEL=WARN")     
         if self.spec.satisfies("+dlp"):
             args.append("-DHCL_PROFILER=DLIO_PROFILER")
-
+        if self.spec.satisfies("+test"):
+            args.append("-DHCL_ENABLE_TESTING=ON")
         return args

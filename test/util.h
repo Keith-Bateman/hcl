@@ -12,20 +12,26 @@
 
 #ifndef HCL_UTIL_H
 #define HCL_UTIL_H
-
+#include <hcl/hcl_config.hpp>
+/*Includes*/
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <boost/interprocess/containers/string.hpp>
+#include <cmath>
+#include <cstdio>
+#include <string>
 
 namespace bip = boost::interprocess;
 
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
+
+  KeyType(const KeyType &t) { a = t.a; }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
-
-  MSGPACK_DEFINE(a);
-
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
   KeyType &operator=(const KeyType &other) {
@@ -33,14 +39,22 @@ struct KeyType {
     return *this;
   }
   bool operator<(const KeyType &o) const { return a < o.a; }
+  bool operator>(const KeyType &o) const { return a > o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
-
-  template <typename A>
-  void serialize(A &ar) const {
-    ar &a;
-  }
 };
 
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+template <typename A>
+void serialize(A &ar, KeyType &a) {
+  ar &a.a;
+}
+#endif
+namespace std {
+template <>
+struct hash<KeyType> {
+  size_t operator()(const KeyType &k) const { return k.a; }
+};
+}  // namespace std
 // 1,4,16,1000,4000,16000,250000,1000000,4000000,16000000
 
 struct MappedType {
@@ -63,8 +77,6 @@ struct MappedType {
     //     a[i] = a_[i];
     // }
   }
-
-  MSGPACK_DEFINE(a);
 
   /* equal operator for comparing two Matrix. */
   bool operator==(const MappedType &o) const {
@@ -122,23 +134,14 @@ std::string printRandomString(int n) {
   return res;
 }
 
-namespace std {
-template <>
-struct hash<KeyType> {
-  int operator()(const KeyType &k) const { return k.a; }
-};
-}  // namespace std
-
 void bt_sighandler(int sig, struct sigcontext ctx) {
   void *trace[16];
   char **messages = (char **)NULL;
   int i, trace_size = 0;
 
   if (sig == SIGSEGV)
-    printf(
-        "Got signal %d, faulty address is %p, "
-        "from %p\n",
-        sig, ctx.cr2, ctx.rip);
+    printf("Got signal %d, faulty address is %p from %p\n", sig, ctx.cr2,
+           ctx.rip);
   else
     printf("Got signal %d\n", sig);
 
@@ -179,4 +182,64 @@ void SetSignal() {
   sigaction(SIGUSR1, &sa, NULL);
   sigaction(SIGABRT, &sa, NULL);
 }
+
+const uint32_t KB = 1024;
+const uint32_t MB = 1024 * 1024;
+#define AGGREGATE_TIME(name, comm)              \
+  double total_##name = 0.0;                    \
+  auto name##_a = name##_time.getElapsedTime(); \
+  MPI_Reduce(&name##_a, &total_##name, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
+
+size_t GetRandomOffset(size_t i, unsigned int offset_seed, size_t stride,
+                       size_t total_size) {
+  return abs((int)(((i * rand_r(&offset_seed)) % stride) % total_size));
+}
+inline std::string get_filename(int fd) {
+  const int kMaxSize = 256;
+  char proclnk[kMaxSize];
+  char filename[kMaxSize];
+  snprintf(proclnk, kMaxSize, "/proc/self/fd/%d", fd);
+  size_t r = readlink(proclnk, filename, kMaxSize);
+  filename[r] = '\0';
+  return filename;
+}
+
+std::string GenRandom(const int len) {
+  std::string tmp_s;
+  static const char alphanum[] =
+      "0123456789"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+      "abcdefghijklmnopqrstuvwxyz";
+
+  srand(100);
+
+  tmp_s.reserve(len);
+
+  for (int i = 0; i < len; ++i) {
+    tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+  }
+
+  tmp_s[len - 1] = '\n';
+
+  return tmp_s;
+}
+namespace hcl {
+namespace test {
+class Timer {
+ public:
+  Timer() : elapsed_time(0) {}
+  void resumeTime() { t1 = std::chrono::high_resolution_clock::now(); }
+  double pauseTime() {
+    auto t2 = std::chrono::high_resolution_clock::now();
+    elapsed_time += std::chrono::duration<double>(t2 - t1).count();
+    return elapsed_time;
+  }
+  double getElapsedTime() { return elapsed_time; }
+
+ private:
+  std::chrono::high_resolution_clock::time_point t1;
+  double elapsed_time;
+};
+}  // namespace test
+}  // namespace hcl
 #endif  // HCL_UTIL_H

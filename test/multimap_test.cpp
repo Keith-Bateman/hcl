@@ -28,15 +28,9 @@ struct KeyType {
   size_t a;
   KeyType() : a(0) {}
 
-  KeyType(const KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType&& t) {
-    a = t.a;
-  }
+  KeyType(const KeyType &t) { a = t.a; }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -158,7 +152,7 @@ int main(int argc, char *argv[]) {
   // }
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    Timer llocal_multimap_timer = Timer();
+    hcl::Timer llocal_multimap_timer = hcl::Timer();
     std::hash<KeyType> keyHash;
     /*Local std::multimap test*/
     for (int i = 0; i < num_request; i++) {
@@ -180,7 +174,7 @@ int main(int argc, char *argv[]) {
         num_request / llocal_multimap_timer.getElapsedTime() * 1000 *
         size_of_elem * my_vals.size() / 1024 / 1024;
 
-    Timer llocal_get_multimap_timer = Timer();
+    hcl::Timer llocal_get_multimap_timer = hcl::Timer();
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
       llocal_get_multimap_timer.resumeTime();
@@ -190,7 +184,7 @@ int main(int argc, char *argv[]) {
       auto iterator = lmultimap.find(KeyType(val));
       auto result = iterator->second;
       llocal_get_multimap_timer.pauseTime();
-      (void) result;
+      (void)result;
     }
     double llocal_get_multimap_throughput =
         num_request / llocal_get_multimap_timer.getElapsedTime() * 1000 *
@@ -205,7 +199,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(client_comm);
 
     if (HCL_CONF->SERVER_ON_NODE) {
-      Timer local_multimap_timer = Timer();
+      hcl::Timer local_multimap_timer = hcl::Timer();
       /*Local multimap test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -218,7 +212,7 @@ int main(int argc, char *argv[]) {
           num_request / local_multimap_timer.getElapsedTime() * 1000 *
           size_of_elem * my_vals.size() / 1024 / 1024;
 
-      Timer local_get_multimap_timer = Timer();
+      hcl::Timer local_get_multimap_timer = hcl::Timer();
       /*Local multimap test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -226,7 +220,7 @@ int main(int argc, char *argv[]) {
         local_get_multimap_timer.resumeTime();
         auto result = multimap->Get(key);
         local_get_multimap_timer.pauseTime();
-        (void) result;
+        (void)result;
       }
 
       double local_get_multimap_throughput =
@@ -254,7 +248,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(client_comm);
 
     if (!HCL_CONF->SERVER_ON_NODE) {
-      Timer remote_multimap_timer = Timer();
+      hcl::Timer remote_multimap_timer = hcl::Timer();
       /*Remote multimap test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;
@@ -269,7 +263,7 @@ int main(int argc, char *argv[]) {
 
       MPI_Barrier(client_comm);
 
-      Timer remote_get_multimap_timer = Timer();
+      hcl::Timer remote_get_multimap_timer = hcl::Timer();
       /*Remote multimap test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;

@@ -27,12 +27,8 @@
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
-  KeyType(KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType&& t) {
-    a = t.a;
-  }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -153,7 +149,7 @@ int main(int argc, char *argv[]) {
   // }
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    Timer llocal_queue_timer = Timer();
+    hcl::Timer llocal_queue_timer = hcl::Timer();
     std::hash<KeyType> keyHash;
     /*Local std::queue test*/
     for (int i = 0; i < num_request; i++) {
@@ -170,7 +166,7 @@ int main(int argc, char *argv[]) {
         num_request / llocal_queue_timer.getElapsedTime() * 1000 *
         size_of_elem * my_vals.size() / 1024 / 1024;
 
-    Timer llocal_get_queue_timer = Timer();
+    hcl::Timer llocal_get_queue_timer = hcl::Timer();
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
       llocal_get_queue_timer.resumeTime();
@@ -180,7 +176,7 @@ int main(int argc, char *argv[]) {
       auto result = lqueue.front();
       lqueue.pop();
       llocal_get_queue_timer.pauseTime();
-      (void) result;
+      (void)result;
     }
     double llocal_get_queue_throughput =
         num_request / llocal_get_queue_timer.getElapsedTime() * 1000 *
@@ -193,7 +189,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(client_comm);
 
     if (HCL_CONF->SERVER_ON_NODE) {
-      Timer local_queue_timer = Timer();
+      hcl::Timer local_queue_timer = hcl::Timer();
       uint16_t my_server_key = my_server % num_servers;
       /*Local queue test*/
       for (int i = 0; i < num_request; i++) {
@@ -207,7 +203,7 @@ int main(int argc, char *argv[]) {
           num_request / local_queue_timer.getElapsedTime() * 1000 *
           size_of_elem * my_vals.size() / 1024 / 1024;
 
-      Timer local_get_queue_timer = Timer();
+      hcl::Timer local_get_queue_timer = hcl::Timer();
       /*Local queue test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -245,7 +241,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(client_comm);
 
     if (!HCL_CONF->SERVER_ON_NODE) {
-      Timer remote_queue_timer = Timer();
+      hcl::Timer remote_queue_timer = hcl::Timer();
       /*Remote queue test*/
       uint16_t my_server_remote_key = (my_server + 1) % num_servers;
       for (int i = 0; i < num_request; i++) {
@@ -261,7 +257,7 @@ int main(int argc, char *argv[]) {
 
       MPI_Barrier(client_comm);
 
-      Timer remote_get_queue_timer = Timer();
+      hcl::Timer remote_get_queue_timer = hcl::Timer();
       /*Remote queue test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;

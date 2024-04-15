@@ -1,10 +1,6 @@
 #ifndef HCL_BLOCK_MAP_H
 #define HCL_BLOCK_MAP_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
 
@@ -13,6 +9,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <hcl/hcl_config.hpp>
 #include <iostream>
 #include <memory>
 #include <mutex>

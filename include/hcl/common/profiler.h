@@ -1,10 +1,7 @@
 #ifndef HCL_COMMON_HCL_PROFILER_H
 #define HCL_COMMON_HCL_PROFILER_H
-#if defined(HCL_HAS_CONFIG)
+
 #include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
 
 #ifdef HCL_PROFILER_DLIO_PROFILER  // DLIO_PROFILER
 #include <dlio_profiler/dlio_profiler.h>

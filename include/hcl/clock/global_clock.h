@@ -12,11 +12,7 @@
 
 #ifndef INCLUDE_HCL_CLOCK_GLOBAL_CLOCK_H_
 #define INCLUDE_HCL_CLOCK_GLOBAL_CLOCK_H_
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
@@ -30,6 +26,8 @@
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <cstdint>
+#include <hcl/hcl_config.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -48,7 +46,7 @@ class global_clock {
   uint16_t my_server;
   bip::managed_mapped_file segment;
   std::string name, func_prefix;
-  std::shared_ptr<RPC> rpc;
+  uint16_t port;
   bool server_on_node;
   CharStruct backed_file;
 
@@ -61,7 +59,7 @@ class global_clock {
   }
 
   global_clock(std::string name_ = "TEST_GLOBAL_CLOCK",
-               uint16_t port = HCL_CONF->RPC_PORT)
+               uint16_t _port = HCL_CONF->RPC_PORT)
       : is_server(HCL_CONF->IS_SERVER),
         memory_allocated(1024ULL * 1024ULL * 128ULL),
         my_rank(0),
@@ -71,6 +69,7 @@ class global_clock {
         segment(),
         name(name_),
         func_prefix(name_),
+        port(_port),
         server_on_node(HCL_CONF->SERVER_ON_NODE),
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_) {
     HCL_LOG_TRACE();
@@ -78,7 +77,7 @@ class global_clock {
     MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     name = name + "_" + std::to_string(my_server);
-    rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(port);
+    auto rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(_port);
     if (is_server) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

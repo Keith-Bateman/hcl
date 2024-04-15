@@ -235,6 +235,8 @@ void priority_queue<MappedType, Compare, Allocator,
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
   HCL_CPP_FUNCTION_UPDATE("access", "local");
+
+  auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

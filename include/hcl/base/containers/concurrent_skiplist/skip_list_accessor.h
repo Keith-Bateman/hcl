@@ -1,12 +1,10 @@
 #ifndef HCL_SKIPLIST_ACCESSOR_H
 #define HCL_SKIPLIST_ACCESSOR_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
+
+#include <hcl/hcl_config.hpp>
 template <typename T, typename Comp, typename NodeAlloc, int MAX_HEIGHT>
 class ConcurrentSkipList<T, Comp, NodeAlloc, MAX_HEIGHT>::Accessor {
   typedef SkipListNode<T> NodeType;

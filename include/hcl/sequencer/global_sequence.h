@@ -12,11 +12,7 @@
 
 #ifndef INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
 #define INCLUDE_HCL_SEQUENCER_GLOBAL_SEQUENCE_H_
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/container.h>
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
@@ -28,6 +24,7 @@
 #include <boost/interprocess/managed_mapped_file.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
+#include <hcl/hcl_config.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -59,6 +56,8 @@ class global_sequence : public container {
   void bind_functions() override {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
+
+    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -94,7 +93,7 @@ class global_sequence : public container {
       HCL_CPP_FUNCTION_UPDATE("access", "local");
       return value;
     } else {
-      nullptr;
+      return nullptr;
     }
   }
   uint64_t GetNextSequence() {

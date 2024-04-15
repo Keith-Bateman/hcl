@@ -12,11 +12,7 @@
 
 #ifndef INCLUDE_HCL_COMMUNICATION_RPC_LIB_H_
 #define INCLUDE_HCL_COMMUNICATION_RPC_LIB_H_
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/constants.h>
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
@@ -24,6 +20,8 @@
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
 #include <mpi.h>
+
+#include <hcl/hcl_config.hpp>
 
 /** Thallium Headers **/
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
@@ -140,7 +138,10 @@ class RPC {
       }
     }
   }
-  ~RPC() { Stop(); }
+  ~RPC() {
+    HCL_LOG_TRACE();
+    Stop();
+  }
 
   RPC() : server_port(HCL_CONF->RPC_PORT), server_list(HCL_CONF->SERVER_LIST) {
     HCL_LOG_TRACE();
@@ -182,7 +183,7 @@ class RPC {
           thallium_server = hcl::Singleton<tl::engine>::GetInstance(
               engine_init_str.c_str(), THALLIUM_SERVER_MODE, true,
               HCL_CONF->RPC_THREADS);
-          // printf("Running server on URI %s\n", engine_init_str.c_str());
+          HCL_LOG_INFO("Running server on URI %s\n", engine_init_str.c_str());
           break;
         }
 #endif
@@ -192,7 +193,7 @@ class RPC {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP: {
         init_engine_and_endpoints();
-        // printf("Running client on URI %s\n", HCL_CONF->URI.c_str());
+        HCL_LOG_INFO("Running client on URI %s\n", HCL_CONF->URI.c_str());
         break;
       }
 #endif

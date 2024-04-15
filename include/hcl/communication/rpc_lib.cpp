@@ -12,12 +12,8 @@
 
 #ifndef INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
 #define INCLUDE_HCL_COMMUNICATION_RPC_LIB_CPP_
-#include <stdexcept>
-#if defined(HCL_HAS_CONFIG)
 #include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+#include <stdexcept>
 template <typename F>
 void RPC::bind(CharStruct str, F func) {
   HCL_LOG_TRACE();

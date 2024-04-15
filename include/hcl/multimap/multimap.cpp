@@ -352,6 +352,8 @@ void multimap<KeyType, MappedType, Compare, Allocator,
               SharedType>::bind_functions() {
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
+
+  auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

@@ -289,6 +289,8 @@ void unordered_map<KeyType, MappedType, Hash, Allocator,
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
   HCL_CPP_FUNCTION_UPDATE("access", "local");
+
+  auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:
