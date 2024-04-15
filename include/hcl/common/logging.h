@@ -18,7 +18,7 @@ std::string hcl_macro_get_time() {
                        1000;
   auto hcl_ts_t = std::time(0);
   auto now = std::localtime(&hcl_ts_t);
-  char hcl_ts_time_str[sizeof "9999-12-31 29:59:59.9999"];
+  char hcl_ts_time_str[256];
   sprintf(hcl_ts_time_str, "%04d-%02d-%02d %02d:%02d:%02d.%ld",
           now->tm_year + 1900, now->tm_mon + 1, now->tm_mday, now->tm_hour,
           now->tm_min, now->tm_sec, hcl_ts_millis);
