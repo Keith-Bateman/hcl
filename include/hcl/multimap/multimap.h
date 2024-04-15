@@ -22,11 +22,6 @@
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
 
-/** Thallium Headers **/
-#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
-#include <thallium.hpp>
-#endif
-
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>

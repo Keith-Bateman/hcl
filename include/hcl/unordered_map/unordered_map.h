@@ -32,10 +32,7 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-/** Thallium Headers **/
-#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
-#include <thallium.hpp>
-#endif
+
 /** Boost Headers **/
 #include <hcl/common/container.h>
 

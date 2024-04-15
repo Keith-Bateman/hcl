@@ -24,6 +24,11 @@
 
 /** Thallium Headers **/
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+// save diagnostic state
+#pragma GCC diagnostic push
+
+// turn off the specific warning. Can also use "-Wall"
+#pragma GCC diagnostic ignored "-Wall"
 #include <thallium.hpp>
 #include <thallium/serialization/proc_input_archive.hpp>
 #include <thallium/serialization/proc_output_archive.hpp>
@@ -45,6 +50,7 @@
 #include <thallium/serialization/stl/unordered_multiset.hpp>
 #include <thallium/serialization/stl/unordered_set.hpp>
 #include <thallium/serialization/stl/vector.hpp>
+#pragma GCC diagnostic pop
 #endif
 
 #include <arpa/inet.h>
