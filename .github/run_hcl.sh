@@ -11,7 +11,7 @@ ctest -VV -R ^benchmark_test$ || exit 1
 
 ctest -VV -R ^benchmark_test_mpi$ || exit 1
 
-if [ "${HCL_COMMUNICATION}" = "THALLIUM" ]; then
+if [ "${HCL_COMMUNICATION_PROTOCOL}" = "UCX" ]; then
     ctest -V -R ^hashmap_test || exit 1
     echo "Testing concurrent queue test"
     ctest -V -R ^concurrent_queue_test || exit 1
