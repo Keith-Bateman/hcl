@@ -1,10 +1,8 @@
 #ifndef HCL_SKIPLIST_H
 #define HCL_SKIPLIST_H
-#if defined(HCL_HAS_CONFIG)
+
 #include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include "skip_list_inl.h"
 
 /*This file contains the class that implements a concurrent randomized skiplist.

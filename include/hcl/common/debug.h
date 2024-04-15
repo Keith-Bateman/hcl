@@ -23,16 +23,13 @@
 
 #ifndef INCLUDE_HCL_COMMON_DEBUG_H_
 #define INCLUDE_HCL_COMMON_DEBUG_H_
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <execinfo.h>
 #include <unistd.h>
 
 #include <chrono>
 #include <csignal>
+#include <hcl/hcl_config.hpp>
 #include <iostream>
 #include <tuple>
 
@@ -52,6 +49,7 @@ inline void handler(int sig) {
   exit(0);
 }
 
+namespace hcl {
 class Timer {
  public:
   Timer() : elapsed_time(0) {}
@@ -69,5 +67,7 @@ class Timer {
   std::chrono::high_resolution_clock::time_point t1;
   double elapsed_time;
 };
+
+}  // namespace hcl
 
 #endif  // INCLUDE_HCL_COMMON_DEBUG_H_

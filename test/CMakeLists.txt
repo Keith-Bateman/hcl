@@ -1,3 +1,14 @@
+find_package(Catch2 REQUIRED)
+find_package(MPI REQUIRED COMPONENTS CXX)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+set(TEST_LIBS Catch2::Catch2 -lstdc++fs ${MPI_CXX_LIBRARIES} ${DEPENDENCY_LIB})
+set(TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catch_config.h ${CMAKE_CURRENT_SOURCE_DIR}/mpi_console_reporter.cpp ${CMAKE_CURRENT_SOURCE_DIR}/mpi_console_reporter.hpp ${CMAKE_CURRENT_SOURCE_DIR}/util.h)
+
+add_subdirectory(benchmark)
+
+
+
+
 # target_link_libraries(DistributedHashMapTest ${CMAKE_BINARY_DIR}/libhcl.so)
 
 set(examples unordered_map_test unordered_map_string_test map_test queue_test priority_queue_test multimap_test set_test global_clock_test hashmap_test concurrent_queue_test skiplist_test)

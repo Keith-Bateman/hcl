@@ -9,11 +9,7 @@
  * the COPYING file, which can be found at the top directory. If you do not  *
  * have access to the file, you may request a copy from help@hdfgroup.org.   *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/clock/global_clock.h>
 #include <hcl/communication/rpc_lib.h>
 #include <hcl/map/map.h>
@@ -23,3 +19,5 @@
 #include <hcl/sequencer/global_sequence.h>
 #include <hcl/set/set.h>
 #include <hcl/unordered_map/unordered_map.h>
+
+#include <hcl/hcl_config.hpp>

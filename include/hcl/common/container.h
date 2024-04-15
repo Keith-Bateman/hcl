@@ -12,17 +12,14 @@
 
 #ifndef HCL_CONTAINER_H
 #define HCL_CONTAINER_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
 
 #include <cstdint>
+#include <hcl/hcl_config.hpp>
 #include <memory>
 
 #include "typedefs.h"
@@ -32,13 +29,13 @@ class container {
  protected:
   int comm_size, my_rank, num_servers;
   uint16_t my_server;
-  std::shared_ptr<RPC> rpc;
   really_long memory_allocated;
   bool is_server;
   boost::interprocess::managed_mapped_file segment;
   CharStruct name, func_prefix;
   boost::interprocess::interprocess_mutex *mutex;
   CharStruct backed_file;
+  uint16_t port;
 
  public:
   bool server_on_node;
@@ -84,7 +81,7 @@ class container {
     if (is_server)
       boost::interprocess::file_mapping::remove(backed_file.c_str());
   }
-  container(CharStruct name_, uint16_t port)
+  container(CharStruct name_, uint16_t _port)
       : comm_size(1),
         my_rank(0),
         num_servers(HCL_CONF->NUM_SERVERS),
@@ -96,6 +93,7 @@ class container {
         func_prefix(name_),
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_ + "_" +
                     std::to_string(my_server)),
+        port(_port),
         server_on_node(HCL_CONF->SERVER_ON_NODE) {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
@@ -106,7 +104,7 @@ class container {
        spawned on one node*/
     this->name += "_" + std::to_string(my_server);
     /* if current rank is a server */
-    rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
+    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(_port);
     if (is_server) {
       /* Delete existing instance of shared memory space*/
       boost::interprocess::file_mapping::remove(backed_file.c_str());

@@ -12,11 +12,7 @@
 
 #ifndef INCLUDE_HCL_COMMON_CONFIGURATION_MANAGER_H
 #define INCLUDE_HCL_COMMON_CONFIGURATION_MANAGER_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/constants.h>
 #include <hcl/common/data_structures.h>
 #include <hcl/common/debug.h>
@@ -27,6 +23,7 @@
 
 #include <boost/thread/mutex.hpp>
 #include <fstream>
+#include <hcl/hcl_config.hpp>
 #include <vector>
 
 #include "typedefs.h"
@@ -84,7 +81,7 @@ class ConfigurationManager {
     HCL_LOG_TRACE();
     HCL_PROFILER_CPP_INIT(NULL);
     HCL_CPP_FUNCTION()
-    char* uri_str = getenv(HCL_THALLIUM_URI_ENV);
+    char* uri_str = getenv(HCL_THALLIUM_URI_ENV.c_str());
     if (uri_str != nullptr) {
       URI = CharStruct(uri_str);
       std::string uri_str = URI.string();

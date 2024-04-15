@@ -1,10 +1,6 @@
 #ifndef HCL_MEMORY_H
 #define HCL_MEMORY_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
+
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
 
@@ -12,6 +8,7 @@
 #include <boost/lockfree/queue.hpp>
 #include <cstdarg>
 #include <functional>
+#include <hcl/hcl_config.hpp>
 #include <iostream>
 #include <mutex>
 #include <vector>

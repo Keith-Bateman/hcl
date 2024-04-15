@@ -12,11 +12,8 @@
 
 #ifndef HCL_RPC_FACTORY_H
 #define HCL_RPC_FACTORY_H
-#if defined(HCL_HAS_CONFIG)
+
 #include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
 #include <memory>
 #include <unordered_map>
 

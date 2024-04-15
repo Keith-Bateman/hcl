@@ -21,13 +21,12 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
-#include <utility>
-#include <random>
-#include <queue>
 #include <mutex>
+#include <queue>
+#include <random>
+#include <utility>
 
-struct thread_arg
-{
+struct thread_arg {
   int tid;
   int num_operations;
 };
@@ -36,41 +35,33 @@ std::mutex m;
 std::queue<int> *stl_queue;
 hcl::concurrent_queue<int> *hcl_queue;
 
-void stl_queue_operations(struct thread_arg *t)
-{
-   for(int i=0;i<t->num_operations;i++)
-   {
-      int k = random()%1000000;
-      m.lock();
-      stl_queue->push(k);
-      m.unlock();
-   }
-   for(int i=0;i<t->num_operations;i++)
-   {
-      m.lock();
-      auto k = stl_queue->front();
-      stl_queue->pop();
-      m.unlock();
-      (void) k;
-   }
-}
-void hcl_queue_operations(struct thread_arg *t)
-{
-
-  for(int i=0;i<t->num_operations;i++)
-  {
-       int k = random()%1000000;
-       auto b = hcl_queue->LocalPush(k);
-      (void) b;
+void stl_queue_operations(struct thread_arg *t) {
+  for (int i = 0; i < t->num_operations; i++) {
+    int k = random() % 1000000;
+    m.lock();
+    stl_queue->push(k);
+    m.unlock();
   }
-
-  for(int i=0;i<t->num_operations;i++)
-  {
-       auto b = hcl_queue->LocalPop();
-       (void) b;
+  for (int i = 0; i < t->num_operations; i++) {
+    m.lock();
+    auto k = stl_queue->front();
+    stl_queue->pop();
+    m.unlock();
+    (void)k;
   }
 }
+void hcl_queue_operations(struct thread_arg *t) {
+  for (int i = 0; i < t->num_operations; i++) {
+    int k = random() % 1000000;
+    auto b = hcl_queue->LocalPush(k);
+    (void)b;
+  }
 
+  for (int i = 0; i < t->num_operations; i++) {
+    auto b = hcl_queue->LocalPop();
+    (void)b;
+  }
+}
 
 int main(int argc, char *argv[]) {
   int provided;
@@ -114,9 +105,9 @@ int main(int argc, char *argv[]) {
   HCL_CONF->NUM_SERVERS = num_servers;
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
-  
-  stl_queue = new std::queue<int> ();
-  hcl_queue = new hcl::concurrent_queue<int> ();
+
+  stl_queue = new std::queue<int>();
+  hcl_queue = new hcl::concurrent_queue<int>();
 
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Comm client_comm;
@@ -125,100 +116,104 @@ int main(int argc, char *argv[]) {
   int client_rank;
   MPI_Comm_size(client_comm, &client_comm_size);
   std::default_random_engine rd;
-  std::uniform_int_distribution<int> dist(0,100000000);
+  std::uniform_int_distribution<int> dist(0, 100000000);
 
   rd.seed(my_rank);
-  auto die = std::bind(dist,rd);
-  (void) die;
-  double local_queue_throughput_l=0,local_queue_throughput=0;
+  auto die = std::bind(dist, rd);
+  (void)die;
+  double local_queue_throughput_l = 0, local_queue_throughput = 0;
   double elapsed_time = 0;
-  double remote_queue_throughput_l=0,remote_queue_throughput=0;
-  double baseline_l=0,baseline=0;
+  double remote_queue_throughput_l = 0, remote_queue_throughput = 0;
+  double baseline_l = 0, baseline = 0;
 
-  if(is_server)
-  {
-     int num_threads = 12;
-     std::vector<struct thread_arg> t_args(num_threads);
-     std::vector<std::thread> workers(num_threads);
+  if (is_server) {
+    int num_threads = 12;
+    std::vector<struct thread_arg> t_args(num_threads);
+    std::vector<std::thread> workers(num_threads);
 
-     int num_ops = num_request/num_threads;
-     int rem = num_request%num_threads;
+    int num_ops = num_request / num_threads;
+    int rem = num_request % num_threads;
 
-     auto t1 = std::chrono::high_resolution_clock::now();
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-     for(int i=0;i<num_threads;i++)
-     {
-	 t_args[i].tid = i;
-	 if(i < rem) t_args[i].num_operations = num_ops+1;
-	 else t_args[i].num_operations = num_ops;
-	 std::thread t{stl_queue_operations,&t_args[i]};
-	 workers[i] = std::move(t);
-     }
+    for (int i = 0; i < num_threads; i++) {
+      t_args[i].tid = i;
+      if (i < rem)
+        t_args[i].num_operations = num_ops + 1;
+      else
+        t_args[i].num_operations = num_ops;
+      std::thread t{stl_queue_operations, &t_args[i]};
+      workers[i] = std::move(t);
+    }
 
-     for(int i=0;i<num_threads;i++)
-	     workers[i].join();
-     auto t2 = std::chrono::high_resolution_clock::now();
-     elapsed_time = std::chrono::duration<double>(t2-t1).count();
-     baseline_l = 2*num_request/elapsed_time;
+    for (int i = 0; i < num_threads; i++) workers[i].join();
+    auto t2 = std::chrono::high_resolution_clock::now();
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    baseline_l = 2 * num_request / elapsed_time;
 
-     t1 = std::chrono::high_resolution_clock::now();
+    t1 = std::chrono::high_resolution_clock::now();
 
-     for(int i=0;i<num_threads;i++)
-     {
-            t_args[i].tid = i;
-            if(i < rem) t_args[i].num_operations = num_ops+1;
-            else t_args[i].num_operations = num_ops;
-            std::thread t{hcl_queue_operations,&t_args[i]};
-            workers[i] = std::move(t);
-     }
+    for (int i = 0; i < num_threads; i++) {
+      t_args[i].tid = i;
+      if (i < rem)
+        t_args[i].num_operations = num_ops + 1;
+      else
+        t_args[i].num_operations = num_ops;
+      std::thread t{hcl_queue_operations, &t_args[i]};
+      workers[i] = std::move(t);
+    }
 
-     for(int i=0;i<num_threads;i++)
-               workers[i].join();
+    for (int i = 0; i < num_threads; i++) workers[i].join();
 
-     t2 = std::chrono::high_resolution_clock::now();
-     elapsed_time = std::chrono::duration<double>(t2-t1).count();
-     local_queue_throughput_l = (double) 2*num_request / elapsed_time;
-   }
+    t2 = std::chrono::high_resolution_clock::now();
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    local_queue_throughput_l = (double)2 * num_request / elapsed_time;
+  }
 
-  MPI_Allreduce(&baseline_l,&baseline,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Baseline throughput = "<<baseline<<" reqs/sec"<<std::endl;
-  MPI_Allreduce(&local_queue_throughput_l,&local_queue_throughput,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Local_operations_throughput = "<<local_queue_throughput<<" reqs/sec"<<std::endl;
-  if(!is_server)
-  {
-   MPI_Comm_rank(client_comm,&client_rank);
+  MPI_Allreduce(&baseline_l, &baseline, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Baseline throughput = " << baseline << " reqs/sec"
+              << std::endl;
+  MPI_Allreduce(&local_queue_throughput_l, &local_queue_throughput, 1,
+                MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Local_operations_throughput = " << local_queue_throughput
+              << " reqs/sec" << std::endl;
+  if (!is_server) {
+    MPI_Comm_rank(client_comm, &client_rank);
 
-    int num_ops = num_request/client_comm_size;
-    int rem = num_request%client_comm_size;
-    if(client_rank < rem) num_ops++;
+    int num_ops = num_request / client_comm_size;
+    int rem = num_request % client_comm_size;
+    if (client_rank < rem) num_ops++;
 
     MPI_Barrier(client_comm);
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int i = 0; i < num_ops; i++) 
-    {
-        int value = dist(rd)%1000000;
-        uint64_t s = random()%num_servers;
-        hcl_queue->Push(s,value);
+    for (int i = 0; i < num_ops; i++) {
+      int value = dist(rd) % 1000000;
+      uint64_t s = random() % num_servers;
+      hcl_queue->Push(s, value);
     }
-      
-    for (int i = 0; i < num_ops; i++) 
-    {
-	uint64_t s = random()%num_servers;
-	std::pair<bool,int> r = hcl_queue->Pop(s);
-  (void) r;
+
+    for (int i = 0; i < num_ops; i++) {
+      uint64_t s = random() % num_servers;
+      std::pair<bool, int> r = hcl_queue->Pop(s);
+      (void)r;
     }
-  
+
     auto t2 = std::chrono::high_resolution_clock::now();
-    elapsed_time = std::chrono::duration<double>(t2-t1).count();
-    MPI_Barrier(client_comm); 
-    remote_queue_throughput_l = 2*num_request/elapsed_time;
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    MPI_Barrier(client_comm);
+    remote_queue_throughput_l = 2 * num_request / elapsed_time;
   }
 
-  MPI_Allreduce(&remote_queue_throughput_l,&remote_queue_throughput,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Remote_operations_throughput = "<<remote_queue_throughput<<" reqs/sec"<<std::endl;
-  delete(stl_queue); 
+  MPI_Allreduce(&remote_queue_throughput_l, &remote_queue_throughput, 1,
+                MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Remote_operations_throughput = " << remote_queue_throughput
+              << " reqs/sec" << std::endl;
+  delete (stl_queue);
   delete (hcl_queue);
   MPI_Finalize();
   exit(EXIT_SUCCESS);

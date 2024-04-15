@@ -1,22 +1,18 @@
 #ifndef HCL_COMMON_HCL_LOGGING_H
 #define HCL_COMMON_HCL_LOGGING_H
-#if defined(HCL_HAS_CONFIG)
-#include <hcl/hcl_config.hpp>
-#else
-#error "no config"
-#endif
 
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <chrono>
+#include <hcl/hcl_config.hpp>
 #include <string>
 #ifdef __cplusplus
 extern "C" {
 #endif
 #define VA_ARGS(...) , ##__VA_ARGS__
 
-std::string get_time() {
+std::string hcl_macro_get_time() {
   auto hcl_ts_millis = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count() %
@@ -56,14 +52,15 @@ std::string get_time() {
 #define HCL_LOG_STDERR_REDIRECT(fpath) freopen((fpath), "a+", stderr);
 #define HCL_LOGGER_NAME "HCL"
 
-#define HCL_INTERNAL_TRACE(file, line, function, name, logger_level)         \
-  cpp_logger_clog(logger_level, name, "[%s] %s [%s:%d]", get_time().c_str(), \
-                  function, file, line);
+#define HCL_INTERNAL_TRACE(file, line, function, name, logger_level) \
+  cpp_logger_clog(logger_level, name, "[%s] %s [%s:%d]",             \
+                  hcl_macro_get_time().c_str(), function, file, line);
 
-#define HCL_INTERNAL_TRACE_FORMAT(file, line, function, name, logger_level, \
-                                  format, ...)                              \
-  cpp_logger_clog(logger_level, name, "[%s] %s " format " [%s:%d]",         \
-                  get_time().c_str(), function, __VA_ARGS__, file, line);
+#define HCL_INTERNAL_TRACE_FORMAT(file, line, function, name, logger_level,    \
+                                  format, ...)                                 \
+  cpp_logger_clog(logger_level, name, "[%s] %s " format " [%s:%d]",            \
+                  hcl_macro_get_time().c_str(), function, ##__VA_ARGS__, file, \
+                  line);
 
 #ifdef HCL_LOGGER_LEVEL_TRACE
 #define HCL_LOGGER_INIT() \
@@ -105,7 +102,7 @@ std::string get_time() {
 #ifdef HCL_LOGGER_LEVEL_INFO
 #define HCL_LOG_INFO(format, ...)                                              \
   HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
-                            CPP_LOGGER_INFO, format, __VA_ARGS__);
+                            CPP_LOGGER_INFO, format, ##__VA_ARGS__);
 #else
 #define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
 #endif

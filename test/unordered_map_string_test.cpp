@@ -28,15 +28,9 @@ struct KeyType {
   size_t a;
   KeyType() : a(0) {}
 
-  KeyType(const KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType& t) {
-    a = t.a;
-  }
-  KeyType(KeyType&& t) {
-    a = t.a;
-  }
+  KeyType(const KeyType &t) { a = t.a; }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -147,7 +141,7 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(client_comm, &client_comm_size);
   MPI_Barrier(MPI_COMM_WORLD);
   if (!is_server) {
-    Timer llocal_map_timer = Timer();
+    hcl::Timer llocal_map_timer = hcl::Timer();
     std::hash<KeyType> keyHash;
     /*Local std::map test*/
     for (int i = 0; i < num_request; i++) {
@@ -164,7 +158,7 @@ int main(int argc, char *argv[]) {
         num_request / llocal_map_timer.getElapsedTime() * 1000 *
         size_of_request * my_vals.size() / 1024 / 1024;
 
-    Timer llocal_get_map_timer = Timer();
+    hcl::Timer llocal_get_map_timer = hcl::Timer();
     for (int i = 0; i < num_request; i++) {
       size_t val = my_server;
       llocal_get_map_timer.resumeTime();
@@ -186,7 +180,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(client_comm);
 
     if (HCL_CONF->SERVER_ON_NODE) {
-      Timer local_map_timer = Timer();
+      hcl::Timer local_map_timer = hcl::Timer();
       /*Local map test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -200,7 +194,7 @@ int main(int argc, char *argv[]) {
           num_request / local_map_timer.getElapsedTime() * 1000 *
           size_of_request * my_vals.size() / 1024 / 1024;
 
-      Timer local_get_map_timer = Timer();
+      hcl::Timer local_get_map_timer = hcl::Timer();
       /*Local map test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server;
@@ -236,7 +230,7 @@ int main(int argc, char *argv[]) {
     }
     MPI_Barrier(client_comm);
     if (!HCL_CONF->SERVER_ON_NODE) {
-      Timer remote_map_timer = Timer();
+      hcl::Timer remote_map_timer = hcl::Timer();
       /*Remote map test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;
@@ -251,7 +245,7 @@ int main(int argc, char *argv[]) {
           size_of_request * my_vals.size() / 1024 / 1024;
 
       MPI_Barrier(client_comm);
-      Timer remote_get_map_timer = Timer();
+      hcl::Timer remote_get_map_timer = hcl::Timer();
       /*Remote map test*/
       for (int i = 0; i < num_request; i++) {
         size_t val = my_server + 1;

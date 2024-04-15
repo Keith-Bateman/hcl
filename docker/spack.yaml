@@ -9,7 +9,8 @@ spack:
     - boost@1.71.0
     - mpich@3.3.2
     - cpp-logger@0.0.3
-    - py-dlio-profiler-py@0.0.4
+    - py-dlio-profiler-py@0.0.5 ^gotcha@1.0.6
+    - catch2@3.4.0
   view: true
   concretizer:
     unify: true
