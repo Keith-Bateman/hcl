@@ -1,6 +1,8 @@
 #include <catch_config.h>
 #include <hcl.h>
+#ifndef DISABLE_MPI
 #include <mpi.h>
+#endif
 #include <unistd.h>
 #include <util.h>
 
@@ -20,9 +22,10 @@ struct Info {
   int comm_size;
   int num_nodes;
   std::shared_ptr<RPC> rpc;
-
+#ifndef DISABLE_MPI
   /*Client Info*/
   MPI_Comm client_comm;
+#endif
   int client_comm_size, client_rank;
   bool is_server;
   bool is_client;
@@ -52,12 +55,17 @@ int configure_hcl(bool is_server_on_node) {
   return 0;
 }
 int catch_init(int* argc, char*** argv) {
-  //  fprintf(stdout, "Initializing MPI\n");
+//  fprintf(stdout, "Initializing MPI\n");
+#ifndef DISABLE_MPI
   MPI_Init(argc, argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &info.rank);
   MPI_Comm_size(MPI_COMM_WORLD, &info.comm_size);
+#else
+  info.rank = 0;
+  info.comm_size = 1;
+#endif
   info.debug_init = false;
-
+#ifndef DISABLE_MPI
   if (!info.debug_init && args.debug) {
     const int HOSTNAME_SIZE = 256;
     char hostname[HOSTNAME_SIZE];
@@ -112,11 +120,13 @@ int catch_init(int* argc, char*** argv) {
     }
     info.debug_init = true;
   }
+#endif
   info.is_server = (info.rank + 1) % args.process_per_node == 0;
   info.num_nodes = info.comm_size / args.process_per_node;
   info.is_client = true;
   info.client_comm_size = 1;
   info.client_rank = 0;
+#ifndef DISABLE_MPI
   if (info.comm_size > 1) {
     MPI_Comm_split(MPI_COMM_WORLD, !info.is_server, info.rank,
                    &info.client_comm);
@@ -126,20 +136,29 @@ int catch_init(int* argc, char*** argv) {
   } else {
     info.client_comm = MPI_COMM_WORLD;
   }
+#else
+  info.is_client = true;
+#endif
 
   configure_hcl(false);
   HCL_LOG_INFO("Initializing the Catch2 Test with args ppn:%d server_path:%s\n",
                args.process_per_node, args.server_path.c_str());
   info.rpc =
       hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(HCL_CONF->RPC_PORT);
+#ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
+#endif
   return 0;
 }
 int catch_finalize() {
+#ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
-  HCL_LOG_INFO("Finalizing the Catch2 Test \n");
+#endif
+  HCL_LOG_INFO("Finalizing the %s Test \n", "Catch2");
   info.rpc.reset();
+#ifndef DISABLE_MPI
   MPI_Finalize();
+#endif
   return 0;
 }
 cl::Parser define_options() {
@@ -153,11 +172,15 @@ cl::Parser define_options() {
 }
 
 int pretest() {
+#ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
+#endif
   return 0;
 }
 int posttest() {
+#ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
+#endif
   return 0;
 }
 

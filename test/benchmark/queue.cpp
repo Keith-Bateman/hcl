@@ -10,7 +10,8 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
 
   float total_requests = info.client_comm_size * args.num_request;
   typedef hcl::queue<Key> Type;
-  HCL_LOG_INFO("Ran Pre Test");
+  HCL_LOG_INFO("Ran Pre Test %d", info.test_count + 1);
+  ;
   SECTION("stl") {
     std::queue<Key> type = std::queue<Key>();
     if (info.is_client) {
@@ -45,10 +46,12 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
     if (info.is_server) {
       type = std::make_shared<Type>("Local" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       type = std::make_shared<Type>("Local" + std::to_string(info.test_count));
     }
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
       for (int i = 1; i <= args.num_request; i++) {
@@ -76,7 +79,9 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
   SECTION("remote") {
     REQUIRE(configure_hcl(false) == 0);
@@ -84,11 +89,12 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
     if (info.is_server) {
       type = std::make_shared<Type>("Remote" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       type = std::make_shared<Type>("Remote" + std::to_string(info.test_count));
     }
-
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
@@ -118,9 +124,11 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
-  HCL_LOG_INFO("Running Post Test");
+  HCL_LOG_INFO("Running Post %d", info.test_count + 1);
   REQUIRE(posttest() == 0);
   info.test_count++;
 }

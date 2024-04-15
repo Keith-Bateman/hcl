@@ -22,13 +22,6 @@
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
-
-/** Thallium Headers **/
-#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
-#include <thallium.hpp>
-#endif
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -51,7 +44,7 @@
 
 namespace hcl {
 /**
- * This is a Distributed Set Class. It uses shared memory + RPC + MPI to
+ * This is a Distributed Set Class. It uses shared memory + RPC to
  * achieve the data structure.
  *
  * @tparam MappedType, the value of the Set

@@ -116,7 +116,6 @@ bool queue<MappedType, Allocator, SharedType>::LocalWaitForElement() {
   int count = 0;
   while (my_queue->size() == 0) {
     usleep(10);
-    if (count == 0) printf("Server %d, No Events in Queue\n", my_rank);
     count++;
   }
   return true;

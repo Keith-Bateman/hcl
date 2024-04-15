@@ -22,18 +22,12 @@
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
-
-/** Thallium Headers **/
-#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
-#include <thallium.hpp>
-#endif
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
 /** Standard C++ Headers**/
 #include <float.h>
+#include <hcl/base/containers/concurrent_unordered_map/block_map.h>
 #include <hcl/common/container.h>
 
 #include <functional>
@@ -43,8 +37,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "../../base/containers/concurrent_unordered_map/block_map.h"
 
 /*This file contains the class that implements a distributed concurrent
  * unordered map of fixed size. The total size of the map can be configured by

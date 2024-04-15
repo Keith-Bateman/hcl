@@ -17,7 +17,6 @@
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-#include <mpi.h>
 #include <stdint-gcc.h>
 
 #include <boost/interprocess/allocators/allocator.hpp>
