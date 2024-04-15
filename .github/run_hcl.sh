@@ -6,7 +6,10 @@ export UCX_LOG_LEVEL=info
 pushd build
 
 
-ctest -VV -R benchmark_test || exit 1
+ctest -VV -R ^benchmark_test$ || exit 1
+
+
+ctest -VV -R ^benchmark_test_mpi$ || exit 1
 
 if [ "${HCL_COMMUNICATION}" = "THALLIUM" ]; then
     ctest -V -R ^hashmap_test || exit 1
