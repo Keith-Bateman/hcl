@@ -54,11 +54,13 @@ TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
       type =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       type =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
       Value v = {10};
@@ -88,7 +90,9 @@ TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
   SECTION("remote") {
     REQUIRE(configure_hcl(false) == 0);
@@ -97,12 +101,13 @@ TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
       type =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       type =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
-
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
@@ -133,7 +138,9 @@ TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
   HCL_LOG_INFO("Running Post Test");
   REQUIRE(posttest() == 0);

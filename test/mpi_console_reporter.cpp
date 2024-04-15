@@ -5,9 +5,9 @@
 
 // SPDX-License-Identifier: BSL-1.0
 #include "mpi_console_reporter.hpp"
-
+#ifndef DISABLE_MPI
 #include <mpi.h>
-
+#endif
 #include <catch2/catch_test_case_info.hpp>
 #include <catch2/catch_test_spec.hpp>
 #include <catch2/catch_version.hpp>
@@ -486,9 +486,11 @@ void ConsoleMPIReporter::testCaseEnded(TestCaseStats const& _testCaseStats) {
   m_headerPrinted = false;
 }
 void ConsoleMPIReporter::testRunEnded(TestRunStats const& _testRunStats) {
+#ifndef DISABLE_MPI
   int rank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank != 0 && _testRunStats.totals.testCases.allPassed()) return;
+#endif
   printTotalsDivider(_testRunStats.totals);
   printTotals(_testRunStats.totals);
   m_stream << '\n' << std::flush;
@@ -496,9 +498,11 @@ void ConsoleMPIReporter::testRunEnded(TestRunStats const& _testRunStats) {
 }
 void ConsoleMPIReporter::testRunStarting(TestRunInfo const& _testInfo) {
   StreamingReporterBase::testRunStarting(_testInfo);
+#ifndef DISABLE_MPI
   int rank = -1;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   if (rank != 0) return;
+#endif
   if (m_config->testSpec().hasFilters()) {
     m_stream << m_colour->guardColour(Colour::BrightYellow)
              << "Filters: " << serializeFilters(m_config->getTestsOrTags())

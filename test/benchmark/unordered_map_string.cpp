@@ -60,11 +60,13 @@ TEMPLATE_TEST_CASE_SIG("unordered_map_string", "[unordered_map_string]",
       lmap =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       lmap =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
       std::string v(S, 'x');
@@ -94,7 +96,9 @@ TEMPLATE_TEST_CASE_SIG("unordered_map_string", "[unordered_map_string]",
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
   SECTION("remote") {
     REQUIRE(configure_hcl(false) == 0);
@@ -103,12 +107,13 @@ TEMPLATE_TEST_CASE_SIG("unordered_map_string", "[unordered_map_string]",
       rmap =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
       rmap =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
-
+#endif
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
@@ -139,7 +144,9 @@ TEMPLATE_TEST_CASE_SIG("unordered_map_string", "[unordered_map_string]",
                       total_requests / total_get * info.client_comm_size);
       }
     }
+#ifndef DISABLE_MPI
     MPI_Barrier(MPI_COMM_WORLD);
+#endif
   }
   HCL_LOG_INFO("Running Post Test");
   REQUIRE(posttest() == 0);

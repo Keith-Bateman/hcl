@@ -185,10 +185,15 @@ void SetSignal() {
 
 const uint32_t KB = 1024;
 const uint32_t MB = 1024 * 1024;
+#ifndef DISABLE_MPI
 #define AGGREGATE_TIME(name, comm)              \
   double total_##name = 0.0;                    \
   auto name##_a = name##_time.getElapsedTime(); \
   MPI_Reduce(&name##_a, &total_##name, 1, MPI_DOUBLE, MPI_SUM, 0, comm);
+#else
+#define AGGREGATE_TIME(name, comm) \
+  double total_##name = name##_time.getElapsedTime();
+#endif
 
 size_t GetRandomOffset(size_t i, unsigned int offset_seed, size_t stride,
                        size_t total_size) {
