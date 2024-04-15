@@ -28,7 +28,8 @@
 #pragma GCC diagnostic push
 
 // turn off the specific warning. Can also use "-Wall"
-#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wpedantic"
 #include <thallium.hpp>
 #include <thallium/serialization/proc_input_archive.hpp>
 #include <thallium/serialization/proc_output_archive.hpp>

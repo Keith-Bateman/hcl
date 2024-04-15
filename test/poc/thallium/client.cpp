@@ -1,5 +1,11 @@
-#include <thallium.hpp>
+// save diagnostic state
+#pragma GCC diagnostic push
 
+// turn off the specific warning. Can also use "-Wall"
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#pragma GCC diagnostic ignored "-Wpedantic"
+#include <thallium.hpp>
+#pragma GCC diagnostic pop
 namespace tl = thallium;
 
 int main(int argc, char** argv) {

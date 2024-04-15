@@ -27,6 +27,7 @@
 #include <boost/algorithm/string.hpp>
 /** Standard C++ Headers**/
 #include <float.h>
+#include <hcl/base/containers/concurrent_skiplist/skip_list.h>
 #include <hcl/common/container.h>
 
 #include <functional>
@@ -36,8 +37,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "../../base/containers/concurrent_skiplist/skip_list.h"
 
 /*This file contains the class that implements a distributed concurrent set. The
  * total size of the set is not fixed. Each server has a set. The total key
