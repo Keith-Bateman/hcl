@@ -32,10 +32,6 @@
 #include <tuple>
 #include <utility>
 #include <vector>
-
-/** MPI Headers**/
-#include <mpi.h>
-
 /** Thallium Headers **/
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #include <thallium.hpp>
@@ -56,7 +52,7 @@
 
 namespace hcl {
 /**
- * This is a Distributed HashMap Class. It uses shared memory + RPC + MPI to
+ * This is a Distributed HashMap Class. It uses shared memory + RPC to
  * achieve the data structure.
  *
  * @tparam MappedType, the value of the HashMap

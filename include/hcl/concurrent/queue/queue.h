@@ -22,8 +22,6 @@
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
 
 /** Thallium Headers **/
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)

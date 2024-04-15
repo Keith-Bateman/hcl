@@ -19,7 +19,6 @@
 #include <hcl/common/typedefs.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-#include <mpi.h>
 #include <stdint-gcc.h>
 
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -42,7 +41,6 @@ class global_clock {
   bool is_server;
   bip::interprocess_mutex *mutex;
   really_long memory_allocated;
-  int my_rank, comm_size, num_servers;
   uint16_t my_server;
   bip::managed_mapped_file segment;
   std::string name, func_prefix;
@@ -62,8 +60,6 @@ class global_clock {
                uint16_t _port = HCL_CONF->RPC_PORT)
       : is_server(HCL_CONF->IS_SERVER),
         memory_allocated(1024ULL * 1024ULL * 128ULL),
-        my_rank(0),
-        comm_size(1),
         num_servers(HCL_CONF->NUM_SERVERS),
         my_server(HCL_CONF->MY_SERVER),
         segment(),
@@ -74,8 +70,6 @@ class global_clock {
         backed_file(HCL_CONF->BACKED_FILE_DIR + PATH_SEPARATOR + name_) {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
-    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     name = name + "_" + std::to_string(my_server);
     auto rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(_port);
     if (is_server) {

@@ -19,7 +19,6 @@
 #include <hcl/common/macros.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
-#include <mpi.h>
 
 #include <hcl/hcl_config.hpp>
 

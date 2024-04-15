@@ -7,7 +7,6 @@
 #include <catch2/catch_all.hpp>
 #include <iostream>
 
-#include "mpi.h"
 namespace cl = Catch::Clara;
 
 cl::Parser define_options();

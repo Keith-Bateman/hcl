@@ -22,8 +22,6 @@
 #include <hcl/common/typedefs.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
-/** MPI Headers**/
-#include <mpi.h>
 
 /** Thallium Headers **/
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
@@ -54,7 +52,7 @@ namespace bip = boost::interprocess;
 
 namespace hcl {
 /**
- * This is a Distributed priority_queue Class. It uses shared memory + RPC + MPI
+ * This is a Distributed priority_queue Class. It uses shared memory + RPC
  * to achieve the data structure.
  *
  * @tparam MappedType, the value of the priority_queue

@@ -27,7 +27,7 @@
 namespace hcl {
 class container {
  protected:
-  int comm_size, my_rank, num_servers;
+  int num_servers;
   uint16_t my_server;
   really_long memory_allocated;
   bool is_server;
@@ -82,9 +82,7 @@ class container {
       boost::interprocess::file_mapping::remove(backed_file.c_str());
   }
   container(CharStruct name_, uint16_t _port)
-      : comm_size(1),
-        my_rank(0),
-        num_servers(HCL_CONF->NUM_SERVERS),
+      : num_servers(HCL_CONF->NUM_SERVERS),
         my_server(HCL_CONF->MY_SERVER),
         memory_allocated(HCL_CONF->MEMORY_ALLOCATED),
         is_server(HCL_CONF->IS_SERVER),
@@ -97,9 +95,6 @@ class container {
         server_on_node(HCL_CONF->SERVER_ON_NODE) {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
-    /* Initialize MPI rank and size of world */
-    MPI_Comm_size(MPI_COMM_WORLD, &comm_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     /* create per server name for shared memory. Needed if multiple servers are
        spawned on one node*/
     this->name += "_" + std::to_string(my_server);
