@@ -165,7 +165,8 @@ void bt_sighandler(int sig, struct sigcontext ctx) {
     char syscom[256];
     sprintf(syscom, "addr2line %p -e %.*s", trace[i], p, messages[i]);
     // last parameter is the file name of the symbol
-    system(syscom);
+    int res = system(syscom);
+    (void)res;
   }
 
   exit(0);
