@@ -34,7 +34,11 @@ jobs:
 
       - name: Setup python
         uses: actions/setup-python@v1
-
+      - name: Run clang-format style check for C/C++/Protobuf programs.
+        uses: jidicula/clang-format-action@v4.11.0
+        with:
+          clang-format-version: '18'
+          check-path: '.'
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
