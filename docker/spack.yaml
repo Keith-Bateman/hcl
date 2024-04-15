@@ -9,12 +9,37 @@ spack:
     - boost@1.71.0
     - mpich@3.3.2
     - cpp-logger@0.0.3
-    - py-dlio-profiler-py@0.0.5 ^gotcha@1.0.6
+    - py-dlio-profiler-py@0.0.5 ^gotcha@1.0.6 ^cmake@3.29.2 ^py-cmake@3.29.2
     - catch2@3.4.0
   view: true
   concretizer:
     unify: true
   packages:
+    cmake:
+      buildable: False
+      externals:
+        - spec: cmake@3.29.2
+          prefix: /usr
+    py-pip:
+      buildable: False
+      externals:
+        - spec: py-pip@20.0.2
+          prefix: /usr
+    py-pybind11:
+      buildable: False
+      externals:
+        - spec: py-pybind11@2.12.0
+          prefix: /usr
+    py-ninja:
+      buildable: False
+      externals:
+        - spec: py-ninja@1.11.1.1
+          prefix: /usr
+    py-cmake:
+      buildable: False
+      externals:
+        - spec: py-cmake@3.29.2
+          prefix: /usr
     pkgconf:
       buildable: False
       externals:
@@ -94,11 +119,6 @@ spack:
     perl:
       externals:
         - spec: perl@5.30.0~cpanm+opcode+open+shared+threads
-          prefix: /usr
-    cmake:
-      buildable: False
-      externals:
-        - spec: cmake@3.16.3
           prefix: /usr
     openssl:
       externals:

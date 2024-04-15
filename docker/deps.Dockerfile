@@ -33,7 +33,6 @@ ENV HOME=/root
 ENV PROJECT_DIR=$HOME/source
 ENV INSTALL_DIR=$HOME/install
 ENV SPACK_DIR=$HOME/spack
-ENV SDS_DIR=$HOME/sds
 
 # install spack
 RUN echo $INSTALL_DIR && mkdir -p $INSTALL_DIR
@@ -41,6 +40,8 @@ RUN git clone https://github.com/spack/spack ${SPACK_DIR}
 
 ENV spack=${SPACK_DIR}/bin/spack
 RUN . ${SPACK_DIR}/share/spack/setup-env.sh
+
+RUN python3 -m pip install cmake ninja pybind11  setuptools wheel
 
 RUN mkdir -p ${INSTALL_DIR}
 COPY ./spack.yaml ${INSTALL_DIR}/spack.yaml
