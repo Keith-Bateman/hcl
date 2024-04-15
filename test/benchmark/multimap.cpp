@@ -1,22 +1,23 @@
 
 
 #include <array>
+#include <utility>
 
-TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
+TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
                        ((int S, typename K, typename V), S, K, V),
-                       (1, int, std::array<int, 1>),
-                       (2, int, std::array<int, 4096>),
-                       (3, int, std::array<int, 16 * 1024>)) {
+                       (1, KeyType, std::array<int, 1>),
+                       (2, KeyType, std::array<int, 4096>),
+                       (3, KeyType, std::array<int, 16 * 1024>)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;
   typedef V Value;
 
   float total_requests = info.client_comm_size * args.num_request;
-  typedef hcl::unordered_map<Key, Value> MapType;
+  typedef hcl::multimap<Key, Value> MapType;
   HCL_LOG_INFO("Ran Pre Test");
   SECTION("stl") {
-    std::unordered_map<Key, Value> map = std::unordered_map<Key, Value>();
+    auto type = std::multimap<Key, Value>();
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
@@ -24,18 +25,17 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         put_time.resumeTime();
-        auto val = map.insert_or_assign(k, v);
+        type.insert(std::pair<Key, Value>(k, v));
         put_time.pauseTime();
-        REQUIRE(val.second);
       }
       hcl::test::Timer get_time = hcl::test::Timer();
 
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         get_time.resumeTime();
-        auto iterator = map.find(k);
+        auto iterator = type.find(k);
         get_time.pauseTime();
-        REQUIRE(iterator != map.end());
+        REQUIRE(iterator != type.end());
       }
       AGGREGATE_TIME(put, info.client_comm);
       AGGREGATE_TIME(get, info.client_comm);
@@ -49,14 +49,14 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
   }
   SECTION("local") {
     configure_hcl(true);
-    std::shared_ptr<MapType> lmap;
+    std::shared_ptr<MapType> type;
     if (info.is_server) {
-      lmap =
+      type =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
-      lmap =
+      type =
           std::make_shared<MapType>("Local" + std::to_string(info.test_count));
     }
     if (info.is_client) {
@@ -66,7 +66,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         put_time.resumeTime();
-        bool success = lmap->Put(k, v);
+        bool success = type->Put(k, v);
         put_time.pauseTime();
         REQUIRE(success);
       }
@@ -75,7 +75,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         get_time.resumeTime();
-        auto iterator = lmap->Get(k);
+        auto iterator = type->Get(k);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }
@@ -92,14 +92,14 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
   }
   SECTION("remote") {
     REQUIRE(configure_hcl(false) == 0);
-    std::shared_ptr<MapType> rmap;
+    std::shared_ptr<MapType> type;
     if (info.is_server) {
-      rmap =
+      type =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
-      rmap =
+      type =
           std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
     }
 
@@ -111,7 +111,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
         Key k = Key(i);
         HCL_LOG_DEBUG("Loop for Put %d %d", k, v[0]);
         put_time.resumeTime();
-        bool success = rmap->Put(k, v);
+        bool success = type->Put(k, v);
         put_time.pauseTime();
         REQUIRE(success);
       }
@@ -120,7 +120,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         get_time.resumeTime();
-        auto iterator = rmap->Get(k);
+        auto iterator = type->Get(k);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }

@@ -15,12 +15,17 @@ namespace fs = std::experimental::filesystem;
  */
 namespace hcl::test {
 struct Info {
+  int test_count;
   int rank;
   int comm_size;
   int num_nodes;
-  bool is_server;
   std::shared_ptr<RPC> rpc;
 
+  /*Client Info*/
+  MPI_Comm client_comm;
+  int client_comm_size, client_rank;
+  bool is_server;
+  bool is_client;
   bool debug_init;
 };
 struct Arguments {
@@ -109,6 +114,19 @@ int catch_init(int* argc, char*** argv) {
   }
   info.is_server = (info.rank + 1) % args.process_per_node == 0;
   info.num_nodes = info.comm_size / args.process_per_node;
+  info.is_client = true;
+  info.client_comm_size = 1;
+  info.client_rank = 0;
+  if (info.comm_size > 1) {
+    MPI_Comm_split(MPI_COMM_WORLD, !info.is_server, info.rank,
+                   &info.client_comm);
+    MPI_Comm_size(info.client_comm, &info.client_comm_size);
+    MPI_Comm_rank(info.client_comm, &info.client_rank);
+    info.is_client = !info.is_server;
+  } else {
+    info.client_comm = MPI_COMM_WORLD;
+  }
+
   configure_hcl(false);
   HCL_LOG_INFO("Initializing the Catch2 Test with args ppn:%d server_path:%s\n",
                args.process_per_node, args.server_path.c_str());
@@ -143,4 +161,10 @@ int posttest() {
   return 0;
 }
 
+#include "map.cpp"
+#include "multimap.cpp"
+#include "priority_queue.cpp"
+#include "queue.cpp"
+#include "set.cpp"
 #include "unordered_map.cpp"
+#include "unordered_map_string.cpp"

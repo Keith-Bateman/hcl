@@ -370,6 +370,14 @@ hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SO
 
 if(HCL_ENABLE_TESTING)
   enable_testing()
+    find_package(Catch2 REQUIRED)
+    if (${Catch2_FOUND})
+        message(STATUS "[${PROJECT_NAME}] found catch2")
+        include_directories(SYSTEM Catch2::Catch2)
+        set(TEST_LIBS ${DEPENDENCY_LIB} Catch2::Catch2)
+    else ()
+        message(FATAL_ERROR "-- [${PROJECT_NAME}] cpp-logger is not found but selected in cmake options for ${PROJECT_NAME} build")
+    endif ()
   add_subdirectory(test)
 endif()
 
@@ -497,6 +505,8 @@ string(APPEND _str
   "  HCL_COMMUNICATION:          ${HCL_COMMUNICATION}\n")
 string(APPEND _str
   "  HCL_COMMUNICATION_PROTOCOL:                ${HCL_COMMUNICATION_PROTOCOL}\n")
+  string(APPEND _str
+    "  MPIEXEC_EXECUTABLE:                ${MPIEXEC_EXECUTABLE}\n")
 string(APPEND _str
   "  HCL_PROFILER:               ${HCL_PROFILER}\n")
 string(APPEND _str
@@ -505,6 +515,8 @@ string(APPEND _str
   "  HCL_LOGGER_LEVEL:           ${HCL_LOGGER_LEVEL}\n")
 string(APPEND _str
   "  GLIBC_VERSION:               ${GLIBC_VERSION}\n")
+  string(APPEND _str
+    "  TEST_LIBS:               ${TEST_LIBS}\n")
 
 #Print the true/false variables
 append_str_tf(_str
@@ -516,6 +528,7 @@ append_str_tf(_str
   HCL_USE_CLANG_LIBCXX
   HCL_WARNINGS_AS_ERRORS
   HCL_ENABLE_TESTING
+  
 )
 string(APPEND _str
   "\n== End HCL Configuration Summary ==\n")

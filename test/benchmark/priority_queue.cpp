@@ -2,40 +2,31 @@
 
 #include <array>
 
-TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
-                       ((int S, typename K, typename V), S, K, V),
-                       (1, int, std::array<int, 1>),
-                       (2, int, std::array<int, 4096>),
-                       (3, int, std::array<int, 16 * 1024>)) {
+TEMPLATE_TEST_CASE_SIG("priority_queue", "[priority_queue]",
+                       ((int S, typename K), S, K), (1, int), (2, float),
+                       (3, char)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;
-  typedef V Value;
 
   float total_requests = info.client_comm_size * args.num_request;
-  typedef hcl::unordered_map<Key, Value> MapType;
+  typedef hcl::priority_queue<Key> Type;
   HCL_LOG_INFO("Ran Pre Test");
   SECTION("stl") {
-    std::unordered_map<Key, Value> map = std::unordered_map<Key, Value>();
+    std::priority_queue<Key> type = std::priority_queue<Key>();
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
-
-      Value v = {10};
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         put_time.resumeTime();
-        auto val = map.insert_or_assign(k, v);
+        type.push(k);
         put_time.pauseTime();
-        REQUIRE(val.second);
       }
       hcl::test::Timer get_time = hcl::test::Timer();
-
       for (int i = 1; i <= args.num_request; i++) {
-        Key k = Key(i);
         get_time.resumeTime();
-        auto iterator = map.find(k);
+        type.pop();
         get_time.pauseTime();
-        REQUIRE(iterator != map.end());
       }
       AGGREGATE_TIME(put, info.client_comm);
       AGGREGATE_TIME(get, info.client_comm);
@@ -49,33 +40,29 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
   }
   SECTION("local") {
     configure_hcl(true);
-    std::shared_ptr<MapType> lmap;
+    std::shared_ptr<Type> type;
     if (info.is_server) {
-      lmap =
-          std::make_shared<MapType>("Local" + std::to_string(info.test_count));
+      type = std::make_shared<Type>("Local" + std::to_string(info.test_count));
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
-      lmap =
-          std::make_shared<MapType>("Local" + std::to_string(info.test_count));
+      type = std::make_shared<Type>("Local" + std::to_string(info.test_count));
     }
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
-      Value v = {10};
-
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
+        uint16_t my_server_key = 0;
         put_time.resumeTime();
-        bool success = lmap->Put(k, v);
+        bool success = type->Push(k, my_server_key);
         put_time.pauseTime();
         REQUIRE(success);
       }
       hcl::test::Timer get_time = hcl::test::Timer();
-
       for (int i = 1; i <= args.num_request; i++) {
-        Key k = Key(i);
+        uint16_t my_server_key = 0;
         get_time.resumeTime();
-        auto iterator = lmap->Get(k);
+        auto iterator = type->Pop(my_server_key);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }
@@ -92,35 +79,30 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
   }
   SECTION("remote") {
     REQUIRE(configure_hcl(false) == 0);
-    std::shared_ptr<MapType> rmap;
+    std::shared_ptr<Type> type;
     if (info.is_server) {
-      rmap =
-          std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
+      type = std::make_shared<Type>("Remote" + std::to_string(info.test_count));
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (!info.is_server) {
-      rmap =
-          std::make_shared<MapType>("Remote" + std::to_string(info.test_count));
+      type = std::make_shared<Type>("Remote" + std::to_string(info.test_count));
     }
 
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
-
-      Value v = {10};
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
-        HCL_LOG_DEBUG("Loop for Put %d %d", k, v[0]);
+        uint16_t my_server_key = 0;
         put_time.resumeTime();
-        bool success = rmap->Put(k, v);
+        bool success = type->Push(k, my_server_key);
         put_time.pauseTime();
         REQUIRE(success);
       }
       hcl::test::Timer get_time = hcl::test::Timer();
-
       for (int i = 1; i <= args.num_request; i++) {
-        Key k = Key(i);
+        uint16_t my_server_key = 0;
         get_time.resumeTime();
-        auto iterator = rmap->Get(k);
+        auto iterator = type->Pop(my_server_key);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }

@@ -12,7 +12,8 @@
 
 #ifndef HCL_UTIL_H
 #define HCL_UTIL_H
-
+#include <hcl/hcl_config.hpp>
+/*Includes*/
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -26,6 +27,10 @@ namespace bip = boost::interprocess;
 struct KeyType {
   size_t a;
   KeyType() : a(0) {}
+
+  KeyType(const KeyType &t) { a = t.a; }
+  KeyType(KeyType &t) { a = t.a; }
+  KeyType(KeyType &&t) { a = t.a; }
   KeyType(size_t a_) : a(a_) {}
   /* equal operator for comparing two Matrix. */
   bool operator==(const KeyType &o) const { return a == o.a; }
@@ -34,14 +39,22 @@ struct KeyType {
     return *this;
   }
   bool operator<(const KeyType &o) const { return a < o.a; }
+  bool operator>(const KeyType &o) const { return a > o.a; }
   bool Contains(const KeyType &o) const { return a == o.a; }
-
-  template <typename A>
-  void serialize(A &ar) const {
-    ar &a;
-  }
 };
 
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+template <typename A>
+void serialize(A &ar, KeyType &a) {
+  ar &a.a;
+}
+#endif
+namespace std {
+template <>
+struct hash<KeyType> {
+  size_t operator()(const KeyType &k) const { return k.a; }
+};
+}  // namespace std
 // 1,4,16,1000,4000,16000,250000,1000000,4000000,16000000
 
 struct MappedType {
@@ -120,13 +133,6 @@ std::string printRandomString(int n) {
 
   return res;
 }
-
-namespace std {
-template <>
-struct hash<KeyType> {
-  int operator()(const KeyType &k) const { return k.a; }
-};
-}  // namespace std
 
 void bt_sighandler(int sig, struct sigcontext ctx) {
   void *trace[16];

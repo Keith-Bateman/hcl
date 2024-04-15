@@ -2,25 +2,31 @@
 
 #include <array>
 
-TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
-                       ((int S, typename K, typename V), S, K, V),
-                       (1, int, std::array<int, 1>),
-                       (2, int, std::array<int, 4096>),
-                       (3, int, std::array<int, 16 * 1024>)) {
+TEMPLATE_TEST_CASE_SIG("unordered_map_string", "[unordered_map_string]",
+                       ((int I, typename K, int S), I, K, S), (1, int, 1),
+                       (2, int, 4096), (3, int, 16 * 1024)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;
-  typedef V Value;
+
+  typedef boost::interprocess::allocator<
+      char, boost::interprocess::managed_mapped_file::segment_manager>
+      CharAllocator;
+  typedef bip::basic_string<char, std::char_traits<char>, CharAllocator>
+      MappedUnitString;
 
   float total_requests = info.client_comm_size * args.num_request;
-  typedef hcl::unordered_map<Key, Value> MapType;
+  typedef hcl::unordered_map<Key, std::string, std::hash<Key>, CharAllocator,
+                             MappedUnitString>
+      MapType;
   HCL_LOG_INFO("Ran Pre Test");
   SECTION("stl") {
-    std::unordered_map<Key, Value> map = std::unordered_map<Key, Value>();
+    std::unordered_map<KeyType, std::string> map =
+        std::unordered_map<KeyType, std::string>();
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
-      Value v = {10};
+      std::string v(S, 'x');
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         put_time.resumeTime();
@@ -61,7 +67,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
     }
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
-      Value v = {10};
+      std::string v(S, 'x');
 
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
@@ -106,7 +112,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
-      Value v = {10};
+      std::string v(S, 'x');
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         HCL_LOG_DEBUG("Loop for Put %d %d", k, v[0]);

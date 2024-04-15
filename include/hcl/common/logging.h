@@ -1,15 +1,14 @@
 #ifndef HCL_COMMON_HCL_LOGGING_H
 #define HCL_COMMON_HCL_LOGGING_H
 
+#include <hcl/hcl_config.hpp>
+/*Include*/
+#include <hcl/common/data_structures.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <chrono>
-#include <hcl/hcl_config.hpp>
 #include <string>
-#ifdef __cplusplus
-extern "C" {
-#endif
 #define VA_ARGS(...) , ##__VA_ARGS__
 
 std::string hcl_macro_get_time() {
@@ -32,6 +31,7 @@ std::string hcl_macro_get_time() {
 #ifdef HCL_LOGGER_NO_LOG
 //=============================================================================
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
+#define HCL_LOG_PRINT(format, ...) fprintf(stdout, format, __VA_ARGS__);
 #define HCL_LOG_ERROR(format, ...) fprintf(stderr, format, __VA_ARGS__);
 #define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
@@ -62,6 +62,9 @@ std::string hcl_macro_get_time() {
                   hcl_macro_get_time().c_str(), function, ##__VA_ARGS__, file, \
                   line);
 
+#define HCL_LOG_PRINT(format, ...)                                             \
+  HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
+                            CPP_LOGGER_PRINT, format, __VA_ARGS__);
 #ifdef HCL_LOGGER_LEVEL_TRACE
 #define HCL_LOGGER_INIT() \
   cpp_logger_clog_level(CPP_LOGGER_TRACE, HCL_LOGGER_NAME);
@@ -124,6 +127,7 @@ std::string hcl_macro_get_time() {
 #endif
 #else
 #define HCL_LOGGER_INIT() HCL_NOOP_MACRO
+#define HCL_LOG_PRINT(format, ...) fprintf(stdout, format, __VA_ARGS__);
 #define HCL_LOG_ERROR(format, ...) fprintf(stderr, format, __VA_ARGS__);
 #define HCL_LOG_WARN(format, ...) HCL_NOOP_MACRO
 #define HCL_LOG_INFO(format, ...) HCL_NOOP_MACRO
@@ -138,9 +142,5 @@ std::string hcl_macro_get_time() {
 //=============================================================================
 #endif  // HCL_LOGGER_NO_LOG
         //=============================================================================
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* HCL_COMMON_HCL_LOGGING_H */
