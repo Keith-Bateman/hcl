@@ -41,6 +41,7 @@ class global_clock {
   bool is_server;
   bip::interprocess_mutex *mutex;
   really_long memory_allocated;
+  int num_servers;
   uint16_t my_server;
   bip::managed_mapped_file segment;
   std::string name, func_prefix;
