@@ -14,7 +14,8 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
 
   float total_requests = info.client_comm_size * args.num_request;
   typedef hcl::unordered_map<Key, Value> MapType;
-  HCL_LOG_INFO("Ran Pre Test");
+  HCL_LOG_INFO("Ran Pre Test %d", info.test_count + 1);
+  ;
   SECTION("stl") {
     std::unordered_map<Key, Value> map = std::unordered_map<Key, Value>();
     if (info.is_client) {
@@ -142,7 +143,7 @@ TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
   }
-  HCL_LOG_INFO("Running Post Test");
+  HCL_LOG_INFO("Running Post %d", info.test_count + 1);
   REQUIRE(posttest() == 0);
   info.test_count++;
 }

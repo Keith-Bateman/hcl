@@ -11,7 +11,8 @@ TEMPLATE_TEST_CASE_SIG("priority_queue", "[priority_queue]",
 
   float total_requests = info.client_comm_size * args.num_request;
   typedef hcl::priority_queue<Key> Type;
-  HCL_LOG_INFO("Ran Pre Test");
+  HCL_LOG_INFO("Ran Pre Test %d", info.test_count + 1);
+  ;
   SECTION("stl") {
     std::priority_queue<Key> type = std::priority_queue<Key>();
     if (info.is_client) {
@@ -124,7 +125,7 @@ TEMPLATE_TEST_CASE_SIG("priority_queue", "[priority_queue]",
     MPI_Barrier(MPI_COMM_WORLD);
 #endif
   }
-  HCL_LOG_INFO("Running Post Test");
+  HCL_LOG_INFO("Running Post %d", info.test_count + 1);
   REQUIRE(posttest() == 0);
   info.test_count++;
 }
