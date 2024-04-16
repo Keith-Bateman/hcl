@@ -17,13 +17,13 @@
 /**
  * Include Headers
  */
-
-/** Standard C++ Headers**/
+#include <hcl/common/container.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
 #include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
 
+/** Standard C++ Headers**/
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -34,8 +34,6 @@
 #include <vector>
 
 /** Boost Headers **/
-#include <hcl/common/container.h>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
