@@ -46,7 +46,7 @@ jobs:
       - name: Install additional packages
         run: |
           apt-get update
-          apt-get install cmake gcovr check clang-format
+          apt-get install -y cmake gcovr check clang-format
       - name: Check code formatting
         run: |
           git clang-format --diff HEAD~1 -q
