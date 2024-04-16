@@ -28,27 +28,23 @@ jobs:
       HCL_TEST_MACHINE: docker
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Push checkout
-      if: github.event_name == 'push'
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 2
+        if: github.event_name == 'push'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
       - name: PR checkout
         if: github.event_name == 'pull_request'
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-
       - name: Run clang-format style check
         run: |
-          ls
-          git config --global --add safe.directory /__w/hcl/hcl
-          git clang-format --diff HEAD~1 -q
-          if git clang-format --diff HEAD~1 -q | grep -m 1 '^' >/dev/null; then
-              echo >&2 "Failed clang-format check. Run: git clang-format HEAD~1"
-          exit 1
-          fi
+          pushd scripts
+          ./clang-format-check.sh
+          popd
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
