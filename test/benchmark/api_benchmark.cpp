@@ -146,7 +146,9 @@ int catch_init(int* argc, char*** argv) {
   if (info.is_server) {
     info.hcl = hcl::HCL::GetInstance(true);
   }
+#ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
+#endif
   if (!info.is_server) {
     info.hcl = hcl::HCL::GetInstance(true);
   }
