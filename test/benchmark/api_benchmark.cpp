@@ -143,7 +143,14 @@ int catch_init(int* argc, char*** argv) {
   configure_hcl(false);
   HCL_LOG_INFO("Initializing the Catch2 Test with args ppn:%d server_path:%s\n",
                args.process_per_node, args.server_path.c_str());
-  info.hcl = hcl::HCL::GetInstance(true);
+  if (info.is_server) {
+    info.hcl = hcl::HCL::GetInstance(true);
+  }
+  MPI_Barrier(MPI_COMM_WORLD);
+  if (!info.is_server) {
+    info.hcl = hcl::HCL::GetInstance(true);
+  }
+
 #ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
