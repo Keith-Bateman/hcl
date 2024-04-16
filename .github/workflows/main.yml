@@ -28,9 +28,17 @@ jobs:
       HCL_TEST_MACHINE: docker
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Get Sources
-        uses: actions/checkout@v2
+      - name: Push checkout
+      if: github.event_name == 'push'
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+      - name: PR checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
 
       - name: Run clang-format style check
         run: |
