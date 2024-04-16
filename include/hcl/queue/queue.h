@@ -19,8 +19,8 @@
  */
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
-#include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
+#include <hcl/hcl_internal.h>
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -71,7 +71,13 @@ class queue : public container {
   void bind_functions() override;
 
   explicit queue(CharStruct name_ = "TEST_QUEUE",
-                 uint16_t port = HCL_CONF->RPC_PORT);
+                 uint16_t port = HCL_CONF->RPC_PORT,
+                 uint16_t _num_servers = HCL_CONF->NUM_SERVERS,
+                 uint16_t _my_server_idx = HCL_CONF->MY_SERVER,
+                 really_long _memory_allocated = HCL_CONF->MEMORY_ALLOCATED,
+                 bool _is_server = HCL_CONF->IS_SERVER,
+                 bool _is_server_on_node = HCL_CONF->SERVER_ON_NODE,
+                 CharStruct _backed_file_dir = HCL_CONF->BACKED_FILE_DIR);
   Queue *data() {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()

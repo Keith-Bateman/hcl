@@ -26,6 +26,7 @@
 
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
+#include <sys/types.h>
 
 #include <boost/concept_check.hpp>
 #include <boost/interprocess/containers/string.hpp>
@@ -165,6 +166,105 @@ typedef struct CharStruct {
   std::string added = a1 + std::string(a2.c_str());
   return CharStruct(added);
 }
+
+struct URI {
+  uint16_t server_idx;
+  CharStruct protocol;
+  CharStruct user_uri;
+  CharStruct device;
+  CharStruct interface;
+  CharStruct ip;
+  CharStruct client_uri;
+  CharStruct server_uri;
+  uint16_t port;
+
+  URI(uint16_t _server_idx, CharStruct _uri, CharStruct _ip, uint16_t _port)
+      : server_idx(0),
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCX)
+        protocol("ucx+tcp"),
+#else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_OFI)
+        protocol("ofi+tcp"),
+#endif
+#endif
+        user_uri(_uri),
+        device(""),
+        interface(""),
+        ip(""),
+        client_uri(""),
+        server_uri(""),
+        port(9000) {
+    std::string uri_str = _uri.string();
+    auto protocol_end_pos = uri_str.find("://");
+    if (protocol_end_pos == std::string::npos) {
+      protocol = _uri;
+    } else {
+      protocol = uri_str.substr(0, protocol_end_pos);
+      auto device_start_pos = protocol_end_pos + 3;
+      auto rest = uri_str.substr(device_start_pos);
+      // printf("rest %s\n", rest.c_str());
+      auto device_end_pos = rest.find("/");
+      auto interface_start_pos = device_end_pos + 1;
+      if (device_end_pos == std::string::npos) {
+        device = "";
+        interface_start_pos = device_start_pos;
+      } else {
+        device = rest.substr(0, device_end_pos);
+        interface_start_pos = device_end_pos + 1;
+      }
+      if (interface_start_pos < uri_str.size() - 2)
+        interface = rest.substr(interface_start_pos, uri_str.size() - 2);
+    }
+    ip = _ip;
+    port = _port;
+    server_uri = protocol + "://";
+    if (device.size() > 0) server_uri += (device + "/");
+    server_uri += _ip + ":" + std::to_string(port);
+    client_uri = protocol + "://" + ip + ":" + std::to_string(port);
+  }
+  URI()
+      : server_idx(0),
+#if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
+#if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCX)
+        protocol("ucx+tcp"),
+        user_uri("ucx+tcp://"),
+#else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_OFI)
+        protocol("ofi+tcp"),
+        user_uri("ofi+tcp://"),
+#endif
+#endif
+        device(""),
+        interface(""),
+        ip(""),
+        port(9000) {
+  }
+  URI(const URI &other)
+      : server_idx(other.server_idx),
+        protocol(other.protocol),
+        user_uri(other.user_uri),
+        device(other.device),
+        interface(other.interface),
+        ip(other.ip),
+        client_uri(other.client_uri),
+        server_uri(other.server_uri),
+        port(other.port) {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  } /* copy constructor*/
+  URI(URI &&other)
+      : server_idx(other.server_idx),
+        protocol(other.protocol),
+        user_uri(other.user_uri),
+        device(other.device),
+        interface(other.interface),
+        ip(other.ip),
+        client_uri(other.client_uri),
+        server_uri(other.server_uri),
+        port(other.port) {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+  } /* move constructor*/
+};
 
 namespace std {
 template <>

@@ -20,8 +20,8 @@
 
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
-#include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
+#include <hcl/hcl_internal.h>
 
 /** Boost Headers **/
 #include <boost/algorithm/string.hpp>
@@ -146,7 +146,7 @@ class concurrent_unordered_map : public container {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
 
-    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP:
@@ -190,8 +190,15 @@ class concurrent_unordered_map : public container {
 
   explicit concurrent_unordered_map(
       CharStruct name_ = "TEST_UNORDERED_MAP_CONCURRENT",
-      uint16_t port = HCL_CONF->RPC_PORT)
-      : container(name_, port) {
+      uint16_t port = HCL_CONF->RPC_PORT,
+      uint16_t _num_servers = HCL_CONF->NUM_SERVERS,
+      uint16_t _my_server_idx = HCL_CONF->MY_SERVER,
+      really_long _memory_allocated = HCL_CONF->MEMORY_ALLOCATED,
+      bool _is_server = HCL_CONF->IS_SERVER,
+      bool _is_server_on_node = HCL_CONF->SERVER_ON_NODE,
+      CharStruct _backed_file_dir = HCL_CONF->BACKED_FILE_DIR)
+      : container(name_, port, _num_servers, _my_server_idx, _memory_allocated,
+                  _is_server, _is_server_on_node, _backed_file_dir) {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
     my_table = nullptr;

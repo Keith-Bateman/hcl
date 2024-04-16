@@ -26,8 +26,13 @@ unordered_map<KeyType, MappedType, Hash, Allocator,
 template <typename KeyType, typename MappedType, typename Hash,
           typename Allocator, typename SharedType>
 unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::unordered_map(
-    CharStruct name_, uint16_t port)
-    : container(name_, port), myHashMap(), size_occupied(0) {
+    CharStruct name_, uint16_t port, uint16_t _num_servers,
+    uint16_t _my_server_idx, really_long _memory_allocated, bool _is_server,
+    bool _is_server_on_node, CharStruct _backed_file_dir)
+    : container(name_, port, _num_servers, _my_server_idx, _memory_allocated,
+                _is_server, _is_server_on_node, _backed_file_dir),
+      myHashMap(),
+      size_occupied(0) {
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
   if (is_server) {
@@ -213,7 +218,7 @@ unordered_map<KeyType, MappedType, Hash, Allocator, SharedType>::GetAllData() {
   final_values.insert(final_values.end(), current_server.begin(),
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
-    if (i != my_server) {
+    if (i != my_server_idx) {
       HCL_CPP_REGION(GetAllDataServer)
       HCL_CPP_REGION_UPDATE(GetAllDataServer, "access", "remote");
       HCL_CPP_REGION_UPDATE(GetAllDataServer, "server", i);
@@ -262,7 +267,7 @@ std::vector<std::pair<KeyType, MappedType>> unordered_map<
     return LocalGetAllDataInServer();
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
-    auto my_server_i = my_server;
+    auto my_server_i = my_server_idx;
     HCL_CPP_FUNCTION_UPDATE("access", "remote");
     HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);
@@ -290,7 +295,7 @@ void unordered_map<KeyType, MappedType, Hash, Allocator,
   HCL_CPP_FUNCTION()
   HCL_CPP_FUNCTION_UPDATE("access", "local");
 
-  auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
+  auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP:

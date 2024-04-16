@@ -17,8 +17,8 @@
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
-#include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
+#include <hcl/hcl_internal.h>
 #include <stdint-gcc.h>
 
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -72,7 +72,7 @@ class global_clock {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
     name = name + "_" + std::to_string(my_server);
-    auto rpc = Singleton<RPCFactory>::GetInstance()->GetRPC(_port);
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);
     if (is_server) {
       switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

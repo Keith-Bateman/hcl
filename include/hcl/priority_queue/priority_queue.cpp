@@ -23,8 +23,12 @@ priority_queue<MappedType, Compare, Allocator, SharedType>::~priority_queue() {
 template <typename MappedType, typename Compare, typename Allocator,
           typename SharedType>
 priority_queue<MappedType, Compare, Allocator, SharedType>::priority_queue(
-    CharStruct name_, uint16_t port)
-    : container(name_, port), queue() {
+    CharStruct name_, uint16_t port, uint16_t _num_servers,
+    uint16_t _my_server_idx, really_long _memory_allocated, bool _is_server,
+    bool _is_server_on_node, CharStruct _backed_file_dir)
+    : container(name_, port, _num_servers, _my_server_idx, _memory_allocated,
+                _is_server, _is_server_on_node, _backed_file_dir),
+      queue() {
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
   if (is_server) {
@@ -236,7 +240,7 @@ void priority_queue<MappedType, Compare, Allocator,
   HCL_CPP_FUNCTION()
   HCL_CPP_FUNCTION_UPDATE("access", "local");
 
-  auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port);
+  auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

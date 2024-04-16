@@ -21,7 +21,7 @@ struct Info {
   int rank;
   int comm_size;
   int num_nodes;
-  std::shared_ptr<RPC> rpc;
+  std::shared_ptr<hcl::HCL> hcl;
 #ifndef DISABLE_MPI
   /*Client Info*/
   MPI_Comm client_comm;
@@ -143,8 +143,7 @@ int catch_init(int* argc, char*** argv) {
   configure_hcl(false);
   HCL_LOG_INFO("Initializing the Catch2 Test with args ppn:%d server_path:%s\n",
                args.process_per_node, args.server_path.c_str());
-  info.rpc =
-      hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(HCL_CONF->RPC_PORT);
+  info.hcl = hcl::HCL::GetInstance(true);
 #ifndef DISABLE_MPI
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
@@ -155,7 +154,7 @@ int catch_finalize() {
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
   HCL_LOG_INFO("Finalizing the %s Test \n", "Catch2");
-  info.rpc.reset();
+  info.hcl.reset();
 #ifndef DISABLE_MPI
   MPI_Finalize();
 #endif

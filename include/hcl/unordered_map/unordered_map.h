@@ -20,8 +20,8 @@
 #include <hcl/common/container.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
-#include <hcl/communication/rpc_factory.h>
 #include <hcl/communication/rpc_lib.h>
+#include <hcl/hcl_internal.h>
 
 /** Standard C++ Headers**/
 #include <functional>
@@ -74,8 +74,15 @@ class unordered_map : public container {
   really_long size_occupied;
   ~unordered_map();
 
-  explicit unordered_map(CharStruct name_ = std::string("TEST_UNORDERED_MAP"),
-                         uint16_t port = HCL_CONF->RPC_PORT);
+  explicit unordered_map(
+      CharStruct name_ = std::string("TEST_UNORDERED_MAP"),
+      uint16_t port = HCL_CONF->RPC_PORT,
+      uint16_t _num_servers = HCL_CONF->NUM_SERVERS,
+      uint16_t _my_server_idx = HCL_CONF->MY_SERVER,
+      really_long _memory_allocated = HCL_CONF->MEMORY_ALLOCATED,
+      bool _is_server = HCL_CONF->IS_SERVER,
+      bool _is_server_on_node = HCL_CONF->SERVER_ON_NODE,
+      CharStruct _backed_file_dir = HCL_CONF->BACKED_FILE_DIR);
   MyHashMap *data() {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()

@@ -57,50 +57,50 @@
 #define RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, ...)
 #endif
 
-#define RPC_CALL_WRAPPER1(funcname, serverVar, ret)                     \
-  [&]() -> ret {                                                        \
-    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port); \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)              \
-    }                                                                   \
-    HCL_LOG_ERROR("RPC Implmentation unknown %d",                       \
-                  (int)HCL_CONF->RPC_IMPLEMENTATION)                    \
-    throw std::logic_error("Function not yet implemented");             \
+#define RPC_CALL_WRAPPER1(funcname, serverVar, ret)         \
+  [&]() -> ret {                                            \
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);  \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                 \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                       \
+      RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
+    }                                                       \
+    HCL_LOG_ERROR("RPC Implmentation unknown %d",           \
+                  (int)HCL_CONF->RPC_IMPLEMENTATION)        \
+    throw std::logic_error("Function not yet implemented"); \
   }();
-#define RPC_CALL_WRAPPER(funcname, serverVar, ret, ...)                 \
-  [&]() -> ret {                                                        \
-    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port); \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__)  \
-    }                                                                   \
-    HCL_LOG_ERROR("RPC Implmentation unknown %d",                       \
-                  (int)HCL_CONF->RPC_IMPLEMENTATION)                    \
-    throw std::logic_error("Function not yet implemented");             \
+#define RPC_CALL_WRAPPER(funcname, serverVar, ret, ...)                \
+  [&]() -> ret {                                                       \
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);             \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
+    }                                                                  \
+    HCL_LOG_ERROR("RPC Implmentation unknown %d",                      \
+                  (int)HCL_CONF->RPC_IMPLEMENTATION)                   \
+    throw std::logic_error("Function not yet implemented");            \
   }();
-#define RPC_CALL_WRAPPER1_CB(funcname, serverVar, ret)                  \
-  [&]() -> ret {                                                        \
-    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port); \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)              \
-    }                                                                   \
-    HCL_LOG_ERROR("RPC Implmentation unknown %d",                       \
-                  (int)HCL_CONF->RPC_IMPLEMENTATION)                    \
-    throw std::logic_error("Function not yet implemented");             \
+#define RPC_CALL_WRAPPER1_CB(funcname, serverVar, ret)      \
+  [&]() -> ret {                                            \
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);  \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                 \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                       \
+      RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
+    }                                                       \
+    HCL_LOG_ERROR("RPC Implmentation unknown %d",           \
+                  (int)HCL_CONF->RPC_IMPLEMENTATION)        \
+    throw std::logic_error("Function not yet implemented"); \
   }();
 
-#define RPC_CALL_WRAPPER_CB(funcname, serverVar, ret, ...)              \
-  [&]() -> ret {                                                        \
-    auto rpc = hcl::Singleton<RPCFactory>::GetInstance()->GetRPC(port); \
-    switch (HCL_CONF->RPC_IMPLEMENTATION) {                             \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                   \
-      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__)  \
-    }                                                                   \
-    HCL_LOG_ERROR("RPC Implmentation unknown %d",                       \
-                  (int)HCL_CONF->RPC_IMPLEMENTATION)                    \
-    throw std::logic_error("Function not yet implemented");             \
+#define RPC_CALL_WRAPPER_CB(funcname, serverVar, ret, ...)             \
+  [&]() -> ret {                                                       \
+    auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);             \
+    switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
+      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
+    }                                                                  \
+    HCL_LOG_ERROR("RPC Implmentation unknown %d",                      \
+                  (int)HCL_CONF->RPC_IMPLEMENTATION)                   \
+    throw std::logic_error("Function not yet implemented");            \
   }();
 
 #endif  // INCLUDE_HCL_COMMON_MACROS_H_
