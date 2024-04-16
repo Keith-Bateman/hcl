@@ -146,9 +146,6 @@ class HCL {
   HCL(const HCL&) = delete; /* deleting copy constructor. */
 
   int Finalize() {
-    for (auto iter : rpcs) {
-      iter.second.reset();
-    }
     rpcs.clear();
     return 0;
   }
