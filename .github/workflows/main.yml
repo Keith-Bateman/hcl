@@ -42,9 +42,9 @@ jobs:
           fetch-depth: 2
       - name: Run clang-format style check
         run: |
-          pushd scripts
+          cd scripts
           ./clang-format-check.sh
-          popd
+          cd ..
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
