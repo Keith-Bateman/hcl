@@ -156,7 +156,7 @@ map<KeyType, MappedType, Compare, Allocator, SharedType>::Contains(
   final_values.insert(final_values.end(), current_server.begin(),
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
-    if (i != my_server) {
+    if (i != my_server_idx) {
       HCL_CPP_REGION(ContainsServer);
       HCL_CPP_REGION_UPDATE(ContainsServer, "access", "remote");
       HCL_CPP_REGION_UPDATE(ContainsServer, "server", i);
@@ -180,7 +180,7 @@ map<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllData() {
   final_values.insert(final_values.end(), current_server.begin(),
                       current_server.end());
   for (int i = 0; i < num_servers; ++i) {
-    if (i != my_server) {
+    if (i != my_server_idx) {
       HCL_CPP_REGION(GetAllDataServer);
       HCL_CPP_REGION_UPDATE(GetAllDataServer, "access", "remote");
       HCL_CPP_REGION_UPDATE(GetAllDataServer, "server", i);
@@ -245,7 +245,7 @@ map<KeyType, MappedType, Compare, Allocator, SharedType>::ContainsInServer(
     return LocalContainsInServer(key_start, key_end);
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
-    auto my_server_i = my_server;
+    auto my_server_i = my_server_idx;
     HCL_CPP_FUNCTION_UPDATE("access", "remote");
     HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER("_Contains", my_server_i, ret_type, key_start,
@@ -288,7 +288,7 @@ map<KeyType, MappedType, Compare, Allocator, SharedType>::GetAllDataInServer() {
     return LocalGetAllDataInServer();
   } else {
     typedef std::vector<std::pair<KeyType, MappedType>> ret_type;
-    auto my_server_i = my_server;
+    auto my_server_i = my_server_idx;
     HCL_CPP_FUNCTION_UPDATE("access", "remote");
     HCL_CPP_FUNCTION_UPDATE("server", my_server_i);
     return RPC_CALL_WRAPPER1("_GetAllData", my_server_i, ret_type);

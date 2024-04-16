@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = std::string(server_list_path) + "server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
   hcl::unordered_map<KeyType, std::array<int, array_size>> *map;
   if (is_server) {
     map = new hcl::unordered_map<KeyType, std::array<int, array_size>>();
@@ -267,6 +268,7 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   delete (map);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }

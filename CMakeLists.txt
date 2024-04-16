@@ -328,7 +328,7 @@ set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/set/set.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_factory.h
+                        ${CMAKE_SOURCE_DIR}/include/hcl/hcl_internal.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/container.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h 
                         ${CMAKE_SOURCE_DIR}/include/hcl/common/constants.h)

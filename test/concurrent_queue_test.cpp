@@ -106,6 +106,8 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
+
   stl_queue = new std::queue<int>();
   hcl_queue = new hcl::concurrent_queue<int>();
 
@@ -215,6 +217,7 @@ int main(int argc, char *argv[]) {
               << " reqs/sec" << std::endl;
   delete (stl_queue);
   delete (hcl_queue);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }

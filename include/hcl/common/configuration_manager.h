@@ -38,12 +38,12 @@ class ConfigurationManager {
   uint16_t RPC_PORT;
   uint16_t RPC_THREADS;
   RPCImplementation RPC_IMPLEMENTATION;
-  CharStruct URI, PROTOCOL, DEVICE, INTERFACE;
+  CharStruct URI;
   really_long MEMORY_ALLOCATED;
 
   bool IS_SERVER;
   uint16_t MY_SERVER;
-  int NUM_SERVERS;
+  uint32_t NUM_SERVERS;
   bool SERVER_ON_NODE;
   CharStruct SERVER_LIST_PATH;
   std::vector<CharStruct> SERVER_LIST;
@@ -59,15 +59,11 @@ class ConfigurationManager {
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCX)
-        PROTOCOL("ucx+tcp"),
-        DEVICE(""),
-        INTERFACE(""),
-#else  // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_OFI)
-        PROTOCOL("ofi+tcp"),
-        DEVICE(""),
-        INTERFACE(""),
-#endif
-#endif
+        URI("ucx+tcp://"),
+#else   // if defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_OFI)
+        URI("ofi+tcp://"),
+#endif  // defined(HCL_COMMUNICATION_PROTOCOL_ENABLE_UCX)
+#endif  // defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
         MEMORY_ALLOCATED(1024ULL * 1024ULL * 128ULL),
         IS_SERVER(false),
         MY_SERVER(0),
@@ -77,42 +73,9 @@ class ConfigurationManager {
         SERVER_LIST(),
         BACKED_FILE_DIR("/dev/shm"),
         DYN_CONFIG(false) {
-    HCL_LOGGER_INIT();
+
     HCL_LOG_TRACE();
-    HCL_PROFILER_CPP_INIT(NULL);
     HCL_CPP_FUNCTION()
-    char* uri_str = getenv(HCL_THALLIUM_URI_ENV.c_str());
-    if (uri_str != nullptr) {
-      URI = CharStruct(uri_str);
-      std::string uri_str = URI.string();
-      auto protocol_end_pos = uri_str.find("://");
-      if (protocol_end_pos == std::string::npos) {
-        PROTOCOL = URI;
-      } else {
-        PROTOCOL = URI.string().substr(0, protocol_end_pos);
-        auto device_start_pos = protocol_end_pos + 3;
-        auto rest = URI.string().substr(device_start_pos);
-        // printf("rest %s\n", rest.c_str());
-        auto device_end_pos = rest.find("/");
-        auto interface_start_pos = device_end_pos + 1;
-        if (device_end_pos == std::string::npos) {
-          DEVICE = "";
-          interface_start_pos = device_start_pos;
-        } else {
-          DEVICE = rest.substr(0, device_end_pos);
-          interface_start_pos = device_end_pos + 1;
-        }
-        if (interface_start_pos < URI.string().size() - 2)
-          INTERFACE = rest.substr(interface_start_pos, URI.string().size() - 2);
-      }
-    } else {
-      URI = PROTOCOL + "://";
-      if (strlen(DEVICE.data()) > 0) URI += (DEVICE + "/");
-      if (strlen(INTERFACE.data()) > 0) URI += INTERFACE;
-    }
-    HCL_LOG_DEBUG(
-        "Thallium is using URI %s with PROTOCOL %s, DEVICE %s, INTERFACE %s\n",
-        URI.c_str(), PROTOCOL.c_str(), DEVICE.c_str(), INTERFACE.c_str());
   }
 
   std::vector<CharStruct> LoadServers() {

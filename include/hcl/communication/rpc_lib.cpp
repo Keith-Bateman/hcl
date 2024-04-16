@@ -34,8 +34,6 @@ template <typename Response, typename... Args>
 Response RPC::callWithTimeout(uint16_t server_index, int timeout_ms,
                               CharStruct const &func_name, Args... args) {
   HCL_LOG_TRACE_FORMAT("(%d, %s)", server_index, func_name.c_str());
-  int16_t port = server_port + server_index;
-
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
     case THALLIUM_TCP: {
@@ -78,7 +76,8 @@ Response RPC::call(CharStruct &server, uint16_t &port,
     case THALLIUM_TCP: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
-      auto end_point = get_endpoint(server, port);
+      auto new_uri = URI(0, uris[0].user_uri, server, port);
+      auto end_point = get_endpoint(new_uri);
       return remote_procedure.on(end_point)(std::forward<Args>(args)...);
       break;
     }
@@ -92,7 +91,6 @@ std::future<Response> RPC::async_call(uint16_t server_index,
                                       CharStruct const &func_name,
                                       Args... args) {
   HCL_LOG_TRACE_FORMAT("(%d, %s)", server_index, func_name.c_str());
-  int16_t port = server_port + server_index;
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM

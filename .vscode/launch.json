@@ -5,12 +5,36 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug",
-            "type": "gdb",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
             "request": "launch",
-            "target": "./bin/unordered_map_test",
+            "program": "${workspaceRoot}/build/bin/api_benchmark",
+            "args": [
+                "--sp",
+                "${workspaceRoot}/build/test/server_list"
+            ],
+            "stopAtEntry": true,
             "cwd": "${workspaceRoot}/build",
-            "valuesFormatting": "parseText"
-        }
+            "environment": [
+                {
+                    "name": "HCL_THALLIUM_URI",
+                    "value": "ucx+rc_verbs://mlx5_2:1/hsi0/"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
     ]
 }
