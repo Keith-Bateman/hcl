@@ -34,6 +34,7 @@ jobs:
 
       - name: Run clang-format style check
         run: |
+          git config --global --add safe.directory /__w/hcl/hcl
           git clang-format --diff HEAD~1 -q
           if git clang-format --diff HEAD~1 -q | grep -m 1 '^' >/dev/null; then
               echo >&2 "Failed clang-format check. Run: git clang-format HEAD~1"
