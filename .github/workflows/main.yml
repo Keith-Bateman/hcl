@@ -4,7 +4,10 @@ name: cmake
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
-on: [ push,pull_request ]
+on: 
+  pull_request:
+    branches: [ main, dev ]
+  push:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -29,12 +32,29 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Get Sources
-        uses: actions/checkout@v2
-
-      - name: Setup python
-        uses: actions/setup-python@v1
-
+      - name: Push checkout
+        if: github.event_name == 'push'
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      - name: PR checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 2
+      - name: Install additional packages
+        run: |
+          apt-get update
+          apt-get install -y cmake gcovr check clang-format
+      - name: Check code formatting
+        run: |
+          git config --global --add safe.directory '*'
+          git clang-format --diff HEAD~1 -q
+          if git clang-format --diff HEAD~1 -q | grep -m 1 '^' >/dev/null; then
+              echo >&2 "Failed clang-format check. Run: git clang-format HEAD~1"
+          exit 1
+          fi
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
