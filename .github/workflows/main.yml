@@ -45,8 +45,8 @@ jobs:
           fetch-depth: 2
       - name: Install additional packages
         run: |
-          sudo apt-get update
-          sudo apt-get install cmake gcovr check clang-format
+          apt-get update
+          apt-get install cmake gcovr check clang-format
       - name: Check code formatting
         run: |
           git clang-format --diff HEAD~1 -q
