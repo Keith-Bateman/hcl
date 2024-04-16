@@ -193,10 +193,11 @@ class BlockMap {
 
     return found;
   }
-
+  // clang-format off
   template <typename... Args>
   bool update_field(KeyT &k, void (*fn)(ValueT *, Args &&...args),
                     Args &&...args_) {
+    // clang-format on
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
     bool found = false;

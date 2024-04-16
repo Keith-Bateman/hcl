@@ -258,10 +258,11 @@ class concurrent_unordered_map : public container {
     HCL_CPP_FUNCTION_UPDATE("access", "local");
     return v;
   }
-
+  // clang-format off
   template <typename... Args>
   bool LocalUpdateField(KeyT &k, void (*f)(ValueT *, Args &&...args),
                         Args &&...args_) {
+    // clang-format on
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
     HCL_CPP_FUNCTION_UPDATE("access", "local");
