@@ -48,7 +48,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install cmake gcovr check clang-format
       - name: Check code formatting
-        if: matrix.os == 'ubuntu-22.04'
         run: |
           git clang-format --diff HEAD~1 -q
           if git clang-format --diff HEAD~1 -q | grep -m 1 '^' >/dev/null; then
