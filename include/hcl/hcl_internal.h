@@ -145,6 +145,13 @@ class HCL {
   }                         /* hidden default constructor. */
   HCL(const HCL&) = delete; /* deleting copy constructor. */
 
+  int Finalize() {
+    for (auto iter : rpcs) {
+      iter.second.reset();
+    }
+    rpcs.clear();
+  }
+
   static std::shared_ptr<HCL> GetInstance(
       bool initialize = true, uint16_t _port = 0, uint16_t _num_servers = 0,
       int32_t _my_server_idx = -1, really_long _memory_allocated = 0,

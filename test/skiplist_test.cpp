@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
   stl_set = new std::set<int>();
   s = new hcl::concurrent_skiplist<int>();
 
@@ -220,6 +221,7 @@ int main(int argc, char *argv[]) {
               << " reqs/sec" << std::endl;
   delete (s);
   delete (stl_set);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }

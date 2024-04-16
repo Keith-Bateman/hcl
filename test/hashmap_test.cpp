@@ -134,6 +134,7 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
   std::default_random_engine rd;
   std::uniform_int_distribution<int> dist(0, 100000000);
 
@@ -250,6 +251,7 @@ int main(int argc, char *argv[]) {
               << " req/sec" << std::endl;
   delete (block_map);
   delete (stl_map);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }

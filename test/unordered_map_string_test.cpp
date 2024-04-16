@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = std::string(server_list_path) + "server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
   typedef boost::interprocess::allocator<
       char, boost::interprocess::managed_mapped_file::segment_manager>
       CharAllocator;
@@ -281,6 +282,7 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   delete (map);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }

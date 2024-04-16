@@ -154,6 +154,7 @@ int catch_finalize() {
   MPI_Barrier(MPI_COMM_WORLD);
 #endif
   HCL_LOG_INFO("Finalizing the %s Test \n", "Catch2");
+  info.hcl->Finalize();
   info.hcl.reset();
 #ifndef DISABLE_MPI
   MPI_Finalize();

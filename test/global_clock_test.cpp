@@ -48,6 +48,9 @@ int main(int argc, char **argv) {
   HCL_CONF->NUM_SERVERS = num_servers;
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = std::string(server_list_path) + "server_list";
+
+  auto hcl = hcl::HCL::GetInstance(true);
+
   hcl::global_clock *clock = new hcl::global_clock();
 
   for (uint16_t i = 0; i < comm_size; i++) {
@@ -63,5 +66,6 @@ int main(int argc, char **argv) {
   }
 
   delete clock;
+  hcl->Finalize();
   MPI_Finalize();
 }

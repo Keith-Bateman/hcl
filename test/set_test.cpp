@@ -128,6 +128,7 @@ int main(int argc, char *argv[]) {
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
+  auto hcl = hcl::HCL::GetInstance(true);
   hcl::set<KeyType> *set;
   if (is_server) {
     set = new hcl::set<KeyType>();
@@ -297,6 +298,7 @@ int main(int argc, char *argv[]) {
   }
   MPI_Barrier(MPI_COMM_WORLD);
   delete (set);
+  hcl->Finalize();
   MPI_Finalize();
   exit(EXIT_SUCCESS);
 }
