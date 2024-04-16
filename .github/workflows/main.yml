@@ -43,11 +43,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-      - name: Run clang-format style check
+      - name: Install additional packages
         run: |
-          cd scripts
-          ./clang-format-check.sh
-          cd ..
+          sudo apt-get update
+          sudo apt-get install cmake gcovr check clang-format
+      - name: Check code formatting
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          git clang-format --diff HEAD~1 -q
+          if git clang-format --diff HEAD~1 -q | grep -m 1 '^' >/dev/null; then
+              echo >&2 "Failed clang-format check. Run: git clang-format HEAD~1"
+          exit 1
+          fi
       - name: Build
         env:
           HCL_COMMUNICATION: ${{ matrix.COMMUNICATION }}
