@@ -150,6 +150,7 @@ class HCL {
       iter.second.reset();
     }
     rpcs.clear();
+    return 0;
   }
 
   static std::shared_ptr<HCL> GetInstance(
