@@ -21,13 +21,12 @@
 #include <chrono>
 #include <functional>
 #include <iostream>
-#include <utility>
+#include <mutex>
 #include <random>
 #include <set>
-#include <mutex>
+#include <utility>
 
-struct thread_arg
-{
+struct thread_arg {
   int tid;
   int num_operations;
 };
@@ -36,55 +35,39 @@ std::mutex m;
 std::set<int> *stl_set;
 hcl::concurrent_skiplist<int> *s;
 
-void stl_set_operations(struct thread_arg *t)
-{
-   for(int i=0;i<t->num_operations;i++)
-   {
-	int op = random()%3;
-	int k = random()%1000000;
+void stl_set_operations(struct thread_arg *t) {
+  for (int i = 0; i < t->num_operations; i++) {
+    int op = random() % 3;
+    int k = random() % 1000000;
 
-	m.lock();
-	if(op==0)
-	{
-	    stl_set->insert(k);
-	}
-	else if(op==1)
-	{
-	   stl_set->find(k);
-	}
-	else if(op==2)
-	{
-	  stl_set->erase(k);
-	}
-	m.unlock();
-   }
-}
-
-void hcl_set_operations(struct thread_arg *t)
-{
-
-  for(int i=0;i<t->num_operations;i++)
-  {
-       int op = random()%3;
-       int k = random()%1000000;
-       if(op==0)
-       {
-	     auto b = s->LocalInsert(k);
-  (void) b;
-       }
-       else if(op==1)
-       {
-	       auto b = s->LocalFind(k);
-  (void) b;
-       }
-       else
-       {
-	       auto b = s->LocalErase(k);
-  (void) b;
-       }
+    m.lock();
+    if (op == 0) {
+      stl_set->insert(k);
+    } else if (op == 1) {
+      stl_set->find(k);
+    } else if (op == 2) {
+      stl_set->erase(k);
+    }
+    m.unlock();
   }
 }
 
+void hcl_set_operations(struct thread_arg *t) {
+  for (int i = 0; i < t->num_operations; i++) {
+    int op = random() % 3;
+    int k = random() % 1000000;
+    if (op == 0) {
+      auto b = s->LocalInsert(k);
+      (void)b;
+    } else if (op == 1) {
+      auto b = s->LocalFind(k);
+      (void)b;
+    } else {
+      auto b = s->LocalErase(k);
+      (void)b;
+    }
+  }
+}
 
 int main(int argc, char *argv[]) {
   int provided;
@@ -101,7 +84,7 @@ int main(int argc, char *argv[]) {
   bool server_on_node = false;
   if (argc > 1) ranks_per_server = atoi(argv[1]);
   if (argc > 2) num_request = atoi(argv[2]);
-    if (argc > 3) server_on_node = (bool)atoi(argv[3]);
+  if (argc > 3) server_on_node = (bool)atoi(argv[3]);
   if (argc > 4) debug = (bool)atoi(argv[4]);
 
   int len;
@@ -123,70 +106,73 @@ int main(int argc, char *argv[]) {
 
   std::string proc_name = std::string(processor_name);
 
-
   HCL_CONF->IS_SERVER = is_server;
   HCL_CONF->MY_SERVER = my_server;
   HCL_CONF->NUM_SERVERS = num_servers;
   HCL_CONF->SERVER_ON_NODE = server_on_node || is_server;
   HCL_CONF->SERVER_LIST_PATH = "./server_list";
 
-  stl_set = new std::set<int> ();
-  s = new hcl::concurrent_skiplist<int> ();
+  stl_set = new std::set<int>();
+  s = new hcl::concurrent_skiplist<int>();
 
-  s->initialize_sets(num_servers,my_server);
+  s->initialize_sets(num_servers, my_server);
 
-  double local_set_throughput_l=0,local_set_throughput=0;
-  double elapsed_time =0;
-  double remote_set_throughput_l=0,remote_set_throughput=0;
-  double baseline_l=0,baseline=0;
+  double local_set_throughput_l = 0, local_set_throughput = 0;
+  double elapsed_time = 0;
+  double remote_set_throughput_l = 0, remote_set_throughput = 0;
+  double baseline_l = 0, baseline = 0;
 
-  if(is_server)
-  {
+  if (is_server) {
     int num_threads = 8;
     std::vector<struct thread_arg> t_args(num_threads);
     std::vector<std::thread> workers(num_threads);
 
-    int num_ops = num_request/num_threads;
-    int rem = num_request%num_threads;
+    int num_ops = num_request / num_threads;
+    int rem = num_request % num_threads;
 
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for(int i=0;i<num_threads;i++)
-    {
-       t_args[i].tid = i;
-       if(i < rem) t_args[i].num_operations = num_ops+1;
-       else t_args[i].num_operations = num_ops;
-       std::thread t{stl_set_operations,&t_args[i]};
-       workers[i] = std::move(t);
+    for (int i = 0; i < num_threads; i++) {
+      t_args[i].tid = i;
+      if (i < rem)
+        t_args[i].num_operations = num_ops + 1;
+      else
+        t_args[i].num_operations = num_ops;
+      std::thread t{stl_set_operations, &t_args[i]};
+      workers[i] = std::move(t);
     }
 
-    for(int i=0;i<num_threads;i++)
-	    workers[i].join();
+    for (int i = 0; i < num_threads; i++) workers[i].join();
     auto t2 = std::chrono::high_resolution_clock::now();
-    elapsed_time = std::chrono::duration<double>(t2-t1).count();
-    baseline_l = num_request/elapsed_time;
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    baseline_l = num_request / elapsed_time;
 
     t1 = std::chrono::high_resolution_clock::now();
-    for(int i=0;i<num_threads;i++)
-    {
-       t_args[i].tid = i;
-       if(i < rem) t_args[i].num_operations = num_ops+1;
-       else t_args[i].num_operations = num_ops;
-       std::thread t{hcl_set_operations,&t_args[i]};
-       workers[i] = std::move(t);
+    for (int i = 0; i < num_threads; i++) {
+      t_args[i].tid = i;
+      if (i < rem)
+        t_args[i].num_operations = num_ops + 1;
+      else
+        t_args[i].num_operations = num_ops;
+      std::thread t{hcl_set_operations, &t_args[i]};
+      workers[i] = std::move(t);
     }
 
-    for(int i=0;i<num_threads;i++)
-           workers[i].join();
+    for (int i = 0; i < num_threads; i++) workers[i].join();
 
     t2 = std::chrono::high_resolution_clock::now();
-    elapsed_time = std::chrono::duration<double>(t2-t1).count();
-    local_set_throughput_l = (double) num_request / elapsed_time;
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    local_set_throughput_l = (double)num_request / elapsed_time;
   }
-  MPI_Allreduce(&baseline_l,&baseline,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Baseline throughput = "<<baseline<<" reqs/sec"<<std::endl;
-  MPI_Allreduce(&local_set_throughput_l,&local_set_throughput,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Local_operations_throughput = "<<local_set_throughput<<" reqs/sec"<<std::endl;
+  MPI_Allreduce(&baseline_l, &baseline, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Baseline throughput = " << baseline << " reqs/sec"
+              << std::endl;
+  MPI_Allreduce(&local_set_throughput_l, &local_set_throughput, 1, MPI_DOUBLE,
+                MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Local_operations_throughput = " << local_set_throughput
+              << " reqs/sec" << std::endl;
 
   MPI_Comm client_comm;
   MPI_Comm_split(MPI_COMM_WORLD, !is_server, my_rank, &client_comm);
@@ -194,47 +180,44 @@ int main(int argc, char *argv[]) {
   int client_rank;
   MPI_Comm_size(client_comm, &client_comm_size);
 
-  if(!is_server)
-  {
-    MPI_Comm_rank(client_comm,&client_rank);
+  if (!is_server) {
+    MPI_Comm_rank(client_comm, &client_rank);
 
     std::default_random_engine rd;
-    std::uniform_int_distribution<int> dist(0,100000000);
+    std::uniform_int_distribution<int> dist(0, 100000000);
 
     rd.seed(my_rank);
-    std::bind(dist,rd);
+    std::bind(dist, rd);
 
     int num_ops = num_request / client_comm_size;
     int rem = num_request % client_comm_size;
-    if(client_rank < rem) num_ops++;
+    if (client_rank < rem) num_ops++;
 
     MPI_Barrier(client_comm);
 
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < num_ops; i++) 
-    {
-	int op = random()%3;
-        int value = dist(rd)%10000;
-	if(op==0)
-	{
-           s->Insert(value);
-	}
-	else if(op==1)
-	{
-	   s->Find(value);
-	}
-	else
-	   s->Erase(value);
-     }
-  
-     auto t2 = std::chrono::high_resolution_clock::now();
-     elapsed_time = std::chrono::duration<double>(t2-t1).count();
-     MPI_Barrier(client_comm);
-     remote_set_throughput_l = num_request/elapsed_time;
+    for (int i = 0; i < num_ops; i++) {
+      int op = random() % 3;
+      int value = dist(rd) % 10000;
+      if (op == 0) {
+        s->Insert(value);
+      } else if (op == 1) {
+        s->Find(value);
+      } else
+        s->Erase(value);
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    elapsed_time = std::chrono::duration<double>(t2 - t1).count();
+    MPI_Barrier(client_comm);
+    remote_set_throughput_l = num_request / elapsed_time;
   }
 
-  MPI_Allreduce(&remote_set_throughput_l,&remote_set_throughput,1,MPI_DOUBLE,MPI_MAX,MPI_COMM_WORLD);
-  if(my_rank==0) std::cout <<" Remote_operations_throughput = "<<remote_set_throughput<<" reqs/sec"<<std::endl;
+  MPI_Allreduce(&remote_set_throughput_l, &remote_set_throughput, 1, MPI_DOUBLE,
+                MPI_MAX, MPI_COMM_WORLD);
+  if (my_rank == 0)
+    std::cout << " Remote_operations_throughput = " << remote_set_throughput
+              << " reqs/sec" << std::endl;
   delete (s);
   delete (stl_set);
   MPI_Finalize();
