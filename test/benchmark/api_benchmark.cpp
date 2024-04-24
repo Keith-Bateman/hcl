@@ -200,3 +200,4 @@ int posttest() {
 #include "set.cpp"
 #include "unordered_map.cpp"
 #include "unordered_map_string.cpp"
+#include "vector.cpp"

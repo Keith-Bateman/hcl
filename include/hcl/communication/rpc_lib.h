@@ -104,7 +104,7 @@ class RPC {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()
     thallium_client = hcl::Singleton<tl::engine>::GetInstance(
-        uris[my_server_index].client_uri.c_str(), MARGO_CLIENT_MODE);
+        uris[my_server_index].endpoint_uri.c_str(), MARGO_CLIENT_MODE);
     auto total_servers = uris.size();
     thallium_endpoints.reserve(total_servers);
     for (std::vector<CharStruct>::size_type i = 0; i < total_servers; ++i) {
@@ -194,9 +194,11 @@ class RPC {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
       case THALLIUM_TCP: {
+        HCL_LOG_INFO(
+            "Will run client with end_point URI %s and client URI %s\n",
+            uris[my_server_index].endpoint_uri.c_str(),
+            uris[my_server_index].client_uri.c_str());
         init_engine_and_endpoints();
-        HCL_LOG_INFO("Running client on URI %s\n",
-                     uris[my_server_index].client_uri.c_str());
         break;
       }
 #endif

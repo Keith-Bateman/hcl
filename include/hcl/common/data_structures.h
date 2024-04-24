@@ -176,6 +176,7 @@ struct URI {
   CharStruct ip;
   CharStruct client_uri;
   CharStruct server_uri;
+  CharStruct endpoint_uri;
   uint16_t port;
 
   URI(uint16_t _server_idx, CharStruct _uri, CharStruct _ip, uint16_t _port)
@@ -193,6 +194,7 @@ struct URI {
         ip(""),
         client_uri(""),
         server_uri(""),
+        endpoint_uri(""),
         port(9000) {
     std::string uri_str = _uri.string();
     auto protocol_end_pos = uri_str.find("://");
@@ -219,8 +221,14 @@ struct URI {
     port = _port;
     server_uri = protocol + "://";
     if (device.size() > 0) server_uri += (device + "/");
-    server_uri += _ip + ":" + std::to_string(port);
-    client_uri = protocol + "://" + ip + ":" + std::to_string(port);
+    server_uri += ip + ":" + std::to_string(port);
+    client_uri = protocol + "://";
+    // if (device.size() > 0) client_uri += (device + "/");
+    client_uri += ip + ":" + std::to_string(port);
+
+    endpoint_uri = protocol + "://";
+    if (device.size() > 0) endpoint_uri += (device + "/");
+    endpoint_uri += interface;
   }
   URI()
       : server_idx(0),
@@ -247,6 +255,7 @@ struct URI {
         ip(other.ip),
         client_uri(other.client_uri),
         server_uri(other.server_uri),
+        endpoint_uri(other.endpoint_uri),
         port(other.port) {
     HCL_LOG_TRACE();
     HCL_CPP_FUNCTION()

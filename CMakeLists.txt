@@ -325,6 +325,7 @@ set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/clock/global_clock.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.h
+                        ${CMAKE_SOURCE_DIR}/include/hcl/vector/vector.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/set/set.h
                         ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
@@ -341,6 +342,7 @@ set(HCL_SRC_PRIVATE
                     ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
                     ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
                     ${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.cpp
+                    ${CMAKE_SOURCE_DIR}/include/hcl/vector/vector.cpp
                     ${CMAKE_SOURCE_DIR}/include/hcl/set/set.cpp
                     ${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp
                     ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp)
