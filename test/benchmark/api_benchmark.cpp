@@ -6,10 +6,13 @@
 #include <unistd.h>
 #include <util.h>
 
+#include <boost/interprocess/containers/vector.hpp>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <experimental/filesystem>
+/** Namespaces Uses **/
+namespace bip = boost::interprocess;
 namespace fs = std::experimental::filesystem;
 
 /**

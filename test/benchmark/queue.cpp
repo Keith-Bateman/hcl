@@ -3,7 +3,7 @@
 #include <array>
 
 TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
-                       (1, int), (2, float), (3, char)) {
+                       (1, int), (2, float), (3, char), (4, bip::vector<int>)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;

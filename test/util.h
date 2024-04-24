@@ -248,4 +248,86 @@ class Timer {
 };
 }  // namespace test
 }  // namespace hcl
+
+#include <boost/interprocess/containers/vector.hpp>
+#include <thallium/config.hpp>
+#include <type_traits>
+/** Namespaces Uses **/
+namespace bip = boost::interprocess;
+
+namespace thallium {
+
+namespace detail {
+
+template <class A, typename T, class Alloc, bool b1, bool b2>
+inline void save_vector_impl(A &ar, bip::vector<T, Alloc> &v,
+                             const std::integral_constant<bool, b1> &,
+                             const std::integral_constant<bool, b2> &) {
+  size_t size = v.size();
+  ar.write(&size);
+  for (auto &elem : v) {
+    ar &elem;
+  }
+}
+
+template <class A, typename T, class Alloc>
+inline void save_vector_impl(A &ar, bip::vector<T, Alloc> &v,
+                             const std::true_type &, const std::false_type &) {
+  size_t size = v.size();
+  ar.write(&size);
+  ar.write(v.data(), size);
+}
+
+template <class A, typename T, class Alloc, bool b1, bool b2>
+inline void load_vector_impl(A &ar, bip::vector<T, Alloc> &v,
+                             const std::integral_constant<bool, b1> &,
+                             const std::integral_constant<bool, b2> &) {
+  size_t size;
+  ar.read(&size);
+  v.clear();
+  v.resize(size);
+  for (unsigned int i = 0; i < size; i++) {
+    ar &v[i];
+  }
+}
+
+template <class A, typename T, class Alloc>
+inline void load_vector_impl(A &ar, bip::vector<T, Alloc> &v,
+                             const std::true_type &, const std::false_type &) {
+  size_t size;
+  ar.read(&size);
+  v.clear();
+  v.resize(size);
+  ar.read(v.data(), size);
+}
+
+}  // namespace detail
+
+template <class A, typename T, class Alloc>
+inline void save(A &ar, bip::vector<T, Alloc> &v) {
+  detail::save_vector_impl(ar, v, std::is_arithmetic<T>(),
+                           std::is_same<T, bool>());
+}
+
+template <class A, typename T, class Alloc>
+inline void load(A &ar, bip::vector<T, Alloc> &v) {
+  detail::load_vector_impl(ar, v, std::is_arithmetic<T>(),
+                           std::is_same<T, bool>());
+}
+
+}  // namespace thallium
+
+namespace std {
+template <>
+struct hash<bip::vector<int>> {
+  size_t operator()(const bip::vector<int> &k) const {
+    std::size_t seed = k.size();
+    for (auto &i : k) {
+      seed ^= i + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+    return seed;
+  }
+};
+}  // namespace std
+
 #endif  // HCL_UTIL_H

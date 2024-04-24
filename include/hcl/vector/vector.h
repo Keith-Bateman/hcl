@@ -36,6 +36,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <scoped_allocator>
 #include <string>
 #include <utility>
 
@@ -54,7 +55,8 @@ template <typename MappedType, class Allocator = nullptr_t,
 class vector : public container {
  private:
   /** Class Typedefs for ease of use **/
-  typedef bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>
+  typedef std::scoped_allocator_adaptor<
+      bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>>
       ShmemAllocator;
   typedef boost::interprocess::vector<MappedType, ShmemAllocator> Vector;
 

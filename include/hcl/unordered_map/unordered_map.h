@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <scoped_allocator>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -59,8 +60,8 @@ class unordered_map : public container {
  private:
   /** Class Typedefs for ease of use **/
   typedef std::pair<const KeyType, MappedType> ValueType;
-  typedef boost::interprocess::allocator<
-      ValueType, boost::interprocess::managed_mapped_file::segment_manager>
+  typedef std::scoped_allocator_adaptor<boost::interprocess::allocator<
+      ValueType, boost::interprocess::managed_mapped_file::segment_manager>>
       ShmemAllocator;
   typedef boost::interprocess::managed_mapped_file managed_segment;
   typedef boost::unordered::unordered_map<

@@ -17,6 +17,7 @@
 /**
  * Include Headers
  */
+#include <hcl/common/container.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
 #include <hcl/common/typedefs.h>
@@ -30,12 +31,12 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 /** Standard C++ Headers**/
-#include <hcl/common/container.h>
 
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <queue>
+#include <scoped_allocator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -57,7 +58,8 @@ template <typename MappedType, typename Compare = std::less<MappedType>,
 class priority_queue : public container {
  private:
   /** Class Typedefs for ease of use **/
-  typedef bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>
+  typedef std::scoped_allocator_adaptor<
+      bip::allocator<MappedType, bip::managed_mapped_file::segment_manager>>
       ShmemAllocator;
   typedef std::priority_queue<MappedType,
                               std::vector<MappedType, ShmemAllocator>, Compare>
