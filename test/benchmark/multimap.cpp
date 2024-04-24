@@ -7,7 +7,8 @@ TEMPLATE_TEST_CASE_SIG("multimap", "[multimap]",
                        ((int S, typename K, typename V), S, K, V),
                        (1, KeyType, std::array<int, 1>),
                        (2, KeyType, std::array<int, 4096>),
-                       (3, KeyType, std::array<int, 16 * 1024>)) {
+                       (3, KeyType, std::array<int, 16 * 1024>),
+                       (4, KeyType, bip::vector<int>)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;

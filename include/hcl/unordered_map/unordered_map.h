@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <scoped_allocator>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -59,8 +60,8 @@ class unordered_map : public container {
  private:
   /** Class Typedefs for ease of use **/
   typedef std::pair<const KeyType, MappedType> ValueType;
-  typedef boost::interprocess::allocator<
-      ValueType, boost::interprocess::managed_mapped_file::segment_manager>
+  typedef std::scoped_allocator_adaptor<boost::interprocess::allocator<
+      ValueType, boost::interprocess::managed_mapped_file::segment_manager>>
       ShmemAllocator;
   typedef boost::interprocess::managed_mapped_file managed_segment;
   typedef boost::unordered::unordered_map<
@@ -110,24 +111,6 @@ class unordered_map : public container {
 
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
   THALLIUM_DEFINE(LocalPut, (key, data), KeyType &key, MappedType &data)
-
-  // void ThalliumLocalPut(const tl::request &thallium_req, tl::bulk
-  // &bulk_handle, KeyType key) {
-  //     MappedType data =
-  //     rpc->prep_rdma_server<MappedType>(thallium_req.get_endpoint(),
-  //     bulk_handle); thallium_req.respond(LocalPut(key, data));
-  // }
-
-  // void ThalliumLocalGet(const tl::request &thallium_req, KeyType key) {
-  //     auto retpair = LocalGet(key);
-  //     if (!retpair.first) {
-  //         printf("error\n");
-  //     }
-  //     MappedType data = retpair.second;
-  //     tl::bulk bulk_handle = rpc->prep_rdma_client<MappedType>(data);
-  //     thallium_req.respond(bulk_handle);
-  // }
-
   THALLIUM_DEFINE(LocalGet, (key), KeyType &key)
   THALLIUM_DEFINE(LocalErase, (key), KeyType &key)
   THALLIUM_DEFINE1(LocalGetAllDataInServer)

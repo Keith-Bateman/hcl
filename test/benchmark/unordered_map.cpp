@@ -1,12 +1,11 @@
-
-
 #include <array>
 
 TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
                        ((int S, typename K, typename V), S, K, V),
                        (1, int, std::array<int, 1>),
                        (2, int, std::array<int, 4096>),
-                       (3, int, std::array<int, 16 * 1024>)) {
+                       (3, int, std::array<int, 16 * 1024>),
+                       (4, int, bip::vector<int>)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;

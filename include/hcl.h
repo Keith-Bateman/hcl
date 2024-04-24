@@ -19,5 +19,6 @@
 #include <hcl/sequencer/global_sequence.h>
 #include <hcl/set/set.h>
 #include <hcl/unordered_map/unordered_map.h>
+#include <hcl/vector/vector.h>
 
 #include <hcl/hcl_config.hpp>

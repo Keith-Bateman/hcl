@@ -1,33 +1,31 @@
-
-
 #include <array>
 
-TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
+TEMPLATE_TEST_CASE_SIG("vector", "[vector]", ((int S, typename K), S, K),
                        (1, int), (2, float), (3, char), (4, bip::vector<int>)) {
   HCL_LOG_INFO("Starting Test %d", info.test_count + 1);
   REQUIRE(pretest() == 0);
   typedef K Key;
 
   float total_requests = info.client_comm_size * args.num_request;
-  typedef hcl::queue<Key> Type;
+  typedef hcl::vector<Key> Type;
   HCL_LOG_INFO("Ran Pre Test %d", info.test_count + 1);
   ;
   SECTION("stl") {
-    std::queue<Key> type = std::queue<Key>();
+    std::vector<Key> type = std::vector<Key>();
     if (info.is_client) {
       hcl::test::Timer put_time = hcl::test::Timer();
 
       for (int i = 1; i <= args.num_request; i++) {
         Key k = Key(i);
         put_time.resumeTime();
-        type.push(k);
+        type.push_back(k);
         put_time.pauseTime();
       }
       hcl::test::Timer get_time = hcl::test::Timer();
 
-      for (int i = 1; i <= args.num_request; i++) {
+      for (int i = 0; i < args.num_request; i++) {
         get_time.resumeTime();
-        type.pop();
+        type.at(i);
         get_time.pauseTime();
       }
       AGGREGATE_TIME(put, info.client_comm);
@@ -63,10 +61,10 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
         REQUIRE(success);
       }
       hcl::test::Timer get_time = hcl::test::Timer();
-      for (int i = 1; i <= args.num_request; i++) {
+      for (int i = 0; i < args.num_request; i++) {
         uint16_t my_server_key = 0;
         get_time.resumeTime();
-        auto iterator = type->Pop(my_server_key);
+        auto iterator = type->Get(i, my_server_key);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }
@@ -108,10 +106,10 @@ TEMPLATE_TEST_CASE_SIG("queue", "[queue]", ((int S, typename K), S, K),
       }
       hcl::test::Timer get_time = hcl::test::Timer();
 
-      for (int i = 1; i <= args.num_request; i++) {
+      for (int i = 0; i < args.num_request; i++) {
         uint16_t my_server_key = 0;
         get_time.resumeTime();
-        auto iterator = type->Pop(my_server_key);
+        auto iterator = type->Get(i, my_server_key);
         get_time.pauseTime();
         REQUIRE(iterator.first);
       }

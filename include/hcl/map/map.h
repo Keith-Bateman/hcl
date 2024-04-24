@@ -18,6 +18,7 @@
  * Include Headers
  */
 
+#include <hcl/common/container.h>
 #include <hcl/common/debug.h>
 #include <hcl/common/singleton.h>
 #include <hcl/communication/rpc_lib.h>
@@ -31,12 +32,12 @@
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
 #include <boost/interprocess/sync/scoped_lock.hpp>
 /** Standard C++ Headers**/
-#include <hcl/common/container.h>
 
 #include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
+#include <scoped_allocator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -56,8 +57,8 @@ class map : public container {
  private:
   /** Class Typedefs for ease of use **/
   typedef std::pair<const KeyType, MappedType> ValueType;
-  typedef boost::interprocess::allocator<
-      ValueType, boost::interprocess::managed_mapped_file::segment_manager>
+  typedef std::scoped_allocator_adaptor<boost::interprocess::allocator<
+      ValueType, boost::interprocess::managed_mapped_file::segment_manager>>
       ShmemAllocator;
   typedef boost::interprocess::map<KeyType, MappedType, Compare, ShmemAllocator>
       MyMap;
