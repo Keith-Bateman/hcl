@@ -1,5 +1,3 @@
-
-
 #include <array>
 
 TEMPLATE_TEST_CASE_SIG("unordered_map", "[unordered_map]",
