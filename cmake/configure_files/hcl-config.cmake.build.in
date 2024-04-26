@@ -1,8 +1,8 @@
-# This will create IMPORTED targets for HPC_AIO. The executables will be
-# hpc_aio::<exe-name>-bin (e.g., hpc_aio::hpc_aio-bin) and the library will
-# be hpc_aio::hpc_aio.
+# This will create IMPORTED targets for hcl. The executables will be
+# hcl::<exe-name>-bin (e.g., hcl::hcl-bin) and the library will
+# be hcl::hcl.
 
-include("${CMAKE_CURRENT_LIST_DIR}/HPC_AIOConfigVersion.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/hcl-config-version.cmake")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/modules")
@@ -10,52 +10,95 @@ list(APPEND CMAKE_MODULE_PATH "@EXTRA_CMAKE_MODULE_DIR@")
 
 #include(GNUInstallDirs)
 include(ExternalProject)
-include(HPC_AIOCMakeUtilities)
+include(hcl-utils)
 include(CMakePackageConfigHelpers)
 
 
-set(HPC_AIO_VERSION ${PACKAGE_VERSION})
+set(HCL_VERSION ${PACKAGE_VERSION})
 
 # Record compiler information
-set(HPC_AIO_C_COMPILER "@CMAKE_C_COMPILER@")
-set(HPC_AIO_CXX_COMPILER "@CMAKE_CXX_COMPILER@")
+set(HCL_C_COMPILER "@CMAKE_C_COMPILER@")
+set(HCL_CXX_COMPILER "@CMAKE_CXX_COMPILER@")
 
-set(HPC_AIO_C_FLAGS "@CMAKE_C_FLAGS@")
-set(HPC_AIO_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
+set(HCL_C_FLAGS "@CMAKE_C_FLAGS@")
+set(HCL_CXX_FLAGS "@CMAKE_CXX_FLAGS@")
 
-set(HPC_AIO_C_STANDARD "@CMAKE_C_STANDARD@")
-set(HPC_AIO_CXX_STANDARD "@CMAKE_CXX_STANDARD@")
+set(HCL_C_STANDARD "@CMAKE_C_STANDARD@")
+set(HCL_CXX_STANDARD "@CMAKE_CXX_STANDARD@")
 
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-# Record the various flags and switches accumlated in HPC_AIO
-set(HPC_AIO_GNU_LINUX @HPC_AIO_GNU_LINUX@)
-set(HPC_AIO_HAS_STD_FILESYSTEM @HPC_AIO_HAS_STD_FILESYSTEM@)
-set(HPC_AIO_HAS_STD_FSTREAM_FD @HPC_AIO_HAS_STD_FSTREAM_FD@)
+# Record the various flags and switches accumlated in HCL
+set(HCL_GNU_LINUX @HCL_GNU_LINUX@)
+set(HCL_HAS_STD_FILESYSTEM @HCL_HAS_STD_FILESYSTEM@)
+set(HCL_HAS_STD_FSTREAM_FD @HCL_HAS_STD_FSTREAM_FD@)
 
 # Setup dependencies
 
 
 @PACKAGE_INIT@
 
-# Now actually import the HPC_AIO target
+# Now actually import the HCL target
 set(_TMP_INCLUDE_DIRS "@CMAKE_INCLUDE_OUTPUT_DIRECTORY@")
 foreach (_DIR ${_TMP_INCLUDE_DIRS})
   set_and_check(_INCLUDE_DIR "${_DIR}")
-  list(APPEND HPC_AIO_INCLUDE_DIRS "${_INCLUDE_DIR}")
+  list(APPEND HCL_INCLUDE_DIRS "${_INCLUDE_DIR}")
 endforeach (_DIR "${_TMP_INCLUDE_DIRS}")
 
 set(_TMP_LIBRARY_DIRS "@CMAKE_LIBRARY_OUTPUT_DIRECTORY@")
 foreach (_DIR ${_TMP_LIBRARY_DIRS})
   set_and_check(_LIBRARY_DIR "${_DIR}")
-  list(APPEND HPC_AIO_LIBRARY_DIRS "${_LIBRARY_DIR}")
+  list(APPEND HCL_LIBRARY_DIRS "${_LIBRARY_DIR}")
 endforeach (_DIR ${_TMP_LIBRARY_DIRS})
 
-if (NOT TARGET hpc_aio::hpc_aio)
-  include(${CMAKE_CURRENT_LIST_DIR}/HPC_AIOTargets.cmake)
-endif (NOT TARGET hpc_aio::hpc_aio)
+if (NOT TARGET hcl::hcl)
+  include(${CMAKE_CURRENT_LIST_DIR}/hcl-targets.cmake)
+endif (NOT TARGET hcl::hcl)
 
-check_required_components(HPC_AIO)
 
-set(HPC_AIO_LIBRARIES hpc_aio::hpc_aio)
+set(HCL_COMMUNICATION @HCL_COMMUNICATION@)
+if(HCL_COMMUNICATION STREQUAL "THALLIUM")
+    find_package(thallium REQUIRED)
+    if (${THALLIUM_FOUND})
+        message(STATUS "[hcl] found thallium at ${THALLIUM_INCLUDE_DIRS}")
+        include_directories(SYSTEM ${THALLIUM_INCLUDE_DIRS})
+        link_directories(${THALLIUM_LIBRARY_PATH})
+        target_link_libraries(hcl INTERFACE ${THALLIUM_LIBRARIES})
+    else ()
+        message(FATAL_ERROR "-- [hcl] thallium is needed for hcl build")
+    endif ()
+endif()
+
+set(HCL_LOGGER @HCL_LOGGER@)
+if (HCL_LOGGER STREQUAL "CPP_LOGGER")
+    find_package(cpp-logger REQUIRED
+                 HINTS ${CPP_LOGGER_DIR} ${cpp-logger_DIR}
+                       ${CPP_LOGGER_PATH} ${cpp-logger_PATH}
+                       $ENV{CPP_LOGGER_DIR} $ENV{cpp-logger_DIR}
+                       $ENV{CPP_LOGGER_PATH} $ENV{cpp-logger_PATH})
+    if (${cpp-logger_FOUND})
+        message(STATUS "[hcl] found cpp-logger at ${CPP_LOGGER_INCLUDE_DIRS}")
+        include_directories(SYSTEM ${CPP_LOGGER_INCLUDE_DIRS})
+        link_directories(${CPP_LOGGER_LIBRARY_DIRS})
+        target_link_libraries(hcl INTERFACE ${CPP_LOGGER_LIBRARIES})
+    else ()
+        message(FATAL_ERROR "-- [hcl] cpp-logger is not found but selected in cmake options for importing hcl")
+    endif ()
+endif()
+set(HCL_PROFILER @HCL_PROFILER@)
+if(HCL_PROFILER STREQUAL "DLIO_PROFILER")
+    find_package(dlio_profiler REQUIRED IMPORTED)
+    if (${DLIO_PROFILER_FOUND})
+        message(STATUS "[hcl] found dlio_profiler at ${DLIO_PROFILER_INCLUDE_DIRS}")
+        include_directories(SYSTEM ${DLIO_PROFILER_INCLUDE_DIRS})
+        link_directories(${DLIO_PROFILER_LIBRARY_DIRS})
+        target_link_libraries(hcl INTERFACE ${DLIO_PROFILER_LIBRARIES})
+    else ()
+        message(FATAL_ERROR "-- [hcl] dlio_profiler is not found but selected in cmake options hcl build")
+    endif ()
+endif()
+
+check_required_components(hcl)
+
+set(HCL_LIBRARIES hcl)

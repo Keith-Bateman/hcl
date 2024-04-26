@@ -12,8 +12,8 @@ else()
 endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-set(TEST_LIBS ${TEST_LIBS} -lstdc++fs ${MPI_CXX_LIBRARIES})
-set(TEST_LIBS_NO_MPI ${TEST_LIBS} -lstdc++fs)
+set(TEST_LIBS ${TEST_LIBS} -lstdc++fs ${MPI_CXX_LIBRARIES} hcl)
+set(TEST_LIBS_NO_MPI ${TEST_LIBS} -lstdc++fs hcl)
 set(TEST_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catch_config.h ${CMAKE_CURRENT_SOURCE_DIR}/mpi_console_reporter.cpp ${CMAKE_CURRENT_SOURCE_DIR}/mpi_console_reporter.hpp ${CMAKE_CURRENT_SOURCE_DIR}/util.h)
 
 add_subdirectory(benchmark)

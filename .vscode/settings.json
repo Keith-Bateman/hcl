@@ -5,10 +5,15 @@
         "-DHCL_COMMUNICATION_PROTOCOL=UCX",
         "-DHCL_LOGGER=CPP_LOGGER",
         "-DHCL_LOGGER_LEVEL=INFO",
-        "-DHCL_PROFILER=DLIO_PROFILER"
+        "-DHCL_PROFILER=DLIO_PROFILER",
+        "-DCMAKE_INSTALL_PREFIX=/usr/workspace/haridev/hcl-2/install-test"
     ],
     "editor.formatOnSave": true,
     "cmake.configureEnvironment": {
         "HCL_TEST_MACHINE": "corona"
+    },
+    "files.associations": {
+        "type_traits": "cpp",
+        "iosfwd": "cpp"
     }
 }
