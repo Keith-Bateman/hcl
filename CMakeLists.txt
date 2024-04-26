@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.10.2)
 # Version information
 #------------------------------------------------------------------------------
 
-set(HCL_VERSION_MAJOR "0")
-set(HCL_VERSION_MINOR "1")
-set(HCL_VERSION_PATCH "0")
+set(HCL_VERSION_MAJOR "1")
+set(HCL_VERSION_MINOR "0")
+set(HCL_VERSION_PATCH "1")
 set(HCL_PACKAGE ${PROJECT_NAME})
 set(HCL_PACKAGE_NAME ${PROJECT_NAME})
 set(HCL_PACKAGE_VERSION "${HCL_VERSION_MAJOR}.${HCL_VERSION_MINOR}.${HCL_VERSION_PATCH}")

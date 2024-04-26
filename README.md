@@ -1,4 +1,4 @@
-# HCL: Hermes Container Library
+# HCL: Hermes Container Library v0.0.2
 
 [![cmake](https://github.com/HDFGroup/hcl/actions/workflows/main.yml/badge.svg)](https://github.com/HDFGroup/hcl/actions/workflows/main.yml)
 
