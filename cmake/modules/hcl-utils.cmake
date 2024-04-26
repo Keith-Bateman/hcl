@@ -13,7 +13,7 @@ macro(set_full_path VAR)
 endmacro()
 
 # A function to get a string of spaces. Useful for formatting output.
-function(hpc_aio_get_space_string OUTPUT_VAR LENGTH)
+function(hcl_get_space_string OUTPUT_VAR LENGTH)
   set(_curr_length 0)
   set(_out_str "")
   while (${_curr_length} LESS ${LENGTH})
@@ -26,7 +26,7 @@ endfunction ()
 
 # This computes the maximum length of the things given in "ARGN"
 # interpreted as simple strings.
-macro(hpc_aio_get_max_str_length OUTPUT_VAR)
+macro(hcl_get_max_str_length OUTPUT_VAR)
   set(${OUTPUT_VAR} 0)
   foreach(var ${ARGN})
     string(LENGTH "${var}" _var_length)
@@ -65,8 +65,8 @@ if (__GIT_EXECUTABLE)
       OUTPUT_VARIABLE __GIT_DESCRIBE_VERSION
       OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    set(HPC_AIO_GIT_VERSION "${__GIT_DESCRIBE_VERSION}"
-      CACHE STRING "HPC_AIO's version string as told by git.")
+    set(HCL_GIT_VERSION "${__GIT_DESCRIBE_VERSION}"
+      CACHE STRING "HCL's version string as told by git.")
   endif (__BUILDING_FROM_GIT_SOURCES)
 endif (__GIT_EXECUTABLE)
 
@@ -79,13 +79,13 @@ endif (__GIT_EXECUTABLE)
 # purpose is to provide uniform output, rather than an odd mixture of
 # "1", "0", "ON", "OFF", "TRUE" and "FALSE".
 macro(append_str_tf STRING_VAR)
-  hpc_aio_get_max_str_length(_max_length ${ARGN})
+  hcl_get_max_str_length(_max_length ${ARGN})
   math(EXPR _max_length "${_max_length} + 2")
 
   foreach(var ${ARGN})
     string(LENGTH "${var}" _var_length)
     math(EXPR _num_spaces "${_max_length} - ${_var_length}")
-    hpc_aio_get_space_string(_spaces ${_num_spaces})
+    hcl_get_space_string(_spaces ${_num_spaces})
     if (${var})
       set(${var} "TRUE")
       string(APPEND ${STRING_VAR} "  ${var}:" "${_spaces}" "TRUE\n")

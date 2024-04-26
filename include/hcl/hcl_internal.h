@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <hcl/hcl_config.hpp>
 /*Internal*/
+#include <hcl/common/logging.h>
+#include <hcl/common/profiler.h>
 #include <hcl/communication/rpc_lib.h>
 /*Standard*/
 #include <stdint.h>
@@ -11,8 +13,6 @@
 #include <memory>
 #include <stdexcept>
 #include <unordered_map>
-
-#include "common/logging.h"
 
 namespace hcl {
 
@@ -195,7 +195,6 @@ class HCL {
   }
 };
 
-std::shared_ptr<HCL> HCL::instance = nullptr;
 }  // namespace hcl
 
 #endif  // INCLUDE_HCL_INTERNAL_H_

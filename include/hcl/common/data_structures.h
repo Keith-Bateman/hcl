@@ -24,8 +24,12 @@
 #ifndef INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
 #define INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
 
+#include <hcl/hcl_config.hpp>
+/* Internal Header */
 #include <hcl/common/logging.h>
 #include <hcl/common/profiler.h>
+
+/* External Headers*/
 #include <sys/types.h>
 
 #include <boost/concept_check.hpp>
@@ -33,7 +37,6 @@
 #include <boost/interprocess/containers/vector.hpp>
 #include <chrono>
 #include <cstdint>
-#include <hcl/hcl_config.hpp>
 #include <string>
 #include <vector>
 

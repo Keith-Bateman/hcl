@@ -39,3 +39,4 @@ spack.lock
 .cache
 __pycache__
 install
+install-test

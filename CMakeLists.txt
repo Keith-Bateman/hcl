@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.10.2)
 # Version information
 #------------------------------------------------------------------------------
 
-set(HCL_VERSION_MAJOR "0")
-set(HCL_VERSION_MINOR "1")
-set(HCL_VERSION_PATCH "0")
+set(HCL_VERSION_MAJOR "1")
+set(HCL_VERSION_MINOR "0")
+set(HCL_VERSION_PATCH "1")
 set(HCL_PACKAGE ${PROJECT_NAME})
 set(HCL_PACKAGE_NAME ${PROJECT_NAME})
 set(HCL_PACKAGE_VERSION "${HCL_VERSION_MAJOR}.${HCL_VERSION_MINOR}.${HCL_VERSION_PATCH}")
@@ -124,6 +124,16 @@ if (HCL_COMMUNICATION STREQUAL "RPCLIB" AND NOT HCL_COMMUNICATION_PROTOCOL STREQ
   message(FATAL_ERROR "-- [${PROJECT_NAME}] HCL_COMMUNICATION with RPCLIB only supports HCL_COMMUNICATION_PROTOCOL as TCP")
 endif()
 
+if(HCL_PROFILER STREQUAL "DLIO_PROFILER")
+    set(HCL_PROFILER_DLIO_PROFILER 1)
+else()
+    set(HCL_PROFILER_NONE 1)
+endif()
+
+if(HCL_LOGGER STREQUAL "CPP_LOGGER")
+    set(HCL_LOGGER_CPP_LOGGER 1)
+endif()
+
 #------------------------------------------------------------------------------
 # Compiler setup
 #------------------------------------------------------------------------------
@@ -138,20 +148,6 @@ include(SetupCompiler)
 if(CMAKE_BUILD_TYPE STREQUAL "")
     set(CMAKE_BUILD_TYPE "Release") # Setting default as Release
 endif()
-
-if(HCL_PROFILER STREQUAL "DLIO_PROFILER")
-    set(HCL_PROFILER_DLIO_PROFILER 1)
-else()
-    set(HCL_PROFILER_NONE 1)
-endif()
-
-if(HCL_LOGGER STREQUAL "CPP_LOGGER")
-    set(HCL_LOGGER_CPP_LOGGER 1)
-endif()
-
-function(check_logger)
-endfunction(check_logger)
-
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (HCL_LOGGER STREQUAL "NONE")
@@ -238,6 +234,97 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
             "MinSizeRel" "RelWithDebInfo")
 endif ()
+
+
+function(hcl_install_headers public_headers current_dir)
+    #message("-- [${PROJECT_NAME}] " "installing headers ${public_headers}")
+    foreach (header ${public_headers})
+        file(RELATIVE_PATH header_file_path "${PROJECT_SOURCE_DIR}/src" "${header}")
+        #message("-- [${PROJECT_NAME}] " "installing header ${header_file_path}")
+        get_filename_component(header_directory_path "${header_file_path}" DIRECTORY)
+        install(
+                FILES ${header}
+                DESTINATION "include/${header_directory_path}"
+        )
+        file(COPY ${header}
+                DESTINATION "${CMAKE_INCLUDE_OUTPUT_DIRECTORY}/${header_directory_path}")
+    endforeach ()
+    set(INCLUDE_INSTALL_DIRS ${public_headers})
+endfunction()
+
+
+#------------------------------------------------------------------------------
+# Dependencies
+#------------------------------------------------------------------------------
+
+# Install Dependencies
+# =============================================================================
+if (HCL_BUILD_DEPENDENCIES)
+  add_subdirectory(dependency)
+
+else()
+
+
+#-----------------------------------------------------------------------------
+# Source for HCL
+#-----------------------------------------------------------------------------
+set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+include_directories(${CMAKE_SOURCE_DIR}/include)  # public header
+include_directories(${CMAKE_SOURCE_DIR}/src)  # private header
+include_directories(${CMAKE_BINARY_DIR}/include)  # build header
+
+set(HCL_SRC   ${PROJECT_SOURCE_DIR}/src/hcl/common/configuration_manager.cpp
+              ${PROJECT_SOURCE_DIR}/src/hcl/clock/global_clock.cpp
+              ${PROJECT_SOURCE_DIR}/src/hcl/common/container.cpp
+              ${PROJECT_SOURCE_DIR}/src/hcl/hcl_internal.cpp)
+set(HCL_PRIVATE_HEADER  )
+set(HCL_PUBLIC_HEADER   ${PROJECT_SOURCE_DIR}/include/hcl.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/debug.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/macros.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/typedefs.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/enumerations.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/data_structures.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/configuration_manager.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/queue/queue.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/map/map.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/multimap/multimap.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/clock/global_clock.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/queue/queue.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/vector/vector.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/set/set.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/hcl_internal.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/container.h
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/singleton.h 
+                        ${PROJECT_SOURCE_DIR}/include/hcl/common/constants.h)
+set(HCL_SRC_PRIVATE  
+                    ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/map/map.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/queue/queue.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/vector/vector.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/set/set.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp)
+
+add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
+target_link_libraries(${PROJECT_NAME} ${DEPENDENCY_LIB})
+set_target_properties(${PROJECT_NAME} PROPERTIES
+    LINKER_LANGUAGE CXX
+    VERSION ${HCL_PACKAGE_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER include/hcl.h)
+target_compile_definitions(${PROJECT_NAME} PUBLIC HCL_HAS_CONFIG)
+hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SOURCE_DIR})
+
 #------------------------------------------------------------------------------
 # Dependencies
 #------------------------------------------------------------------------------
@@ -265,7 +352,7 @@ if (HCL_LOGGER STREQUAL "CPP_LOGGER")
                        ${CPP_LOGGER_PATH} ${cpp-logger_PATH}
                        $ENV{CPP_LOGGER_DIR} $ENV{cpp-logger_DIR}
                        $ENV{CPP_LOGGER_PATH} $ENV{cpp-logger_PATH})
-    if (${CPP_LOGGER_FOUND})
+    if (${cpp-logger_FOUND})
         message(STATUS "[${PROJECT_NAME}] found cpp-logger at ${CPP_LOGGER_INCLUDE_DIRS}")
         include_directories(SYSTEM ${CPP_LOGGER_INCLUDE_DIRS})
         set(DEPENDENCY_LIB ${DEPENDENCY_LIB} ${CPP_LOGGER_LIBRARIES})
@@ -284,78 +371,15 @@ if(HCL_PROFILER STREQUAL "DLIO_PROFILER")
     endif ()
 endif()
 
-
-function(hcl_install_headers public_headers current_dir)
-    #message("-- [${PROJECT_NAME}] " "installing headers ${public_headers}")
-    foreach (header ${public_headers})
-        file(RELATIVE_PATH header_file_path "${PROJECT_SOURCE_DIR}/src" "${header}")
-        #message("-- [${PROJECT_NAME}] " "installing header ${header_file_path}")
-        get_filename_component(header_directory_path "${header_file_path}" DIRECTORY)
-        install(
-                FILES ${header}
-                DESTINATION "include/${header_directory_path}"
-        )
-        file(COPY ${header}
-                DESTINATION "${CMAKE_INCLUDE_OUTPUT_DIRECTORY}/${header_directory_path}")
-    endforeach ()
-endfunction()
-
-
-#-----------------------------------------------------------------------------
-# Source for HCL
-#-----------------------------------------------------------------------------
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
-include_directories(${CMAKE_SOURCE_DIR}/include)  # public header
-include_directories(${CMAKE_SOURCE_DIR}/src)  # private header
-include_directories(${CMAKE_BINARY_DIR}/include)  # build header
-set(HCL_SRC )
-set(HCL_PRIVATE_HEADER  )
-set(HCL_PUBLIC_HEADER   ${CMAKE_SOURCE_DIR}/include/hcl.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/debug.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/macros.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/typedefs.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/enumerations.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/data_structures.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/configuration_manager.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/map/map.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/clock/global_clock.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/vector/vector.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/set/set.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/sequencer/global_sequence.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/hcl_internal.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/container.h
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/singleton.h 
-                        ${CMAKE_SOURCE_DIR}/include/hcl/common/constants.h)
-set(HCL_SRC_PRIVATE  
-                    ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/map/map.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/multimap/multimap.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/priority_queue/priority_queue.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/queue/queue.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/vector/vector.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/set/set.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp
-                    ${CMAKE_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp)
-
-add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
 target_link_libraries(${PROJECT_NAME} ${DEPENDENCY_LIB})
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    LINKER_LANGUAGE CXX
-    VERSION ${HCL_PACKAGE_VERSION}
-    SOVERSION 1
-    PUBLIC_HEADER include/hcl.h)
-target_compile_definitions(${PROJECT_NAME} PUBLIC HCL_HAS_CONFIG)
-hcl_install_headers("${HCL_PUBLIC_HEADER};${HCL_SRC_PRIVATE}" ${CMAKE_CURRENT_SOURCE_DIR})
+
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT ${HCL_EXPORTED_TARGETS}
+        LIBRARY DESTINATION ${HCL_INSTALL_LIB_DIR}
+        ARCHIVE DESTINATION ${HCL_INSTALL_LIB_DIR}
+        RUNTIME DESTINATION ${HCL_INSTALL_BIN_DIR}
+)
 #-----------------------------------------------------------------------------
 # Testing
 #-----------------------------------------------------------------------------
@@ -386,18 +410,28 @@ endif()
 #-----------------------------------------------------------------------------
 # Configure the config.cmake file for the build directory
 #-----------------------------------------------------------------------------
-configure_file(
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/configure_files/${PROJECT_NAME}-config.cmake.build.in
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake @ONLY
+        "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+        INSTALL_DESTINATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}-config.cmake 
+        PATH_VARS CMAKE_BINARY_DIR
 )
 
-configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/configure_files/${PROJECT_NAME}-config.cmake.install.in
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/install/${PROJECT_NAME}-config.cmake @ONLY
+configure_package_config_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/configure_files/${PROJECT_NAME}-config.cmake.install.in
+        "${CMAKE_BINARY_DIR}/install/${PROJECT_NAME}-config.cmake"
+        INSTALL_DESTINATION  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/install/${PROJECT_NAME}-config.cmake
+        PATH_VARS CMAKE_BINARY_DIR
 )
+
+# configure_file(
+#         ${CMAKE_CURRENT_SOURCE_DIR}/cmake/configure_files/${PROJECT_NAME}-config.cmake.install.in
+#         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/install/${PROJECT_NAME}-config.cmake @ONLY
+# )
 install(
         FILES
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/install/${PROJECT_NAME}-config.cmake
+        "${CMAKE_BINARY_DIR}/install/${PROJECT_NAME}-config.cmake"
         DESTINATION
         ${HCL_LIBDIR}/cmake/${PROJECT_NAME}
 )
@@ -416,8 +450,8 @@ install(
         ${HCL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
-# export(EXPORT ${HCL_EXPORTED_TARGETS}
-#         FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
+export(EXPORT ${HCL_EXPORTED_TARGETS}
+        FILE "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/cmake/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake")
 
 # Write the configure file
 configure_file("${CMAKE_SOURCE_DIR}/cmake/configure_files/hcl_config.hpp.in"
@@ -432,7 +466,7 @@ include(CMakePackageConfigHelpers)
 
 # Write the version file. This is independent of build/install tree.
 write_basic_package_version_file(
-  HCLConfigVersion.cmake
+  HclConfigVersion.cmake
   VERSION "${HCL_PACKAGE_VERSION}"
   COMPATIBILITY SameMajorVersion)
 
@@ -441,13 +475,19 @@ install(FILES
         DESTINATION
         ${HCL_INSTALL_INCLUDE_DIR}/hcl)
 
-# install(EXPORT
-#         ${HCL_EXPORTED_TARGETS}
-#         DESTINATION
-#         ${HCL_LIBDIR}/cmake/${PROJECT_NAME}
-#         FILE
-#         ${HCL_EXPORTED_TARGETS}.cmake
-#         )
+install(EXPORT
+        ${HCL_EXPORTED_TARGETS}
+        DESTINATION
+        ${HCL_LIBDIR}/cmake/${PROJECT_NAME}
+        FILE
+        ${HCL_EXPORTED_TARGETS}.cmake
+        )
+
+# Install export
+install(EXPORT ${HCL_EXPORTED_TARGETS}
+        NAMESPACE hcl::
+        FILE HclTargets.cmake
+        DESTINATION "${HCL_LIBDIR}/cmake/hcl")
 
 # Install license and readme
 install(FILES
@@ -456,6 +496,9 @@ install(FILES
         "${PROJECT_SOURCE_DIR}/README.md"
         DESTINATION
         ${HCL_INSTALL_DOCDIR})
+
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/hcl-utils.cmake"
+        DESTINATION "${HCL_LIBDIR}/cmake/hcl")
 
 
 ###############################################################################
@@ -564,3 +607,4 @@ install(FILES "${CMAKE_BINARY_DIR}/hcl_module.lua.install"
   RENAME "${HCL_MODULEFILE_NAME}"
   DESTINATION
   "${HCL_INSTALL_SYSCONFDIR}")
+endif()

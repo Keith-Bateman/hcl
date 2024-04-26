@@ -3,7 +3,6 @@
 
 #include <hcl/hcl_config.hpp>
 /*Include*/
-#include <hcl/common/data_structures.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -11,7 +10,7 @@
 #include <string>
 #define VA_ARGS(...) , ##__VA_ARGS__
 
-std::string hcl_macro_get_time() {
+inline std::string hcl_macro_get_time() {
   auto hcl_ts_millis = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count() %
@@ -90,8 +89,8 @@ std::string hcl_macro_get_time() {
   HCL_INTERNAL_TRACE_FORMAT(__FILE__, __LINE__, __FUNCTION__, HCL_LOGGER_NAME, \
                             CPP_LOGGER_TRACE, format, __VA_ARGS__);
 #else
-#define HCL_LOG_TRACE(...) HCL_NOOP_MACRO
-#define HCL_LOG_TRACE_FORMAT(...) HCL_NOOP_MACRO
+#define HCL_LOG_TRACE() HCL_NOOP_MACRO
+#define HCL_LOG_TRACE_FORMAT(format, ...) HCL_NOOP_MACRO
 #endif
 
 #ifdef HCL_LOGGER_LEVEL_DEBUG
