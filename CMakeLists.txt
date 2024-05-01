@@ -53,7 +53,7 @@ endif ()
 # This sets where to look for dependent libraries
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_BINARY_DIR} ${CMAKE_INSTALL_PREFIX})
 # This sets where to look for dependent library's cmake files
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/${HCL_LIBDIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR}/share/cmake)
 
