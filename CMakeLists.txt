@@ -276,7 +276,9 @@ include_directories(${CMAKE_BINARY_DIR}/include)  # build header
 set(HCL_SRC   ${PROJECT_SOURCE_DIR}/src/hcl/common/configuration_manager.cpp
               ${PROJECT_SOURCE_DIR}/src/hcl/clock/global_clock.cpp
               ${PROJECT_SOURCE_DIR}/src/hcl/common/container.cpp
-              ${PROJECT_SOURCE_DIR}/src/hcl/hcl_internal.cpp)
+              ${PROJECT_SOURCE_DIR}/src/hcl/hcl_internal.cpp
+              ${PROJECT_SOURCE_DIR}/src/hcl/common/data_structures.cpp
+              ${PROJECT_SOURCE_DIR}/src/hcl/communication/rpc_lib.cpp)
 set(HCL_PRIVATE_HEADER  )
 set(HCL_PUBLIC_HEADER   ${PROJECT_SOURCE_DIR}/include/hcl.h
                         ${PROJECT_SOURCE_DIR}/include/hcl/common/debug.h
@@ -302,7 +304,7 @@ set(HCL_PUBLIC_HEADER   ${PROJECT_SOURCE_DIR}/include/hcl.h
                         ${PROJECT_SOURCE_DIR}/include/hcl/common/singleton.h 
                         ${PROJECT_SOURCE_DIR}/include/hcl/common/constants.h)
 set(HCL_SRC_PRIVATE  
-                    ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp
+                    ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib_int.cpp
                     ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/queue/queue.cpp
                     ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/skiplist/skiplist.cpp
                     ${PROJECT_SOURCE_DIR}/include/hcl/concurrent/unordered_map/unordered_map.cpp
