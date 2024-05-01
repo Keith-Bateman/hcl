@@ -96,7 +96,6 @@ struct URI {
   URI(URI &&other);      /* move constructor*/
 };
 
-
 template <typename T>
 class CalculateSize {
  public:
