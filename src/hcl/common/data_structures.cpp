@@ -1,6 +1,5 @@
 
 #include <hcl/common/data_structures.h>
-namespace bip = boost::interprocess;
 void CharStruct::Set(char *data_, size_t size) {
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
@@ -262,33 +261,6 @@ inline std::ostream &operator<<(std::ostream &os, std::vector<T> const &ms) {
   return os;
 }
 
-template <typename T>
-class CalculateSize {
- public:
-  really_long GetSize(T value) {
-    HCL_LOG_TRACE();
-    HCL_CPP_FUNCTION()
-    return sizeof(value);
-  }
-};
-template <>
-class CalculateSize<std::string> {
- public:
-  really_long GetSize(std::string value) {
-    HCL_LOG_TRACE();
-    HCL_CPP_FUNCTION()
-    return strlen(value.c_str()) + 1;
-  }
-};
-template <>
-class CalculateSize<bip::string> {
- public:
-  really_long GetSize(bip::string value) {
-    HCL_LOG_TRACE();
-    HCL_CPP_FUNCTION()
-    return strlen(value.c_str()) + 1;
-  }
-};
 
 namespace std {
 template <>

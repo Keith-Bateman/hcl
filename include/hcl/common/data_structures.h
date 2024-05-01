@@ -40,6 +40,8 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+
+namespace bip = boost::interprocess;
 struct CharStruct {
  private:
   char value[256];
@@ -92,6 +94,35 @@ struct URI {
   URI();
   URI(const URI &other); /* copy constructor*/
   URI(URI &&other);      /* move constructor*/
+};
+
+
+template <typename T>
+class CalculateSize {
+ public:
+  really_long GetSize(T value) {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    return sizeof(value);
+  }
+};
+template <>
+class CalculateSize<std::string> {
+ public:
+  really_long GetSize(std::string value) {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    return strlen(value.c_str()) + 1;
+  }
+};
+template <>
+class CalculateSize<bip::string> {
+ public:
+  really_long GetSize(bip::string value) {
+    HCL_LOG_TRACE();
+    HCL_CPP_FUNCTION()
+    return strlen(value.c_str()) + 1;
+  }
 };
 
 #endif  // INCLUDE_HCL_COMMON_DATA_STRUCTURES_H_
