@@ -314,8 +314,7 @@ set(HCL_SRC_PRIVATE
                     ${PROJECT_SOURCE_DIR}/include/hcl/queue/queue.cpp
                     ${PROJECT_SOURCE_DIR}/include/hcl/vector/vector.cpp
                     ${PROJECT_SOURCE_DIR}/include/hcl/set/set.cpp
-                    ${PROJECT_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp
-                    ${PROJECT_SOURCE_DIR}/include/hcl/communication/rpc_lib.cpp)
+                    ${PROJECT_SOURCE_DIR}/include/hcl/unordered_map/unordered_map.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${HCL_SRC} ${HCL_PUBLIC_HEADER} ${HCL_PRIVATE_HEADER})
 target_link_libraries(${PROJECT_NAME} ${DEPENDENCY_LIB})
