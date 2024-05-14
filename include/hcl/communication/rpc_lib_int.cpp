@@ -20,7 +20,7 @@ void RPC::bind(CharStruct str, F func) {
   HCL_CPP_FUNCTION()
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP:
+    case THALLIUM:
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {
@@ -36,7 +36,7 @@ Response RPC::callWithTimeout(uint16_t server_index, int timeout_ms,
   HCL_LOG_TRACE_FORMAT("(%d, %s)", server_index, func_name.c_str());
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
       // Setup args for RDMA bulk transfer
@@ -55,7 +55,7 @@ Response RPC::call(uint16_t server_index, CharStruct const &func_name,
   HCL_LOG_TRACE_FORMAT("(%d, %s)", server_index, func_name.c_str());
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
       return remote_procedure.on(thallium_endpoints[server_index])(
@@ -73,7 +73,7 @@ Response RPC::call(CharStruct &server, uint16_t &port,
   HCL_LOG_TRACE_FORMAT("(%d, %d, %s)", server, port, func_name.c_str());
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       tl::remote_procedure remote_procedure =
           thallium_client->define(func_name.c_str());
       auto new_uri = URI(0, uris[0].user_uri, server, port);
@@ -94,7 +94,7 @@ std::future<Response> RPC::async_call(uint16_t server_index,
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       // TODO:NotImplemented error
       break;
     }
@@ -110,7 +110,7 @@ std::future<Response> RPC::async_call(CharStruct &server, uint16_t &port,
 
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       // TODO:NotImplemented error
       break;
     }

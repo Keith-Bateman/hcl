@@ -30,7 +30,7 @@ void RPC::Stop() {
   if (HCL_CONF->IS_SERVER) {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-      case THALLIUM_TCP:
+      case THALLIUM:
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
@@ -62,7 +62,7 @@ RPC::RPC(bool _is_server, uint16_t _my_server_index, size_t _threads,
   if (is_server) {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-      case THALLIUM_TCP: {
+      case THALLIUM: {
         engine_init_str = uris[my_server_index].server_uri;
         break;
       }
@@ -78,7 +78,7 @@ void RPC::run() {
   if (is_server) {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-      case THALLIUM_TCP:
+      case THALLIUM:
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
@@ -92,7 +92,7 @@ void RPC::run() {
   }
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP: {
+    case THALLIUM: {
       HCL_LOG_INFO("Will run client with end_point URI %s and client URI %s\n",
                    uris[my_server_index].endpoint_uri.c_str(),
                    uris[my_server_index].client_uri.c_str());

@@ -37,9 +37,9 @@
   }
 
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-#define RPC_CALL_WRAPPER_THALLIUM_TCP() case THALLIUM_TCP:
+#define RPC_CALL_WRAPPER_THALLIUM_ENUM() case THALLIUM:
 #else
-#define RPC_CALL_WRAPPER_THALLIUM_TCP()
+#define RPC_CALL_WRAPPER_THALLIUM_ENUM()
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
 #define RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
@@ -61,7 +61,7 @@
   [&]() -> ret {                                            \
     auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);  \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                 \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                       \
+      RPC_CALL_WRAPPER_THALLIUM_ENUM()                      \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
     }                                                       \
     HCL_LOG_ERROR("RPC Implmentation unknown %d",           \
@@ -72,7 +72,7 @@
   [&]() -> ret {                                                       \
     auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);             \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM_ENUM()                                 \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
     }                                                                  \
     HCL_LOG_ERROR("RPC Implmentation unknown %d",                      \
@@ -83,7 +83,7 @@
   [&]() -> ret {                                            \
     auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);  \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                 \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                       \
+      RPC_CALL_WRAPPER_THALLIUM_ENUM()                      \
       RPC_CALL_WRAPPER_THALLIUM1(funcname, serverVar, ret)  \
     }                                                       \
     HCL_LOG_ERROR("RPC Implmentation unknown %d",           \
@@ -95,7 +95,7 @@
   [&]() -> ret {                                                       \
     auto rpc = hcl::HCL::GetInstance(false)->GetRPC(port);             \
     switch (HCL_CONF->RPC_IMPLEMENTATION) {                            \
-      RPC_CALL_WRAPPER_THALLIUM_TCP()                                  \
+      RPC_CALL_WRAPPER_THALLIUM_ENUM()                                 \
       RPC_CALL_WRAPPER_THALLIUM(funcname, serverVar, ret, __VA_ARGS__) \
     }                                                                  \
     HCL_LOG_ERROR("RPC Implmentation unknown %d",                      \
