@@ -6,7 +6,7 @@ The example shows how to use HCL data structures.
 The template can be used for any data structure supported by HCL.
 
 .. code-block:: cpp
-   :linenos:
+  :linenos:
 
   #include <hcl.h>
 
