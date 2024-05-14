@@ -5,10 +5,10 @@ Example Programs
 The example shows how to use HCL data structures. 
 The template can be used for any data structure supported by HCL.
 
-.. code-block:: c
+.. code-block:: cpp
    :linenos:
 
-   #include <hcl.h>
+  #include <hcl.h>
 
   int main(int argc, char *argv[]) {
     bool is_server = true;
