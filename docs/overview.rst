@@ -11,16 +11,16 @@ Evaluation results from testing real workloads shows that HCL programs are 2x to
 
 
 Supported Data structors with hash-based distributions
-1. hcl::unordered_map
-2. hcl::map
-3. hcl::multi map
-4. hcl::set
+#. hcl::unordered_map
+#. hcl::map
+#. hcl::multi map
+#. hcl::set
 
 Supported Data structors with server-specific distribution
-1. hcl::queue
-2. hcl::priority_queue
-3. hcl::sequencer
-4. hcl::vector
+#. hcl::queue
+#. hcl::priority_queue
+#. hcl::sequencer
+#. hcl::vector
 
 Experimenal data structures
-1. hcl::concurrent_skiplist
+#. hcl::concurrent_skiplist
