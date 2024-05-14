@@ -40,3 +40,4 @@ spack.lock
 __pycache__
 install
 install-test
+.vscode
