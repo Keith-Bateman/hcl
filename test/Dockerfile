@@ -7,11 +7,11 @@ RUN     git clone --recursive https://github.com/scs-lab/hcl $HCL_DIR
 SHELL   ["/bin/bash", "-c"]
 
 ENV     RPC_BUILD_DIR=${HCL_DIR}/build_rpc
-ENV     THALLIUM_TCP_BUILD_DIR=${HCL_DIR}/build_thallium_tcp
+ENV     THALLIUM_BUILD_DIR=${HCL_DIR}/build_thallium
 
 # Build Thallium TCP Version
 
-ENV     BUILD_DIR=${THALLIUM_TCP_BUILD_DIR}
+ENV     BUILD_DIR=${THALLIUM_BUILD_DIR}
 
 ENV     HCL_COMMUNICATION=THALLIUM
 
@@ -36,7 +36,7 @@ RUN ${INSTALL_DIR}/bin/cmake --build . -- -j 2
 
 # Test Thallium Version
 
-WORKDIR ${THALLIUM_TCP_BUILD_DIR}/test
+WORKDIR ${THALLIUM_BUILD_DIR}/test
 
 RUN     ${INSTALL_DIR}/bin/mpiexec -n 2 ./map_test || exit 1
 

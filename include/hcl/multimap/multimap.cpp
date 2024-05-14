@@ -361,7 +361,7 @@ void multimap<KeyType, MappedType, Compare, Allocator,
   /* Create a RPC server and map the methods to it. */
   switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-    case THALLIUM_TCP:
+    case THALLIUM:
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
     {

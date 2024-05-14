@@ -69,6 +69,7 @@ int HCL::ConfigureInternal(bool initialize, uint16_t _port,
                            CharStruct _server_list_path, CharStruct _uri) {
   HCL_LOG_TRACE();
   HCL_CPP_FUNCTION()
+  auto previous_port = conf->RPC_PORT;
   if (_port != 0) conf->RPC_PORT = _port;
   if (_num_servers != 0) conf->NUM_SERVERS = _num_servers;
   if (_my_server_idx != -1) conf->MY_SERVER = _my_server_idx;
@@ -78,7 +79,8 @@ int HCL::ConfigureInternal(bool initialize, uint16_t _port,
   if (_backed_file_dir.size() != 0) conf->BACKED_FILE_DIR = _backed_file_dir;
   if (_server_list_path.size() != 0) conf->SERVER_LIST_PATH = _server_list_path;
   if (_uri.size() != 0) conf->URI = _uri;
-  if (_port == 0 && (_server_list_path.size() != 0 || _uri.size() != 0)) {
+  if (!initialize && previous_port == conf->RPC_PORT &&
+      (_server_list_path.size() != 0 || _uri.size() != 0)) {
     throw new std::logic_error(
         "To change the server list or URI use a new port");
   }

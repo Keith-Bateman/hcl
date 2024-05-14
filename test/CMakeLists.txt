@@ -23,7 +23,7 @@ add_subdirectory(benchmark)
 
 # target_link_libraries(DistributedHashMapTest ${CMAKE_BINARY_DIR}/libhcl.so)
 
-set(examples global_clock_test hashmap_test concurrent_queue_test skiplist_test)
+set(examples global_clock_test hashmap_test concurrent_queue_test skiplist_test simple_test)
 
 add_custom_target(copy_hostfile)
 add_custom_command(TARGET copy_hostfile

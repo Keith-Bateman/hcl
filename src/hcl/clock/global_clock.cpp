@@ -23,7 +23,7 @@ global_clock::global_clock(std::string name_, uint16_t _port)
   if (is_server) {
     switch (HCL_CONF->RPC_IMPLEMENTATION) {
 #ifdef HCL_COMMUNICATION_ENABLE_THALLIUM
-      case THALLIUM_TCP:
+      case THALLIUM:
 #endif
 #if defined(HCL_COMMUNICATION_ENABLE_THALLIUM)
       {
