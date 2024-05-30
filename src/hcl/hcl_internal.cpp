@@ -84,7 +84,8 @@ int HCL::ConfigureInternal(bool initialize, uint16_t _port,
     throw new std::logic_error(
         "To change the server list or URI use a new port");
   }
-  if (initialize || _server_list_path.size() != 0 || _uri.size() != 0) {
+  if (initialize || _server_list_path.size() != 0 || _uri.size() != 0 ||
+      previous_port != conf->RPC_PORT) {
     auto uris = LoadURI(conf->RPC_PORT, conf->SERVER_LIST_PATH, conf->URI,
                         conf->MY_SERVER, conf->IS_SERVER);
     if (uris.size() != conf->NUM_SERVERS) {
