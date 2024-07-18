@@ -49,7 +49,7 @@ class Hcl(CMakePackage):
     depends_on('ucx@1.13.1:', when='+ucx')
     depends_on('cpp-logger@0.0.3:', when='+cpp-logger')
     depends_on('py-dlio-profiler-py@0.0.4:', when='+dlp')
-    depends_on('cmake@3.4.0:', when='+test')
+    depends_on('catch2@3.4.0:', when='+test')
     
     def cmake_args(self):
         spec = self.spec
