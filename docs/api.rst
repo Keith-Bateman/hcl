@@ -54,7 +54,7 @@ SERVER_LIST_PATH                 STRING  List of servers defined for HCL. The fo
 BACKED_FILE_DIR                  STRING  Where to store the file backed file. Default is /dev/shm. Can be stored on ssd as well.
 ================================ ======  ===========================================================================
 
-Configuration variables for using environment varibles
+Configuration variables for using environment variables
 *********************************************************
 ================================ ======  ===========================================================================
 Configuration Option             Type    Description

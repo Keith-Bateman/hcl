@@ -28,7 +28,7 @@ Supported Data structors with server-specific distribution
 #. hcl::vector
 
 --------------------------
-Experimenal data structures
+Experimental data structures
 --------------------------
 
 #. hcl::concurrent_skiplist

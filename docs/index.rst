@@ -14,6 +14,7 @@ HCL: a distributed data structure library with STL like interface
    overview
    build
    api
+   limitations
 
 .. toctree::
    :maxdepth: 2
